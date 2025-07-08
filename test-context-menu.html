@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Context Menu</title>
+    <style>
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 150px;
+            padding: 8px 0;
+        }
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+        .file-item {
+            padding: 8px;
+            margin: 4px 0;
+            background: #f8f8f8;
+            cursor: pointer;
+        }
+        .folder-item {
+            padding: 8px;
+            margin: 4px 0;
+            background: #e8e8e8;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="folder-item" oncontextmenu="showContextMenu(event, 'folder', 'test-folder')">
+        📁 Test Folder (Right-click me)
+    </div>
+    <div class="file-item" oncontextmenu="showContextMenu(event, 'file', 'test-file.md')">
+        📄 Test File (Right-click me)
+    </div>
+    
+    <div id="contextMenu" class="context-menu" style="display: none;">
+        <div class="context-menu-item" onclick="createFolder()">New Folder</div>
+        <div class="context-menu-item" onclick="createFile()">New File</div>
+        <div class="context-menu-item" onclick="deleteItem()">Delete</div>
+    </div>
+
+    <script>
+        let currentContextMenu = null;
+
+        function showContextMenu(e, type, path) {
+            e.preventDefault();
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = e.clientX + 'px';
+            menu.style.top = e.clientY + 'px';
+            currentContextMenu = { type, path };
+            
+            // Show/hide menu items based on type
+            const items = menu.children;
+            if (type === 'folder') {
+                items[0].style.display = 'block'; // New Folder
+                items[1].style.display = 'block'; // New File
+                items[2].style.display = 'block'; // Delete
+            } else if (type === 'file') {
+                items[0].style.display = 'none'; // New Folder
+                items[1].style.display = 'none'; // New File
+                items[2].style.display = 'block'; // Delete
+            }
+        }
+
+        function createFolder() {
+            alert('Create folder in: ' + currentContextMenu.path);
+            hideContextMenu();
+        }
+
+        function createFile() {
+            alert('Create file in: ' + currentContextMenu.path);
+            hideContextMenu();
+        }
+
+        function deleteItem() {
+            alert('Delete: ' + currentContextMenu.path);
+            hideContextMenu();
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+            currentContextMenu = null;
+        }
+
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', hideContextMenu);
+    </script>
+</body>
+</html>

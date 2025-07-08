@@ -128,4 +128,50 @@ export const createFile = async (filePath, content = '') => {
   }
 };
 
+/**
+ * Clones a git repository into the content directory.
+ * @param {string} repoUrl - The repository URL to clone.
+ * @param {string} branch - The branch to clone (default: 'main').
+ * @return {Promise<Object>} The clone response.
+ */
+export const cloneRepository = async (repoUrl, branch = 'main') => {
+  try {
+    const response = await api.post('/clone', {repoUrl, branch});
+    return response.data;
+  } catch (error) {
+    console.error('Error cloning repository:', error);
+    throw error;
+  }
+};
+
+/**
+ * Pulls the latest changes from the remote repository.
+ * @param {string} branch - The branch to pull (default: 'main').
+ * @return {Promise<Object>} The pull response.
+ */
+export const pullRepository = async (branch = 'main') => {
+  try {
+    const response = await api.post('/pull', {branch});
+    return response.data;
+  } catch (error) {
+    console.error('Error pulling repository:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a file or folder.
+ * @param {string} itemPath - The path of the file or folder to delete.
+ * @return {Promise<Object>} The delete response.
+ */
+export const deleteItem = async (itemPath) => {
+  try {
+    const response = await api.delete(`/files/${itemPath}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    throw error;
+  }
+};
+
 export default api;

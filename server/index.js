@@ -187,6 +187,44 @@ app.post('/api/files/*', async (req, res) => {
   }
 });
 
+app.delete('/api/files/*', async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const fullPath = path.join(contentDir, filePath);
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    const stats = await fs.stat(fullPath);
+    if (stats.isDirectory()) {
+      await fs.rm(fullPath, {recursive: true, force: true});
+      res.json({message: 'Folder deleted successfully', path: filePath});
+    } else {
+      await fs.unlink(fullPath);
+      res.json({message: 'File deleted successfully', path: filePath});
+    }
+  } catch (error) {
+    console.error('Error deleting file/folder:', error);
+    res.status(500).json({error: 'Failed to delete file/folder'});
+  }
+});
+
+app.delete('/api/folders/*', async (req, res) => {
+  try {
+    const folderPath = req.params[0];
+    const fullPath = path.join(contentDir, folderPath);
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    await fs.rm(fullPath, {recursive: true, force: true});
+    res.json({message: 'Folder deleted successfully', path: folderPath});
+  } catch (error) {
+    console.error('Error deleting folder:', error);
+    res.status(500).json({error: 'Failed to delete folder'});
+  }
+});
+
 app.post('/api/commit', async (req, res) => {
   try {
     const {message} = req.body;
@@ -194,6 +232,7 @@ app.post('/api/commit', async (req, res) => {
       return res.status(400).json({error: 'Commit message is required'});
     }
 
+    await git.cwd(contentDir);
     await git.add('.');
     await git.commit(message);
     res.json({message: 'Changes committed successfully'});
@@ -205,6 +244,7 @@ app.post('/api/commit', async (req, res) => {
 
 app.post('/api/push', async (req, res) => {
   try {
+    await git.cwd(contentDir);
     await git.push('origin', 'main');
     res.json({message: 'Changes pushed successfully'});
   } catch (error) {
@@ -215,11 +255,63 @@ app.post('/api/push', async (req, res) => {
 
 app.get('/api/status', async (req, res) => {
   try {
+    await git.cwd(contentDir);
     const status = await git.status();
     res.json(status);
   } catch (error) {
     console.error('Error getting git status:', error);
     res.status(500).json({error: 'Failed to get git status'});
+  }
+});
+
+app.post('/api/clone', async (req, res) => {
+  try {
+    const {repoUrl, branch = 'main'} = req.body;
+    if (!repoUrl) {
+      return res.status(400).json({error: 'Repository URL is required'});
+    }
+
+    await ensureContentDir();
+    
+    // Clear existing content directory
+    const items = await fs.readdir(contentDir);
+    for (const item of items) {
+      await fs.rm(path.join(contentDir, item), {recursive: true, force: true});
+    }
+
+    // Clone repository into content directory
+    await git.clone(repoUrl, contentDir, ['--branch', branch]);
+    
+    // Set working directory for future git operations
+    await git.cwd(contentDir);
+    
+    res.json({message: 'Repository cloned successfully', branch});
+  } catch (error) {
+    console.error('Error cloning repository:', error);
+    res.status(500).json({error: 'Failed to clone repository'});
+  }
+});
+
+app.post('/api/pull', async (req, res) => {
+  try {
+    const {branch = 'main'} = req.body;
+    
+    // Set working directory first
+    await git.cwd(contentDir);
+    
+    // Check if content directory is a git repository
+    const isRepo = await git.checkIsRepo();
+    if (!isRepo) {
+      return res.status(400).json({error: 'Content directory is not a git repository. Please clone a repository first.'});
+    }
+
+    // Pull latest changes
+    await git.pull('origin', branch);
+    
+    res.json({message: 'Repository updated successfully', branch});
+  } catch (error) {
+    console.error('Error pulling repository:', error);
+    res.status(500).json({error: 'Failed to pull repository'});
   }
 });
 

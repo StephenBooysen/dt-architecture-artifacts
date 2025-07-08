@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 
 /**
  * FileTree component for displaying and managing file/folder structure.
@@ -9,6 +9,7 @@ import React, {useState} from 'react';
  * @param {boolean} props.isLoading - Loading state indicator.
  * @param {Function} props.onCreateFolder - Callback for folder creation.
  * @param {Function} props.onCreateFile - Callback for file creation.
+ * @param {Function} props.onDeleteItem - Callback for item deletion.
  * @return {JSX.Element} The FileTree component.
  */
 const FileTree = ({
@@ -18,19 +19,73 @@ const FileTree = ({
   isLoading,
   onCreateFolder,
   onCreateFile,
+  onDeleteItem,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
   const [createPath, setCreatePath] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState(new Set());
+  const [contextMenu, setContextMenu] = useState(null);
+  const contextMenuRef = useRef(null);
 
   const handleCreateClick = (type, basePath = '') => {
     setCreateType(type);
     setCreatePath(basePath);
     setInputValue('');
     setShowCreateDialog(true);
+    setContextMenu(null);
   };
+
+  const handleContextMenu = (e, path = '', itemType = 'empty') => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      path: path,
+      itemType: itemType
+    });
+  };
+
+  const handleDeleteClick = (itemPath) => {
+    if (window.confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+      if (onDeleteItem) {
+        onDeleteItem(itemPath);
+      } else {
+        console.error('onDeleteItem function not provided');
+      }
+    }
+    setContextMenu(null);
+  };
+
+  const handleContextMenuClose = () => {
+    setContextMenu(null);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+        handleContextMenuClose();
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        handleContextMenuClose();
+      }
+    };
+
+    if (contextMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [contextMenu]);
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
@@ -89,7 +144,8 @@ const FileTree = ({
           <div
             className="file-tree-item directory"
             style={{paddingLeft: `${paddingLeft}rem`}}
-            onClick={() => toggleFolder(item.path)}>
+            onClick={() => toggleFolder(item.path)}
+            onContextMenu={(e) => handleContextMenu(e, item.path, 'directory')}>
             <div className="folder-content">
               <span className="icon">
                 {isCollapsed ? '📁' : '📂'}
@@ -103,6 +159,7 @@ const FileTree = ({
                   e.stopPropagation();
                   handleCreateClick('folder', item.path);
                 }}
+                onContextMenu={(e) => e.stopPropagation()}
                 title="Create folder">
                 📁+
               </button>
@@ -112,6 +169,7 @@ const FileTree = ({
                   e.stopPropagation();
                   handleCreateClick('file', item.path);
                 }}
+                onContextMenu={(e) => e.stopPropagation()}
                 title="Create file">
                 📄+
               </button>
@@ -128,7 +186,8 @@ const FileTree = ({
         key={item.path}
         className={`file-tree-item file ${isSelected ? 'selected' : ''}`}
         style={{paddingLeft: `${paddingLeft}rem`}}
-        onClick={() => onFileSelect(item.path)}>
+        onClick={() => onFileSelect(item.path)}
+        onContextMenu={(e) => handleContextMenu(e, item.path, 'file')}>
         <span className="icon">📄</span>
         <span>{item.name}</span>
       </div>
@@ -165,14 +224,18 @@ const FileTree = ({
         </div>
       </div>
 
-      {files.length === 0 ? (
-        <div className="empty-state">
-          <h3>No files found</h3>
-          <p>Create some markdown files to get started.</p>
-        </div>
-      ) : (
-        files.map((file) => renderFileItem(file))
-      )}
+      <div 
+        className="file-tree-content"
+        onContextMenu={(e) => handleContextMenu(e, '')}>
+        {files.length === 0 ? (
+          <div className="empty-state">
+            <h3>No files found</h3>
+            <p>Create some markdown files to get started.</p>
+          </div>
+        ) : (
+          files.map((file) => renderFileItem(file))
+        )}
+      </div>
 
       {showCreateDialog && (
         <div className="modal-overlay">
@@ -220,6 +283,49 @@ const FileTree = ({
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {contextMenu && (
+        <div
+          ref={contextMenuRef}
+          className="context-menu"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+          }}>
+          {/* Show create options for empty space and directories */}
+          {(contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
+            <div
+              className="context-menu-item"
+              onClick={() => handleCreateClick('folder', contextMenu.path)}>
+              <span className="context-menu-icon">📁</span>
+              New Folder
+            </div>
+          )}
+          {(contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
+            <div
+              className="context-menu-item"
+              onClick={() => handleCreateClick('file', contextMenu.path)}>
+              <span className="context-menu-icon">📄</span>
+              New File
+            </div>
+          )}
+          
+          {/* Show delete option for files and directories */}
+          {(contextMenu.itemType === 'file' || contextMenu.itemType === 'directory') && (
+            <>
+              {contextMenu.itemType === 'directory' && (
+                <div className="context-menu-divider"></div>
+              )}
+              <div
+                className="context-menu-item delete-item"
+                onClick={() => handleDeleteClick(contextMenu.path)}>
+                <span className="context-menu-icon">🗑️</span>
+                Delete
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

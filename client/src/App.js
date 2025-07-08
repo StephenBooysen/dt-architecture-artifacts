@@ -3,15 +3,15 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
-import CommitModal from './components/CommitModal';
+import PublishModal from './components/PublishModal';
+import GitIntegration from './components/GitIntegration';
 import {
   fetchFiles,
   fetchFile,
   saveFile,
-  commitChanges,
-  pushChanges,
   createFolder,
   createFile,
+  deleteItem,
 } from './services/api';
 import './App.css';
 
@@ -24,7 +24,8 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showCommitModal, setShowCommitModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showGitIntegration, setShowGitIntegration] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
@@ -79,19 +80,17 @@ function App() {
     }
   };
 
-  const handleCommit = async (message) => {
-    try {
-      setIsLoading(true);
-      await commitChanges(message);
-      await pushChanges();
-      setShowCommitModal(false);
-      setHasChanges(false);
-      toast.success('Changes committed and pushed successfully');
-    } catch (error) {
-      toast.error('Failed to commit changes');
-    } finally {
-      setIsLoading(false);
-    }
+  const handlePublish = () => {
+    setShowPublishModal(false);
+    setHasChanges(false);
+    loadFiles(); // Refresh file tree after publishing
+  };
+
+  const handleRepositoryUpdate = () => {
+    loadFiles(); // Refresh file tree after git operations
+    setSelectedFile(null);
+    setFileContent('');
+    setHasChanges(false);
   };
 
   const handleCreateFolder = async (folderPath) => {
@@ -117,6 +116,27 @@ function App() {
       await handleFileSelect(filePath);
     } catch (error) {
       toast.error('Failed to create file');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteItem = async (itemPath) => {
+    try {
+      setIsLoading(true);
+      await deleteItem(itemPath);
+      await loadFiles(); // Refresh file tree
+      
+      // If the deleted item was the currently selected file, clear the selection
+      if (selectedFile === itemPath) {
+        setSelectedFile(null);
+        setFileContent('');
+        setHasChanges(false);
+      }
+      
+      toast.success('Item deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete item');
     } finally {
       setIsLoading(false);
     }
@@ -170,30 +190,42 @@ function App() {
         <h1>Architecture Artifacts Editor</h1>
         <div className="header-actions">
           <button
+            className="btn btn-secondary"
+            onClick={() => setShowGitIntegration(!showGitIntegration)}
+            disabled={isLoading}>
+            Git Integration
+          </button>
+          <button
             className="btn btn-primary"
             onClick={handleSave}
             disabled={!selectedFile || !hasChanges || isLoading}>
             Save
           </button>
           <button
-            className="btn btn-secondary"
-            onClick={() => setShowCommitModal(true)}
+            className="btn btn-primary"
+            onClick={() => setShowPublishModal(true)}
             disabled={!hasChanges || isLoading}>
-            Commit & Push
+            Publish
           </button>
         </div>
       </header>
 
       <main className="app-main">
         <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
-          <FileTree
-            files={files}
-            onFileSelect={handleFileSelect}
-            selectedFile={selectedFile}
-            isLoading={isLoading}
-            onCreateFolder={handleCreateFolder}
-            onCreateFile={handleCreateFile}
-          />
+          <div className="sidebar-content">
+            {showGitIntegration && (
+              <GitIntegration onRepositoryUpdate={handleRepositoryUpdate} />
+            )}
+            <FileTree
+              files={files}
+              onFileSelect={handleFileSelect}
+              selectedFile={selectedFile}
+              isLoading={isLoading}
+              onCreateFolder={handleCreateFolder}
+              onCreateFile={handleCreateFile}
+              onDeleteItem={handleDeleteItem}
+            />
+          </div>
           <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
         </aside>
 
@@ -207,11 +239,14 @@ function App() {
         </section>
       </main>
 
-      {showCommitModal && (
-        <CommitModal
-          onCommit={handleCommit}
-          onCancel={() => setShowCommitModal(false)}
-          isLoading={isLoading}
+      <footer className="app-footer">
+        <p>© 2025 All rights reserved.</p>
+      </footer>
+
+      {showPublishModal && (
+        <PublishModal
+          onPublish={handlePublish}
+          onClose={() => setShowPublishModal(false)}
         />
       )}
 
