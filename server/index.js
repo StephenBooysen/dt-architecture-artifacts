@@ -48,6 +48,11 @@ async function getDirectoryTree(dirPath, relativePath = '') {
   const tree = [];
 
   for (const item of items) {
+    // Skip hidden files and folders (starting with .)
+    if (item.name.startsWith('.')) {
+      continue;
+    }
+
     const fullPath = path.join(dirPath, item.name);
     const relPath = path.join(relativePath, item.name);
 
@@ -222,6 +227,47 @@ app.delete('/api/folders/*', async (req, res) => {
   } catch (error) {
     console.error('Error deleting folder:', error);
     res.status(500).json({error: 'Failed to delete folder'});
+  }
+});
+
+app.put('/api/rename/*', async (req, res) => {
+  try {
+    const oldPath = req.params[0];
+    const {newName} = req.body;
+    
+    if (!newName) {
+      return res.status(400).json({error: 'New name is required'});
+    }
+
+    const oldFullPath = path.join(contentDir, oldPath);
+    if (!oldFullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    // Get the directory and create new path
+    const parentDir = path.dirname(oldFullPath);
+    const newFullPath = path.join(parentDir, newName);
+    
+    if (!newFullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    // Check if new path already exists
+    try {
+      await fs.access(newFullPath);
+      return res.status(409).json({error: 'A file or folder with that name already exists'});
+    } catch {
+      // File doesn't exist, continue with rename
+    }
+
+    // Perform the rename
+    await fs.rename(oldFullPath, newFullPath);
+    
+    const newPath = path.relative(contentDir, newFullPath);
+    res.json({message: 'Item renamed successfully', oldPath, newPath});
+  } catch (error) {
+    console.error('Error renaming item:', error);
+    res.status(500).json({error: 'Failed to rename item'});
   }
 });
 

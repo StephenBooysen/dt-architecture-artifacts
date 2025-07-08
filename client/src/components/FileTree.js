@@ -10,6 +10,9 @@ import React, {useState, useEffect, useRef} from 'react';
  * @param {Function} props.onCreateFolder - Callback for folder creation.
  * @param {Function} props.onCreateFile - Callback for file creation.
  * @param {Function} props.onDeleteItem - Callback for item deletion.
+ * @param {Function} props.onRenameItem - Callback for item renaming.
+ * @param {Set} props.expandedFolders - Set of folder paths that should be expanded.
+ * @param {Function} props.onFolderToggle - Callback when a folder is expanded/collapsed.
  * @return {JSX.Element} The FileTree component.
  */
 const FileTree = ({
@@ -20,13 +23,23 @@ const FileTree = ({
   onCreateFolder,
   onCreateFile,
   onDeleteItem,
+  onRenameItem,
+  expandedFolders = new Set(),
+  onFolderToggle,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
   const [createPath, setCreatePath] = useState('');
   const [inputValue, setInputValue] = useState('');
-  const [collapsedFolders, setCollapsedFolders] = useState(new Set());
+  // Use expandedFolders prop if provided, otherwise maintain local state
+  const [localCollapsedFolders, setLocalCollapsedFolders] = useState(new Set());
+  const collapsedFolders = expandedFolders.size > 0 ? 
+    new Set([...localCollapsedFolders].filter(path => !expandedFolders.has(path))) : 
+    localCollapsedFolders;
   const [contextMenu, setContextMenu] = useState(null);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [renameItemPath, setRenameItemPath] = useState('');
+  const [renameValue, setRenameValue] = useState('');
   const contextMenuRef = useRef(null);
 
   const handleCreateClick = (type, basePath = '') => {
@@ -57,6 +70,45 @@ const FileTree = ({
       }
     }
     setContextMenu(null);
+  };
+
+  const handleRenameClick = (itemPath) => {
+    const pathParts = itemPath.split('/');
+    const currentName = pathParts[pathParts.length - 1];
+    setRenameItemPath(itemPath);
+    setRenameValue(currentName);
+    setShowRenameDialog(true);
+    setContextMenu(null);
+  };
+
+  const handleRenameSubmit = (e) => {
+    e.preventDefault();
+    if (!renameValue.trim()) return;
+
+    // Validate input - no special characters except hyphens and underscores
+    const cleanInput = renameValue.trim();
+    const invalidChars = /[<>:"/\\|?*]/;
+    
+    if (invalidChars.test(cleanInput)) {
+      alert('Invalid characters detected. Please use only letters, numbers, hyphens, and underscores.');
+      return;
+    }
+
+    if (onRenameItem) {
+      onRenameItem(renameItemPath, cleanInput);
+    } else {
+      console.error('onRenameItem function not provided');
+    }
+
+    setShowRenameDialog(false);
+    setRenameValue('');
+    setRenameItemPath('');
+  };
+
+  const handleRenameCancel = () => {
+    setShowRenameDialog(false);
+    setRenameValue('');
+    setRenameItemPath('');
   };
 
   const handleContextMenuClose = () => {
@@ -124,13 +176,18 @@ const FileTree = ({
   };
 
   const toggleFolder = (folderPath) => {
-    const newCollapsed = new Set(collapsedFolders);
+    const newCollapsed = new Set(localCollapsedFolders);
     if (newCollapsed.has(folderPath)) {
       newCollapsed.delete(folderPath);
     } else {
       newCollapsed.add(folderPath);
     }
-    setCollapsedFolders(newCollapsed);
+    setLocalCollapsedFolders(newCollapsed);
+    
+    // Notify parent component about folder toggle
+    if (onFolderToggle) {
+      onFolderToggle(folderPath, !newCollapsed.has(folderPath));
+    }
   };
 
   const renderFileItem = (item, depth = 0) => {
@@ -312,12 +369,18 @@ const FileTree = ({
             </div>
           )}
           
-          {/* Show delete option for files and directories */}
+          {/* Show rename and delete options for files and directories */}
           {(contextMenu.itemType === 'file' || contextMenu.itemType === 'directory') && (
             <>
               {contextMenu.itemType === 'directory' && (
                 <div className="context-menu-divider"></div>
               )}
+              <div
+                className="context-menu-item"
+                onClick={() => handleRenameClick(contextMenu.path)}>
+                <span className="context-menu-icon">✏️</span>
+                Rename
+              </div>
               <div
                 className="context-menu-item delete-item"
                 onClick={() => handleDeleteClick(contextMenu.path)}>
@@ -326,6 +389,45 @@ const FileTree = ({
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {showRenameDialog && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Rename Item</h2>
+            <form onSubmit={handleRenameSubmit} className="modal-form">
+              <div>
+                <label htmlFor="rename-name">New Name:</label>
+                <p style={{fontSize: '0.9rem', color: '#7f8c8d'}}>
+                  Current: {renameItemPath}
+                </p>
+                <input
+                  id="rename-name"
+                  type="text"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  placeholder="Enter new name"
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleRenameCancel}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={!renameValue.trim()}>
+                  Rename
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -8,7 +8,7 @@ The Enterprise Architecture Data Platform is a comprehensive solution designed t
 
 ## Product Overview
 
-### Vision Statement
+### Vision Statementa
 To provide enterprise architects and business stakeholders with a single source of truth for enterprise architecture data, enabling better strategic decisions through comprehensive visibility into technology landscapes, business capabilities, and project initiatives.
 
 ### Success Metrics

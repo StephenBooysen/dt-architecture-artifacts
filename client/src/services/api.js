@@ -174,4 +174,20 @@ export const deleteItem = async (itemPath) => {
   }
 };
 
+/**
+ * Renames a file or folder.
+ * @param {string} itemPath - The current path of the file or folder.
+ * @param {string} newName - The new name for the item.
+ * @return {Promise<Object>} The rename response.
+ */
+export const renameItem = async (itemPath, newName) => {
+  try {
+    const response = await api.put(`/rename/${itemPath}`, {newName});
+    return response.data;
+  } catch (error) {
+    console.error('Error renaming item:', error);
+    throw error;
+  }
+};
+
 export default api;
