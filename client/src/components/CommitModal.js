@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const CommitModal = ({ onCommit, onCancel, isLoading }) => {
+const CommitModal = ({onCommit, onCancel, isLoading}) => {
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e) => {
@@ -32,15 +32,13 @@ const CommitModal = ({ onCommit, onCancel, isLoading }) => {
               type="button"
               className="btn btn-secondary"
               onClick={onCancel}
-              disabled={isLoading}
-            >
+              disabled={isLoading}>
               Cancel
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={!message.trim() || isLoading}
-            >
+              disabled={!message.trim() || isLoading}>
               {isLoading ? 'Committing...' : 'Commit & Push'}
             </button>
           </div>

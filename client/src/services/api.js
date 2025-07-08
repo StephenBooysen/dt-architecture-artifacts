@@ -31,7 +31,7 @@ export const fetchFile = async (filePath) => {
 
 export const saveFile = async (filePath, content) => {
   try {
-    const response = await api.post(`/files/${filePath}`, { content });
+    const response = await api.post(`/files/${filePath}`, {content});
     return response.data;
   } catch (error) {
     console.error('Error saving file:', error);
@@ -41,7 +41,7 @@ export const saveFile = async (filePath, content) => {
 
 export const commitChanges = async (message) => {
   try {
-    const response = await api.post('/commit', { message });
+    const response = await api.post('/commit', {message});
     return response.data;
   } catch (error) {
     console.error('Error committing changes:', error);
@@ -65,6 +65,26 @@ export const getGitStatus = async () => {
     return response.data;
   } catch (error) {
     console.error('Error getting git status:', error);
+    throw error;
+  }
+};
+
+export const createFolder = async (folderPath) => {
+  try {
+    const response = await api.post('/folders', {folderPath});
+    return response.data;
+  } catch (error) {
+    console.error('Error creating folder:', error);
+    throw error;
+  }
+};
+
+export const createFile = async (filePath, content = '') => {
+  try {
+    const response = await api.post('/files', {filePath, content});
+    return response.data;
+  } catch (error) {
+    console.error('Error creating file:', error);
     throw error;
   }
 };

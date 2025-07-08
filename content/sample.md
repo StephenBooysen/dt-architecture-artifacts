@@ -7,7 +7,7 @@ This is a sample markdown file to demonstrate the architecture artifacts editor.
 - **Glassmorphism UI**: Modern glass-like interface with blur effects
 - **Live Preview**: Real-time markdown preview
 - **Git Integration**: Commit and push changes directly from the editor
-- **File Management**: Browse and edit files from the left sidebar
+- **File Management**: Browse and edit files from the left sidebarrewrwer
 
 ## Code Example
 ```javascript

@@ -29,12 +29,12 @@ async function ensureContentDir() {
   try {
     await fs.access(contentDir);
   } catch {
-    await fs.mkdir(contentDir, { recursive: true });
+    await fs.mkdir(contentDir, {recursive: true});
   }
 }
 
 async function getDirectoryTree(dirPath, relativePath = '') {
-  const items = await fs.readdir(dirPath, { withFileTypes: true });
+  const items = await fs.readdir(dirPath, {withFileTypes: true});
   const tree = [];
 
   for (const item of items) {
@@ -47,7 +47,7 @@ async function getDirectoryTree(dirPath, relativePath = '') {
         name: item.name,
         type: 'directory',
         path: relPath,
-        children: children
+        children
       });
     } else if (item.name.endsWith('.md')) {
       tree.push({
@@ -65,6 +65,73 @@ async function getDirectoryTree(dirPath, relativePath = '') {
   });
 }
 
+// Create new folder - must come before wildcard routes
+app.post('/api/folders', async (req, res) => {
+  try {
+    const {folderPath} = req.body;
+    
+    if (!folderPath) {
+      return res.status(400).json({error: 'Folder path is required'});
+    }
+
+    // Ensure content directory exists
+    await ensureContentDir();
+    
+    const fullPath = path.join(contentDir, folderPath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    await fs.mkdir(fullPath, {recursive: true});
+    res.json({message: 'Folder created successfully', path: folderPath});
+  } catch (error) {
+    console.error('Error creating folder:', error);
+    res.status(500).json({error: 'Failed to create folder'});
+  }
+});
+
+// Create new file - must come before wildcard routes
+app.post('/api/files', async (req, res) => {
+  try {
+    const {filePath, content = ''} = req.body;
+    
+    if (!filePath) {
+      return res.status(400).json({error: 'File path is required'});
+    }
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Only markdown files (.md) are allowed'});
+    }
+
+    // Ensure content directory exists
+    await ensureContentDir();
+    
+    const fullPath = path.join(contentDir, filePath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    // Check if file already exists
+    try {
+      await fs.access(fullPath);
+      return res.status(409).json({error: 'File already exists'});
+    } catch {
+      // File doesn't exist, continue with creation
+    }
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(fullPath), {recursive: true});
+    await fs.writeFile(fullPath, content, 'utf8');
+    
+    res.json({message: 'File created successfully', path: filePath});
+  } catch (error) {
+    console.error('Error creating file:', error);
+    res.status(500).json({error: 'Failed to create file'});
+  }
+});
+
 app.get('/api/files', async (req, res) => {
   try {
     await ensureContentDir();
@@ -72,7 +139,7 @@ app.get('/api/files', async (req, res) => {
     res.json(tree);
   } catch (error) {
     console.error('Error getting files:', error);
-    res.status(500).json({ error: 'Failed to get files' });
+    res.status(500).json({error: 'Failed to get files'});
   }
 });
 
@@ -80,64 +147,59 @@ app.get('/api/files/*', async (req, res) => {
   try {
     const filePath = req.params[0];
     const fullPath = path.join(contentDir, filePath);
-    
     if (!fullPath.startsWith(contentDir)) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({error: 'Access denied'});
     }
 
     const content = await fs.readFile(fullPath, 'utf8');
-    res.json({ content, path: filePath });
+    res.json({content, path: filePath});
   } catch (error) {
     console.error('Error reading file:', error);
-    res.status(404).json({ error: 'File not found' });
+    res.status(404).json({error: 'File not found'});
   }
 });
 
 app.post('/api/files/*', async (req, res) => {
   try {
     const filePath = req.params[0];
-    const { content } = req.body;
+    const {content} = req.body;
     const fullPath = path.join(contentDir, filePath);
-    
     if (!fullPath.startsWith(contentDir)) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({error: 'Access denied'});
     }
 
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    await fs.mkdir(path.dirname(fullPath), {recursive: true});
     await fs.writeFile(fullPath, content, 'utf8');
-    
-    res.json({ message: 'File saved successfully', path: filePath });
+    res.json({message: 'File saved successfully', path: filePath});
   } catch (error) {
     console.error('Error saving file:', error);
-    res.status(500).json({ error: 'Failed to save file' });
+    res.status(500).json({error: 'Failed to save file'});
   }
 });
 
 app.post('/api/commit', async (req, res) => {
   try {
-    const { message } = req.body;
-    
+    const {message} = req.body;
     if (!message) {
-      return res.status(400).json({ error: 'Commit message is required' });
+      return res.status(400).json({error: 'Commit message is required'});
     }
 
     await git.add('.');
     await git.commit(message);
-    
-    res.json({ message: 'Changes committed successfully' });
+    res.json({message: 'Changes committed successfully'});
   } catch (error) {
     console.error('Error committing changes:', error);
-    res.status(500).json({ error: 'Failed to commit changes' });
+    res.status(500).json({error: 'Failed to commit changes'});
   }
 });
 
 app.post('/api/push', async (req, res) => {
   try {
     await git.push('origin', 'main');
-    res.json({ message: 'Changes pushed successfully' });
+    res.json({message: 'Changes pushed successfully'});
   } catch (error) {
     console.error('Error pushing changes:', error);
-    res.status(500).json({ error: 'Failed to push changes' });
+    res.status(500).json({error: 'Failed to push changes'});
   }
 });
 
@@ -147,7 +209,7 @@ app.get('/api/status', async (req, res) => {
     res.json(status);
   } catch (error) {
     console.error('Error getting git status:', error);
-    res.status(500).json({ error: 'Failed to get git status' });
+    res.status(500).json({error: 'Failed to get git status'});
   }
 });
 

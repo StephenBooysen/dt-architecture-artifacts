@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {tomorrow} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const MarkdownEditor = ({ content, onChange, fileName, isLoading }) => {
+const MarkdownEditor = ({content, onChange, fileName, isLoading}) => {
   const [activeTab, setActiveTab] = useState('edit');
 
   const handleTabChange = (tab) => {
@@ -35,22 +35,19 @@ const MarkdownEditor = ({ content, onChange, fileName, isLoading }) => {
           <h2>{fileName}</h2>
         </div>
         <div className="editor-tabs">
-          <button 
+          <button
             className={`editor-tab ${activeTab === 'edit' ? 'active' : ''}`}
-            onClick={() => handleTabChange('edit')}
-          >
+            onClick={() => handleTabChange('edit')}>
             Edit
           </button>
-          <button 
+          <button
             className={`editor-tab ${activeTab === 'preview' ? 'active' : ''}`}
-            onClick={() => handleTabChange('preview')}
-          >
+            onClick={() => handleTabChange('preview')}>
             Preview
           </button>
-          <button 
+          <button
             className={`editor-tab ${activeTab === 'split' ? 'active' : ''}`}
-            onClick={() => handleTabChange('split')}
-          >
+            onClick={() => handleTabChange('split')}>
             Split View
           </button>
         </div>
@@ -74,7 +71,7 @@ const MarkdownEditor = ({ content, onChange, fileName, isLoading }) => {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  code({ node, inline, className, children, ...props }) {
+                  code({node, inline, className, children, ...props}) {
                     const match = /language-(\w+)/.exec(className || '');
                     return !inline && match ? (
                       <SyntaxHighlighter
@@ -114,7 +111,7 @@ const MarkdownEditor = ({ content, onChange, fileName, isLoading }) => {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    code({ node, inline, className, children, ...props }) {
+                    code({node, inline, className, children, ...props}) {
                       const match = /language-(\w+)/.exec(className || '');
                       return !inline && match ? (
                         <SyntaxHighlighter
