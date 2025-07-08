@@ -19,12 +19,16 @@ app.use(express.json());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api/', limiter);
 
 const contentDir = path.join(__dirname, '../content');
 
+/**
+ * Ensures the content directory exists, creating it if necessary.
+ * @return {Promise<void>}
+ */
 async function ensureContentDir() {
   try {
     await fs.access(contentDir);
@@ -33,6 +37,12 @@ async function ensureContentDir() {
   }
 }
 
+/**
+ * Recursively builds a directory tree structure for markdown files.
+ * @param {string} dirPath - The directory path to scan.
+ * @param {string} relativePath - The relative path from the content root.
+ * @return {Promise<Array>} The directory tree structure.
+ */
 async function getDirectoryTree(dirPath, relativePath = '') {
   const items = await fs.readdir(dirPath, {withFileTypes: true});
   const tree = [];
@@ -47,13 +57,13 @@ async function getDirectoryTree(dirPath, relativePath = '') {
         name: item.name,
         type: 'directory',
         path: relPath,
-        children
+        children,
       });
     } else if (item.name.endsWith('.md')) {
       tree.push({
         name: item.name,
         type: 'file',
-        path: relPath
+        path: relPath,
       });
     }
   }

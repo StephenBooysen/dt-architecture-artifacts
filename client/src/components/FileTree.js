@@ -1,5 +1,16 @@
 import React, {useState} from 'react';
 
+/**
+ * FileTree component for displaying and managing file/folder structure.
+ * @param {Object} props - Component properties.
+ * @param {Array} props.files - Array of file/folder objects.
+ * @param {Function} props.onFileSelect - Callback for file selection.
+ * @param {string} props.selectedFile - Currently selected file path.
+ * @param {boolean} props.isLoading - Loading state indicator.
+ * @param {Function} props.onCreateFolder - Callback for folder creation.
+ * @param {Function} props.onCreateFile - Callback for file creation.
+ * @return {JSX.Element} The FileTree component.
+ */
 const FileTree = ({
   files,
   onFileSelect,
@@ -9,7 +20,7 @@ const FileTree = ({
   onCreateFile,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [createType, setCreateType] = useState('file'); // 'file' or 'folder'
+  const [createType, setCreateType] = useState('file');
   const [createPath, setCreatePath] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [collapsedFolders, setCollapsedFolders] = useState(new Set());
@@ -42,9 +53,9 @@ const FileTree = ({
       onCreateFolder(fullPath);
     } else {
       // Ensure .md extension for files
-      const fileName = fullPath.endsWith('.md')
-        ? fullPath
-        : `${fullPath}.md`;
+      const fileName = fullPath.endsWith('.md') ?
+        fullPath :
+        `${fullPath}.md`;
       onCreateFile(fileName);
     }
 

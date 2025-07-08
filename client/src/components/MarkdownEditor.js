@@ -4,6 +4,15 @@ import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {tomorrow} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
+/**
+ * MarkdownEditor component for editing and previewing markdown content.
+ * @param {Object} props - Component properties.
+ * @param {string} props.content - The markdown content to display/edit.
+ * @param {Function} props.onChange - Callback for content changes.
+ * @param {string} props.fileName - The current file name.
+ * @param {boolean} props.isLoading - Loading state indicator.
+ * @return {JSX.Element} The MarkdownEditor component.
+ */
 const MarkdownEditor = ({content, onChange, fileName, isLoading}) => {
   const [activeTab, setActiveTab] = useState('edit');
 
@@ -87,7 +96,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading}) => {
                         {children}
                       </code>
                     );
-                  }
+                  },
                 }}
               >
                 {content}
@@ -127,7 +136,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading}) => {
                           {children}
                         </code>
                       );
-                    }
+                    },
                   }}
                 >
                   {content}

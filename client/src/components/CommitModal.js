@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 
+/**
+ * CommitModal component for committing changes to git.
+ * @param {Object} props - Component properties.
+ * @param {Function} props.onCommit - Callback for commit action.
+ * @param {Function} props.onCancel - Callback for cancel action.
+ * @param {boolean} props.isLoading - Loading state indicator.
+ * @return {JSX.Element} The CommitModal component.
+ */
 const CommitModal = ({onCommit, onCancel, isLoading}) => {
   const [message, setMessage] = useState('');
 

@@ -15,6 +15,10 @@ import {
 } from './services/api';
 import './App.css';
 
+/**
+ * Main App component for the Architecture Artifacts Editor.
+ * @return {JSX.Element} The App component.
+ */
 function App() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
