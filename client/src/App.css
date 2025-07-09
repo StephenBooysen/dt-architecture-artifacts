@@ -10,7 +10,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
   min-height: 100vh;
   color: #2c3e50;
 }
@@ -22,8 +23,11 @@ body {
 }
 
 .app-header {
-  background: #3498db;
-  border-bottom: 1px solid #2980b9;
+  background: rgba(44, 62, 80, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -31,7 +35,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .app-header h1 {
@@ -51,10 +55,13 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 0.5rem 1rem;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .editor-mode-toggle label {
@@ -66,15 +73,18 @@ body {
 }
 
 .editor-mode-select {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
   padding: 0.25rem 0.5rem;
   font-size: 0.9rem;
   color: #2c3e50;
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .editor-mode-select:focus {
@@ -89,14 +99,17 @@ body {
 
 .btn {
   padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
   display: inline-block;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .btn:disabled {
@@ -105,9 +118,10 @@ body {
 }
 
 .btn-primary {
-  background: #27ae60;
+  background: rgba(39, 174, 96, 0.8);
   color: white;
   font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -117,9 +131,10 @@ body {
 }
 
 .btn-secondary {
-  background: #3498db;
+  background: rgba(52, 152, 219, 0.8);
   color: white;
   font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -263,14 +278,17 @@ body {
 }
 
 .action-btn {
-  background: rgba(52, 152, 219, 0.1);
-  border: 1px solid rgba(52, 152, 219, 0.3);
-  border-radius: 4px;
+  background: rgba(52, 152, 219, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(52, 152, 219, 0.4);
+  border-radius: 8px;
   padding: 0.2rem 0.4rem;
   font-size: 0.7rem;
   cursor: pointer;
   transition: all 0.3s ease;
   color: #3498db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .action-btn:hover {
@@ -279,15 +297,22 @@ body {
 }
 
 .file-tree-item:hover {
-  background: #ecf0f1;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .file-tree-item.selected {
-  background: #3498db;
+  background: rgba(52, 152, 219, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: white;
-  border-radius: 4px;
+  border-radius: 8px;
   font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.3);
 }
 
 .file-tree-item.directory {
@@ -341,14 +366,17 @@ body {
 
 .editor-tab {
   padding: 0.5rem 1rem;
-  background: #bdc3c7;
-  border: none;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
   color: #2c3e50;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
   margin-right: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .editor-tab:hover:not(.active) {
@@ -362,9 +390,11 @@ body {
 }
 
 .editor-tab.active {
-  background: #3498db;
+  background: rgba(52, 152, 219, 0.8);
   color: white;
   font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.3);
 }
 
 .editor-content {
@@ -512,14 +542,16 @@ body {
 }
 
 .modal {
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
   padding: 2rem;
   min-width: 400px;
   max-width: 600px;
   color: #2c3e50;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.2);
 }
 
 .modal h2 {
@@ -535,13 +567,16 @@ body {
 
 .modal-form input,
 .modal-form textarea {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
   padding: 0.75rem;
   color: #2c3e50;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .modal-form input::placeholder,
@@ -596,11 +631,14 @@ body {
 
 /* Git Integration Styles */
 .git-integration {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
   padding: 1rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .git-integration h3 {
@@ -637,10 +675,14 @@ body {
 .git-form input {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
   font-size: 0.9rem;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .git-form input:focus {
@@ -694,10 +736,12 @@ body {
 /* Context Menu Styles */
 .context-menu {
   position: fixed;
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   min-width: 150px;
   padding: 0.5rem 0;
