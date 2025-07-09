@@ -33,11 +33,38 @@ const FileTree = ({
   const [createType, setCreateType] = useState('file');
   const [createPath, setCreatePath] = useState('');
   const [inputValue, setInputValue] = useState('');
-  // Use expandedFolders prop if provided, otherwise maintain local state
-  const [localCollapsedFolders, setLocalCollapsedFolders] = useState(new Set());
+  // Function to collect all folder paths recursively
+  const collectAllFolderPaths = (items) => {
+    const folderPaths = new Set();
+    const traverse = (items) => {
+      items.forEach(item => {
+        if (item.type === 'directory') {
+          folderPaths.add(item.path);
+          if (item.children) {
+            traverse(item.children);
+          }
+        }
+      });
+    };
+    traverse(items);
+    return folderPaths;
+  };
+
+  // Initialize with all folders collapsed
+  const [localCollapsedFolders, setLocalCollapsedFolders] = useState(() => {
+    return collectAllFolderPaths(files);
+  });
+  
   const collapsedFolders = expandedFolders.size > 0 ? 
     new Set([...localCollapsedFolders].filter(path => !expandedFolders.has(path))) : 
     localCollapsedFolders;
+
+  // Update collapsed folders when files change
+  React.useEffect(() => {
+    if (files.length > 0) {
+      setLocalCollapsedFolders(collectAllFolderPaths(files));
+    }
+  }, [files]);
   const [contextMenu, setContextMenu] = useState(null);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameItemPath, setRenameItemPath] = useState('');

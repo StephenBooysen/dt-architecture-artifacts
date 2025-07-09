@@ -77,14 +77,13 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
   };
 
   const handleOpenPreviewWindow = () => {
-    if (!fileName || !content) return;
+    if (!fileName) return;
     
-    // Encode the content and filename for the URL
-    const encodedContent = encodeURIComponent(content);
+    // Only pass the file path as reference
     const encodedFileName = encodeURIComponent(fileName);
     
     // Open preview in new window
-    const previewUrl = `/preview?file=${encodedFileName}&content=${encodedContent}`;
+    const previewUrl = `/preview?file=${encodedFileName}`;
     window.open(previewUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
   };
 
@@ -175,7 +174,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
           <button
             className="editor-tab preview-window-btn"
             onClick={handleOpenPreviewWindow}
-            disabled={!fileName || !content}
+            disabled={!fileName}
             title="Open preview in new window">
             🔗 Preview Window
           </button>

@@ -33,6 +33,7 @@ function App() {
   const [hasChanges, setHasChanges] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [defaultEditorMode, setDefaultEditorMode] = useState(() => {
     return localStorage.getItem('editorDefaultMode') || 'edit';
@@ -312,6 +313,13 @@ function App() {
       <header className="app-header">
         <h1>Architecture Artifacts Editor</h1>
         <div className="header-actions">
+          <button
+            className="btn btn-secondary sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+          >
+            {sidebarCollapsed ? '☰' : '✕'}
+          </button>
           <div className="editor-mode-toggle">
             <label htmlFor="editor-mode-select">Default mode:</label>
             <select
@@ -347,8 +355,9 @@ function App() {
       </header>
 
       <main className="app-main">
-        <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
-          <div className="sidebar-content">
+        {!sidebarCollapsed && (
+          <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
+            <div className="sidebar-content">
             {showGitIntegration && (
               <GitIntegration onRepositoryUpdate={handleRepositoryUpdate} />
             )}
@@ -373,9 +382,10 @@ function App() {
                 setExpandedFolders(newExpanded);
               }, [expandedFolders])}
             />
-          </div>
-          <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
-        </aside>
+            </div>
+            <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
+          </aside>
+        )}
 
         <section className="editor-section">
           <MarkdownEditor
