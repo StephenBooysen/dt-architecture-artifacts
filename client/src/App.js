@@ -13,6 +13,7 @@ import {
   createFile,
   deleteItem,
   renameItem,
+  downloadFile,
 } from './services/api';
 import './App.css';
 
@@ -24,23 +25,33 @@ function App() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
+  const [fileData, setFileData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFileLoading, setIsFileLoading] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showGitIntegration, setShowGitIntegration] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [defaultEditorMode, setDefaultEditorMode] = useState(() => {
+    return localStorage.getItem('editorDefaultMode') || 'edit';
+  });
 
   useEffect(() => {
     loadFiles();
   }, []);
 
-  const loadFiles = async () => {
+  const loadFiles = async (force = false) => {
     try {
       setIsLoading(true);
       const fileTree = await fetchFiles();
-      setFiles(prevFiles => diffAndUpdateTree(prevFiles, fileTree));
+      const updatedTree = diffAndUpdateTree(files, fileTree);
+      
+      // Only update if tree actually changed or force is true
+      if (updatedTree !== files || force) {
+        setFiles(updatedTree);
+      }
     } catch (error) {
       toast.error('Failed to load files');
     } finally {
@@ -86,24 +97,39 @@ function App() {
     return map;
   };
 
-  const handleFileSelect = async (filePath) => {
+  const handleFileSelect = useCallback(async (filePath) => {
+    // Don't reload if the same file is already selected
+    if (selectedFile === filePath) {
+      return;
+    }
+    
     try {
-      setIsLoading(true);
-      const fileData = await fetchFile(filePath);
+      setIsFileLoading(true);
+      const data = await fetchFile(filePath);
       setSelectedFile(filePath);
-      setFileContent(fileData.content);
+      setFileData(data);
+      setFileContent(data.content || '');
       setHasChanges(false);
+      
+      // Handle downloadable files
+      if (data.downloadable) {
+        try {
+          await downloadFile(filePath);
+        } catch (downloadError) {
+          toast.error('Failed to download file');
+        }
+      }
     } catch (error) {
       toast.error('Failed to load file');
     } finally {
-      setIsLoading(false);
+      setIsFileLoading(false);
     }
-  };
+  }, [selectedFile]);
 
-  const handleContentChange = (newContent) => {
+  const handleContentChange = useCallback((newContent) => {
     setFileContent(newContent);
     setHasChanges(true);
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!selectedFile) return;
@@ -123,13 +149,14 @@ function App() {
   const handlePublish = () => {
     setShowPublishModal(false);
     setHasChanges(false);
-    loadFiles(); // Refresh file tree after publishing
+    loadFiles(true); // Force refresh after publishing
   };
 
   const handleRepositoryUpdate = () => {
-    loadFiles(); // Refresh file tree after git operations
+    loadFiles(true); // Force refresh after git operations
     setSelectedFile(null);
     setFileContent('');
+    setFileData(null);
     setHasChanges(false);
     setExpandedFolders(new Set()); // Reset expanded folders after git operations
   };
@@ -150,7 +177,7 @@ function App() {
       }
       
       setExpandedFolders(newExpanded);
-      await loadFiles(); // Refresh file tree
+      await loadFiles(true); // Force refresh after creating folder
       toast.success('Folder created successfully');
     } catch (error) {
       toast.error('Failed to create folder');
@@ -175,7 +202,7 @@ function App() {
       }
       
       setExpandedFolders(newExpanded);
-      await loadFiles(); // Refresh file tree
+      await loadFiles(true); // Force refresh after creating file
       toast.success('File created successfully');
       // Automatically open the newly created file
       await handleFileSelect(filePath);
@@ -190,12 +217,13 @@ function App() {
     try {
       setIsLoading(true);
       await deleteItem(itemPath);
-      await loadFiles(); // Refresh file tree
+      await loadFiles(true); // Force refresh after deleting item
       
       // If the deleted item was the currently selected file, clear the selection
       if (selectedFile === itemPath) {
         setSelectedFile(null);
         setFileContent('');
+        setFileData(null);
         setHasChanges(false);
       }
       
@@ -211,7 +239,7 @@ function App() {
     try {
       setIsLoading(true);
       const result = await renameItem(itemPath, newName);
-      await loadFiles(); // Refresh file tree
+      await loadFiles(true); // Force refresh after renaming item
       
       // If the renamed item was the currently selected file, update the selection
       if (selectedFile === itemPath) {
@@ -268,11 +296,35 @@ function App() {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
+  const handleEditorModeChange = useCallback((mode) => {
+    setDefaultEditorMode(mode);
+    localStorage.setItem('editorDefaultMode', mode);
+  }, []);
+
+  const handleFileUpload = useCallback(async (filePath) => {
+    // Refresh file tree after upload
+    await loadFiles(true);
+    toast.success('File uploaded successfully');
+  }, []);
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>Architecture Artifacts Editor</h1>
         <div className="header-actions">
+          <div className="editor-mode-toggle">
+            <label htmlFor="editor-mode-select">Default mode:</label>
+            <select
+              id="editor-mode-select"
+              value={defaultEditorMode}
+              onChange={(e) => handleEditorModeChange(e.target.value)}
+              className="editor-mode-select"
+            >
+              <option value="edit">Edit</option>
+              <option value="preview">Preview</option>
+              <option value="split">Split View</option>
+            </select>
+          </div>
           <button
             className="btn btn-secondary"
             onClick={() => setShowGitIntegration(!showGitIntegration)}
@@ -282,7 +334,7 @@ function App() {
           <button
             className="btn btn-primary"
             onClick={handleSave}
-            disabled={!selectedFile || !hasChanges || isLoading}>
+            disabled={!selectedFile || !hasChanges || isFileLoading}>
             Save
           </button>
           <button
@@ -309,8 +361,9 @@ function App() {
               onCreateFile={handleCreateFile}
               onDeleteItem={handleDeleteItem}
               onRenameItem={handleRenameItem}
+              onFileUpload={handleFileUpload}
               expandedFolders={expandedFolders}
-              onFolderToggle={(folderPath, isExpanded) => {
+              onFolderToggle={useCallback((folderPath, isExpanded) => {
                 const newExpanded = new Set(expandedFolders);
                 if (isExpanded) {
                   newExpanded.add(folderPath);
@@ -318,7 +371,7 @@ function App() {
                   newExpanded.delete(folderPath);
                 }
                 setExpandedFolders(newExpanded);
-              }}
+              }, [expandedFolders])}
             />
           </div>
           <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
@@ -329,8 +382,10 @@ function App() {
             content={fileContent}
             onChange={handleContentChange}
             fileName={selectedFile}
-            isLoading={isLoading}
+            isLoading={isFileLoading}
             onRename={handleRenameItem}
+            defaultMode={defaultEditorMode}
+            fileData={fileData}
           />
         </section>
       </main>

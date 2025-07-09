@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const simpleGit = require('simple-git');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
@@ -25,6 +26,30 @@ app.use('/api/', limiter);
 
 const contentDir = path.join(__dirname, '../content');
 
+// Configure multer for file uploads - store temporarily in root, then move to correct folder
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Store temporarily in the content directory
+    cb(null, contentDir);
+  },
+  filename: (req, file, cb) => {
+    // Use original filename, but sanitize it
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, sanitizedName);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept all file types for now
+    cb(null, true);
+  }
+});
+
 /**
  * Ensures the content directory exists, creating it if necessary.
  * @return {Promise<void>}
@@ -38,7 +63,28 @@ async function ensureContentDir() {
 }
 
 /**
- * Recursively builds a directory tree structure for markdown files.
+ * Detects file type based on extension
+ * @param {string} fileName - The file name
+ * @return {string} The file type
+ */
+function detectFileType(fileName) {
+  const extension = path.extname(fileName).toLowerCase();
+  
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+  const textExtensions = ['.txt', '.json', '.xml', '.csv', '.log', '.js', '.ts', '.css', '.html'];
+  const pdfExtensions = ['.pdf'];
+  const markdownExtensions = ['.md', '.markdown'];
+  
+  if (markdownExtensions.includes(extension)) return 'markdown';
+  if (pdfExtensions.includes(extension)) return 'pdf';
+  if (imageExtensions.includes(extension)) return 'image';
+  if (textExtensions.includes(extension)) return 'text';
+  
+  return 'unknown';
+}
+
+/**
+ * Recursively builds a directory tree structure for all files.
  * @param {string} dirPath - The directory path to scan.
  * @param {string} relativePath - The relative path from the content root.
  * @return {Promise<Array>} The directory tree structure.
@@ -64,11 +110,14 @@ async function getDirectoryTree(dirPath, relativePath = '') {
         path: relPath,
         children,
       });
-    } else if (item.name.endsWith('.md')) {
+    } else {
+      // Include all files, not just markdown
+      const fileType = detectFileType(item.name);
       tree.push({
         name: item.name,
         type: 'file',
         path: relPath,
+        fileType: fileType,
       });
     }
   }
@@ -166,11 +215,139 @@ app.get('/api/files/*', async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    const content = await fs.readFile(fullPath, 'utf8');
-    res.json({content, path: filePath});
+    const fileName = path.basename(filePath);
+    const fileType = detectFileType(fileName);
+    
+    // Handle different file types
+    if (fileType === 'markdown' || fileType === 'text') {
+      // Read as text
+      const content = await fs.readFile(fullPath, 'utf8');
+      res.json({content, path: filePath, fileType});
+    } else if (fileType === 'image' || fileType === 'pdf') {
+      // Read as binary and convert to base64
+      const buffer = await fs.readFile(fullPath);
+      const base64Content = buffer.toString('base64');
+      res.json({content: base64Content, path: filePath, fileType, encoding: 'base64'});
+    } else {
+      // Unknown file type - return file info for download
+      const stats = await fs.stat(fullPath);
+      res.json({
+        path: filePath,
+        fileType,
+        size: stats.size,
+        downloadable: true
+      });
+    }
   } catch (error) {
     console.error('Error reading file:', error);
     res.status(404).json({error: 'File not found'});
+  }
+});
+
+// Download endpoint for files
+app.get('/api/download/*', async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const fullPath = path.join(contentDir, filePath);
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    const fileName = path.basename(filePath);
+    const stats = await fs.stat(fullPath);
+    
+    // Set appropriate headers for download
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', stats.size);
+    
+    // Determine content type based on extension
+    const extension = path.extname(fileName).toLowerCase();
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+      '.txt': 'text/plain',
+      '.json': 'application/json',
+      '.xml': 'application/xml',
+      '.csv': 'text/csv',
+      '.log': 'text/plain',
+      '.js': 'application/javascript',
+      '.ts': 'application/typescript',
+      '.css': 'text/css',
+      '.html': 'text/html',
+      '.md': 'text/markdown',
+      '.markdown': 'text/markdown'
+    };
+    
+    const contentType = mimeTypes[extension] || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    
+    // Stream the file
+    const fileStream = await fs.readFile(fullPath);
+    res.send(fileStream);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    res.status(404).json({error: 'File not found'});
+  }
+});
+
+// File upload endpoint
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const folderPath = req.body.folderPath || '';
+    const tempFilePath = req.file.path; // Current location of uploaded file
+    const finalFilePath = path.join(folderPath, req.file.filename);
+    const finalFullPath = path.join(contentDir, finalFilePath);
+    
+    console.log('Folder path from request:', folderPath);
+    console.log('Temp file path:', tempFilePath);
+    console.log('Final file path:', finalFilePath);
+    console.log('Final full path:', finalFullPath);
+    
+    // Validate that the final path is within the content directory
+    if (!finalFullPath.startsWith(contentDir)) {
+      // Clean up temp file
+      await fs.unlink(tempFilePath);
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Create the target directory if it doesn't exist
+    const targetDir = path.dirname(finalFullPath);
+    await fs.mkdir(targetDir, { recursive: true });
+    
+    // Move the file to the correct location
+    if (tempFilePath !== finalFullPath) {
+      await fs.rename(tempFilePath, finalFullPath);
+    }
+
+    res.json({
+      message: 'File uploaded successfully',
+      filePath: finalFilePath,
+      fileName: req.file.filename,
+      size: req.file.size
+    });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    
+    // Clean up temp file if it exists
+    if (req.file && req.file.path) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (cleanupError) {
+        console.error('Error cleaning up temp file:', cleanupError);
+      }
+    }
+    
+    res.status(500).json({ error: 'Failed to upload file' });
   }
 });
 

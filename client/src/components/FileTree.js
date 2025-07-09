@@ -11,6 +11,7 @@ import React, {useState, useEffect, useRef} from 'react';
  * @param {Function} props.onCreateFile - Callback for file creation.
  * @param {Function} props.onDeleteItem - Callback for item deletion.
  * @param {Function} props.onRenameItem - Callback for item renaming.
+ * @param {Function} props.onFileUpload - Callback for file upload.
  * @param {Set} props.expandedFolders - Set of folder paths that should be expanded.
  * @param {Function} props.onFolderToggle - Callback when a folder is expanded/collapsed.
  * @return {JSX.Element} The FileTree component.
@@ -24,6 +25,7 @@ const FileTree = ({
   onCreateFile,
   onDeleteItem,
   onRenameItem,
+  onFileUpload,
   expandedFolders = new Set(),
   onFolderToggle,
 }) => {
@@ -40,7 +42,10 @@ const FileTree = ({
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameItemPath, setRenameItemPath] = useState('');
   const [renameValue, setRenameValue] = useState('');
+  const [uploadPath, setUploadPath] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const contextMenuRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const handleCreateClick = (type, basePath = '') => {
     setCreateType(type);
@@ -109,6 +114,70 @@ const FileTree = ({
     setShowRenameDialog(false);
     setRenameValue('');
     setRenameItemPath('');
+  };
+
+  const handleUploadClick = (folderPath) => {
+    setUploadPath(folderPath);
+    setContextMenu(null);
+    // Trigger file input click
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Call the upload function
+      const result = await uploadFileToServer(file, uploadPath);
+      // Reset form
+      event.target.value = '';
+      
+      // Call the callback to refresh file tree
+      if (onFileUpload) {
+        onFileUpload(result.filePath);
+      }
+      
+      // Success is handled by the parent component via toast
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const uploadFileToServer = async (file, folderPath) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folderPath', folderPath);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Upload failed';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (e) {
+        // If we can't parse JSON, use the status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
   };
 
   const handleContextMenuClose = () => {
@@ -261,8 +330,19 @@ const FileTree = ({
 
   return (
     <div className="file-tree">
+      {/* Hidden file input for upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        style={{ display: 'none' }}
+        accept="*/*"
+      />
+      
       <div className="file-tree-header">
-        <h3 style={{marginBottom: '1rem', color: '#2c3e50'}}>Files</h3>
+        <h3 style={{marginBottom: '1rem', color: '#2c3e50'}}>
+          Files {isUploading && <small style={{color: '#3498db'}}>Uploading...</small>}
+        </h3>
         <div className="file-tree-toolbar">
           <button
             className="btn btn-secondary"
@@ -368,6 +448,14 @@ const FileTree = ({
               New File
             </div>
           )}
+          {(contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
+            <div
+              className="context-menu-item"
+              onClick={() => handleUploadClick(contextMenu.path)}>
+              <span className="context-menu-icon">📤</span>
+              Upload File
+            </div>
+          )}
           
           {/* Show rename and delete options for files and directories */}
           {(contextMenu.itemType === 'file' || contextMenu.itemType === 'directory') && (
@@ -434,4 +522,4 @@ const FileTree = ({
   );
 };
 
-export default FileTree;
+export default React.memo(FileTree);

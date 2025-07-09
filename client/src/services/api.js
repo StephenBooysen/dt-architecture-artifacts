@@ -39,6 +39,32 @@ export const fetchFile = async (filePath) => {
 };
 
 /**
+ * Downloads a file from the server.
+ * @param {string} filePath - The path to the file.
+ * @return {Promise<void>} Downloads the file.
+ */
+export const downloadFile = async (filePath) => {
+  try {
+    const response = await api.get(`/download/${filePath}`, {
+      responseType: 'blob'
+    });
+    
+    // Create a download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filePath.split('/').pop());
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    throw error;
+  }
+};
+
+/**
  * Saves a file's content to the API.
  * @param {string} filePath - The path to the file.
  * @param {string} content - The file content to save.

@@ -1,23 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {tomorrow} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import PDFViewer from './PDFViewer';
+import ImageViewer from './ImageViewer';
+import TextViewer from './TextViewer';
+import FileDownloader from './FileDownloader';
+import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
 
 /**
- * MarkdownEditor component for editing and previewing markdown content.
+ * MarkdownEditor component for editing and previewing different file types.
  * @param {Object} props - Component properties.
- * @param {string} props.content - The markdown content to display/edit.
+ * @param {string} props.content - The file content to display/edit.
  * @param {Function} props.onChange - Callback for content changes.
  * @param {string} props.fileName - The current file name.
  * @param {boolean} props.isLoading - Loading state indicator.
  * @param {Function} props.onRename - Callback for renaming the current file.
+ * @param {string} props.defaultMode - Default editor mode (edit, preview, split).
+ * @param {Object} props.fileData - Complete file data including type and encoding.
  * @return {JSX.Element} The MarkdownEditor component.
  */
-const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename}) => {
-  const [activeTab, setActiveTab] = useState('edit');
+const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defaultMode = 'edit', fileData}) => {
+  const [activeTab, setActiveTab] = useState(defaultMode);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+
+  const fileType = fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN;
+  const isMarkdown = fileType === FILE_TYPES.MARKDOWN;
+  
+  useEffect(() => {
+    if (fileName) {
+      // Only set activeTab for markdown files, other files will use their specific viewers
+      if (isMarkdown) {
+        setActiveTab(defaultMode);
+      }
+    }
+  }, [fileName, defaultMode, isMarkdown]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -81,11 +100,50 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename}) => {
     return (
       <div className="empty-state">
         <h3>No file selected</h3>
-        <p>Select a markdown file from the sidebar to start editing.</p>
+        <p>Select a file from the sidebar to start viewing.</p>
       </div>
     );
   }
 
+  // Render different viewers based on file type
+  if (fileType === FILE_TYPES.PDF) {
+    return (
+      <PDFViewer 
+        content={content} 
+        fileName={fileName} 
+      />
+    );
+  }
+
+  if (fileType === FILE_TYPES.IMAGE) {
+    return (
+      <ImageViewer 
+        content={content} 
+        fileName={fileName} 
+      />
+    );
+  }
+
+  if (fileType === FILE_TYPES.TEXT) {
+    return (
+      <TextViewer 
+        content={content} 
+        fileName={fileName} 
+      />
+    );
+  }
+
+  if (fileType === FILE_TYPES.UNKNOWN) {
+    return (
+      <FileDownloader 
+        filePath={fileName}
+        fileName={fileName.split('/').pop()}
+        fileSize={fileData?.size || 0}
+      />
+    );
+  }
+
+  // Default markdown editor for markdown files
   return (
     <div className="markdown-editor">
       <div className="editor-header">
@@ -251,4 +309,4 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename}) => {
   );
 };
 
-export default MarkdownEditor;
+export default React.memo(MarkdownEditor);
