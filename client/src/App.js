@@ -308,6 +308,16 @@ function App() {
     toast.success('File uploaded successfully');
   }, []);
 
+  const handleFolderToggle = useCallback((folderPath, isExpanded) => {
+    const newExpanded = new Set(expandedFolders);
+    if (isExpanded) {
+      newExpanded.add(folderPath);
+    } else {
+      newExpanded.delete(folderPath);
+    }
+    setExpandedFolders(newExpanded);
+  }, [expandedFolders]);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -372,15 +382,7 @@ function App() {
               onRenameItem={handleRenameItem}
               onFileUpload={handleFileUpload}
               expandedFolders={expandedFolders}
-              onFolderToggle={useCallback((folderPath, isExpanded) => {
-                const newExpanded = new Set(expandedFolders);
-                if (isExpanded) {
-                  newExpanded.add(folderPath);
-                } else {
-                  newExpanded.delete(folderPath);
-                }
-                setExpandedFolders(newExpanded);
-              }, [expandedFolders])}
+              onFolderToggle={handleFolderToggle}
             />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
