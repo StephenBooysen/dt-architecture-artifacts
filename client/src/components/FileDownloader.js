@@ -1,3 +1,15 @@
+/**
+ * @fileoverview File downloader component for Architecture Artifacts.
+ * 
+ * This component provides a user interface for downloading files that cannot
+ * be displayed directly in the browser. It includes file size formatting,
+ * download progress indication, and error handling for file downloads.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React from 'react';
 import { downloadFile } from '../services/api';
 

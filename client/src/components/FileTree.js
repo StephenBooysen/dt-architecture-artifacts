@@ -1,3 +1,25 @@
+/**
+ * @fileoverview File tree navigation component for Architecture Artifacts.
+ * 
+ * This component renders a hierarchical file and folder structure with
+ * comprehensive file management capabilities. It supports file operations
+ * like creation, deletion, renaming, and uploading, along with folder
+ * expansion/collapse functionality and context menu interactions.
+ * 
+ * Key features:
+ * - Hierarchical file/folder display
+ * - File and folder CRUD operations
+ * - Context menu interactions
+ * - File upload with drag-and-drop support
+ * - Folder expansion/collapse state management
+ * - File type detection and icon display
+ * - Keyboard navigation support
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, {useState, useEffect, useRef} from 'react';
 
 /**

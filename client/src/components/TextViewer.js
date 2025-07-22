@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Text file viewer component for Architecture Artifacts.
+ * 
+ * This component provides a feature-rich text viewing experience with options
+ * for line numbers, text wrapping, and syntax highlighting. It supports
+ * various text file formats and provides download functionality.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState } from 'react';
 
 /**

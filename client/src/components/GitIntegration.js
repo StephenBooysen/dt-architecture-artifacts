@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Git integration component for Architecture Artifacts.
+ * 
+ * This component provides user interface for Git repository operations
+ * including cloning repositories and pulling updates. It integrates with
+ * the backend API to perform Git operations and provides user feedback
+ * through toast notifications.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState } from 'react';
 import { cloneRepository, pullRepository } from '../services/api';
 import { toast } from 'react-toastify';

@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Git commit modal component for Architecture Artifacts.
+ * 
+ * This component provides a modal dialog interface for creating Git commits.
+ * It allows users to enter commit messages and initiate the commit process
+ * with proper validation and user feedback.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState } from 'react';
 
 /**

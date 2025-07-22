@@ -1,3 +1,27 @@
+/**
+ * @fileoverview Main application component for Architecture Artifacts Editor.
+ * 
+ * This is the root component that orchestrates the entire Architecture Artifacts
+ * editing application. It manages the overall application state including file
+ * selection, content editing, Git integration, and user interface layout. The
+ * component provides a complete content management system with file tree navigation,
+ * markdown editing capabilities, and integrated version control.
+ * 
+ * Key features:
+ * - File tree navigation with CRUD operations
+ * - Multi-format file editing and preview
+ * - Integrated Git operations (commit, push, pull, clone)
+ * - Resizable sidebar with collapse functionality
+ * - Real-time content synchronization
+ * - Toast notifications for user feedback
+ * - Responsive design with mobile support
+ * - File upload and download capabilities
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

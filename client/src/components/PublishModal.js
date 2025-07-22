@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Publish modal component for Architecture Artifacts.
+ * 
+ * This component provides a comprehensive publishing interface that handles
+ * both Git commit and push operations in a single workflow. It guides users
+ * through the process of committing changes and pushing them to the remote
+ * repository with appropriate progress indicators and error handling.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState } from 'react';
 import { commitChanges, pushChanges } from '../services/api';
 import { toast } from 'react-toastify';

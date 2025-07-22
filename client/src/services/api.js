@@ -1,3 +1,22 @@
+/**
+ * @fileoverview API service module for Architecture Artifacts application.
+ * 
+ * This module provides a comprehensive API client for communicating with the
+ * Architecture Artifacts backend. It includes functions for file management,
+ * Git operations, and content manipulation with proper error handling.
+ * 
+ * Key features:
+ * - File CRUD operations (create, read, update, delete)
+ * - Git integration (commit, push, pull, clone, status)
+ * - File upload and download functionality
+ * - Folder management operations
+ * - Centralized axios configuration
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';

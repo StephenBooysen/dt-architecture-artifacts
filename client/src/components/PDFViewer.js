@@ -1,3 +1,15 @@
+/**
+ * @fileoverview PDF viewer component for Architecture Artifacts.
+ * 
+ * This component provides functionality to display PDF files within the
+ * application interface. It handles base64-encoded PDF content and provides
+ * controls for downloading and viewing PDF documents in embedded format.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React from 'react';
 
 /**

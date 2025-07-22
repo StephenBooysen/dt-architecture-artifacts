@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Standalone preview window component for Architecture Artifacts.
+ * 
+ * This component renders markdown content in a dedicated preview window that
+ * can be opened separately from the main application. It provides a clean,
+ * distraction-free environment for viewing rendered markdown content with
+ * syntax highlighting and GitHub Flavored Markdown support.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

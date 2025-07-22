@@ -1,5 +1,21 @@
 /**
- * Utility functions for detecting and handling different file types
+ * @fileoverview File type detection utilities for Architecture Artifacts.
+ * 
+ * This module provides comprehensive file type detection and classification
+ * functionality based on file extensions. It supports various file types
+ * including markdown, PDF, images, and text files with appropriate MIME
+ * type mapping and viewing capabilities.
+ * 
+ * Key features:
+ * - File type detection by extension
+ * - MIME type resolution
+ * - Viewability classification
+ * - File name and extension extraction
+ * - Support for markdown, PDF, image, and text files
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
  */
 
 /**

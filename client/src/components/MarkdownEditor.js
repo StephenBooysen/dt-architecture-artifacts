@@ -1,3 +1,24 @@
+/**
+ * @fileoverview Markdown editor and file viewer component.
+ * 
+ * This is the main editor component that handles viewing and editing of various
+ * file types including Markdown, PDF, images, and text files. It provides a
+ * tabbed interface with edit, preview, and split view modes for Markdown files,
+ * and appropriate viewers for other file types.
+ * 
+ * Key features:
+ * - Multi-format file support (Markdown, PDF, images, text)
+ * - Tabbed interface (edit/preview/split for Markdown)
+ * - Syntax highlighting for code blocks
+ * - File renaming functionality
+ * - External preview window support
+ * - GitHub Flavored Markdown support
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

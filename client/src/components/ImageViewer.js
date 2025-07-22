@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Image viewer component for Architecture Artifacts.
+ * 
+ * This component provides an interactive image viewing experience with features
+ * like fullscreen mode, zoom controls, and image download functionality. It
+ * handles various image formats and provides error handling for failed loads.
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import React, { useState } from 'react';
 
 /**
