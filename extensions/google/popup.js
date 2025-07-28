@@ -7,6 +7,9 @@ class ArchitectureArtifactsExtension {
     this.initializeElements();
     this.loadSettings();
     this.bindEvents();
+
+    console.log('Architecture Artifacts Extension initialized');
+    debugger
   }
 
   initializeElements() {
@@ -24,7 +27,7 @@ class ArchitectureArtifactsExtension {
     this.previewContent = document.getElementById('previewContent');
     this.backBtn = document.getElementById('backBtn');
     
-    // Settings elements
+    // Settings elementsnpm audit fix --force
     this.settingsBtn = document.getElementById('settingsBtn');
     this.settingsPanel = document.getElementById('settingsPanel');
     this.closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -202,6 +205,8 @@ class ArchitectureArtifactsExtension {
     this.previewTitle.textContent = filePath || 'Preview';
     
     try {
+
+      console.log(`Fetching file content from: ${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`);
       // Fetch full file content
       const response = await fetch(`${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`);
       
@@ -245,7 +250,7 @@ class ArchitectureArtifactsExtension {
       // Inline code
       .replace(/`([^`]*)`/gim, '<code>$1</code>')
       // Links
-      .replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/gim, '<a href="$2" target="_blank">$1</a>')
+      //.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/gim, '<a href="$2" target="_blank">$1</a>')
       // Line breaks
       .replace(/\\n/gim, '<br>');
   }
@@ -354,6 +359,6 @@ style.textContent = `
       transform: translateX(0);
       opacity: 1;
     }
-  }
+  }npm audit fix --force
 `;
 document.head.appendChild(style);

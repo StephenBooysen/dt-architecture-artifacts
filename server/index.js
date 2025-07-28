@@ -687,6 +687,7 @@ app.post('/api/pull', async (req, res) => {
 
 // Search files by name
 app.get('/api/search/files', async (req, res) => {
+  console.log(`Search request received: ${JSON.stringify(req.query)}`);
   try {
     const query = req.query.q;
     if (!query) {
@@ -734,6 +735,7 @@ app.get('/api/search/files', async (req, res) => {
 
 // Search content within files
 app.get('/api/search/content', async (req, res) => {
+  console.log(`Content search request received: ${JSON.stringify(req.query)}`);
   try {
     const query = req.query.q;
     if (!query) {
