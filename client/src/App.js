@@ -560,7 +560,7 @@ function App() {
 
               <div className="d-flex align-items-center gap-3">
                 <div className="d-flex align-items-center gap-2 editor-mode-toggle">
-                  <label htmlFor="editor-mode-select" className="form-label mb-0 small fw-medium">Default mode:</label>
+                  
                   <select
                     id="editor-mode-select"
                     value={defaultEditorMode}

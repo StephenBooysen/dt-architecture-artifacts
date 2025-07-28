@@ -26,6 +26,7 @@ const simpleGit = require('simple-git');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
+const EventEmitter = require('events');
 require('dotenv').config();
 
 const app = express();
@@ -91,6 +92,37 @@ function logApiCall(req, res, next) {
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+/**
+ * Patch our emitter to capture all events
+ * @param {} emitter
+ */
+function patchEmitter(emitter) {
+  const originalEmit = emitter.emit;
+
+  emitter.emit = function () {
+    const eventName = arguments[0];
+    const args = Array.from(arguments).slice(1); // Get arguments excluding the event name
+
+    console.log(`Caught event: "${eventName}" with arguments:`, args);
+
+    // Call the original emit method to ensure normal event handling continues
+    return originalEmit.apply(this, arguments);
+  };
+}
+const eventEmitter = new EventEmitter();
+patchEmitter(eventEmitter);
+
+// lets cache
+const cache = require('./services/caching')(
+  'memory',
+  { 'express-app': app },
+  eventEmitter,
+);
+cache.put('currentdate', new Date());
+
+const log = require('./services/logging')('', { 'express-app': app }, eventEmitter);
+cache.get('currentdate').then((value) => log.log(value));
 
 // Apply API call logging to all API routes
 app.use('/api', logApiCall);
