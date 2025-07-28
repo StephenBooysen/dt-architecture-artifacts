@@ -28,7 +28,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
-import GitIntegration from './components/GitIntegration';
+import TemplateManager from './components/TemplateManager';
 import {
   fetchFiles,
   fetchFile,
@@ -38,6 +38,10 @@ import {
   deleteItem,
   renameItem,
   downloadFile,
+  fetchTemplates,
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
 } from './services/api';
 import './App.css';
 
@@ -53,7 +57,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFileLoading, setIsFileLoading] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [showGitIntegration, setShowGitIntegration] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
@@ -62,9 +65,12 @@ function App() {
   const [defaultEditorMode, setDefaultEditorMode] = useState(() => {
     return localStorage.getItem('editorDefaultMode') || 'edit';
   });
+  const [templates, setTemplates] = useState([]);
+  const [isTemplatesLoading, setIsTemplatesLoading] = useState(false);
 
   useEffect(() => {
     loadFiles();
+    loadTemplates();
   }, []);
 
   const loadFiles = async (force = false) => {
@@ -211,10 +217,10 @@ function App() {
     }
   };
 
-  const handleCreateFile = async (filePath) => {
+  const handleCreateFile = async (filePath, templateContent = '') => {
     try {
       setIsLoading(true);
-      await createFile(filePath);
+      await createFile(filePath, templateContent);
       
       // Expand all parent folders of the newly created file
       const pathParts = filePath.split('/');
@@ -342,6 +348,50 @@ function App() {
     setExpandedFolders(newExpanded);
   }, [expandedFolders]);
 
+  const loadTemplates = async () => {
+    try {
+      setIsTemplatesLoading(true);
+      const templatesData = await fetchTemplates();
+      setTemplates(templatesData);
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+    } finally {
+      setIsTemplatesLoading(false);
+    }
+  };
+
+  const handleTemplateCreate = async (templateData) => {
+    try {
+      await createTemplate(templateData);
+      await loadTemplates();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleTemplateEdit = async (templateName, templateData) => {
+    try {
+      await updateTemplate(templateName, templateData);
+      await loadTemplates();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleTemplateDelete = async (templateName) => {
+    try {
+      await deleteTemplate(templateName);
+      await loadTemplates();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleTemplateSelect = async (template) => {
+    // This could be used for future functionality if needed
+    console.log('Template selected:', template);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -368,12 +418,6 @@ function App() {
             </select>
           </div>
           <button
-            className="btn btn-secondary"
-            onClick={() => setShowGitIntegration(!showGitIntegration)}
-            disabled={isLoading}>
-            Git Integration
-          </button>
-          <button
             className="btn btn-primary"
             onClick={handleSave}
             disabled={!selectedFile || !hasChanges || isFileLoading}>
@@ -392,9 +436,6 @@ function App() {
         {!sidebarCollapsed && (
           <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
             <div className="sidebar-content">
-            {showGitIntegration && (
-              <GitIntegration onRepositoryUpdate={handleRepositoryUpdate} />
-            )}
             <FileTree
               files={files}
               onFileSelect={handleFileSelect}
@@ -407,6 +448,14 @@ function App() {
               onFileUpload={handleFileUpload}
               expandedFolders={expandedFolders}
               onFolderToggle={handleFolderToggle}
+            />
+            <TemplateManager
+              templates={templates}
+              onTemplateSelect={handleTemplateSelect}
+              onTemplateCreate={handleTemplateCreate}
+              onTemplateEdit={handleTemplateEdit}
+              onTemplateDelete={handleTemplateDelete}
+              isLoading={isTemplatesLoading}
             />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>

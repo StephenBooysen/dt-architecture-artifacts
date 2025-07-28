@@ -21,6 +21,7 @@
  */
 
 import React, {useState, useEffect, useRef} from 'react';
+import { fetchTemplates } from '../services/api';
 
 /**
  * FileTree component for displaying and managing file/folder structure.
@@ -55,6 +56,8 @@ const FileTree = ({
   const [createType, setCreateType] = useState('file');
   const [createPath, setCreatePath] = useState('');
   const [inputValue, setInputValue] = useState('');
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
   // Function to collect all folder paths recursively
   const collectAllFolderPaths = (items) => {
     const folderPaths = new Set();
@@ -100,8 +103,24 @@ const FileTree = ({
     setCreateType(type);
     setCreatePath(basePath);
     setInputValue('');
+    setSelectedTemplate('');
     setShowCreateDialog(true);
     setContextMenu(null);
+    
+    // Load templates when creating a file
+    if (type === 'file') {
+      loadTemplates();
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const templatesData = await fetchTemplates();
+      setTemplates(templatesData);
+    } catch (error) {
+      console.error('Error loading templates:', error);
+      setTemplates([]);
+    }
   };
 
   const handleContextMenu = (e, path = '', itemType = 'empty') => {
@@ -257,7 +276,7 @@ const FileTree = ({
     };
   }, [contextMenu]);
 
-  const handleCreateSubmit = (e) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
@@ -281,16 +300,26 @@ const FileTree = ({
       const fileName = fullPath.endsWith('.md') ?
         fullPath :
         `${fullPath}.md`;
-      onCreateFile(fileName);
+      
+      // Get template content if selected
+      let templateContent = '';
+      if (selectedTemplate) {
+        const template = templates.find(t => t.name === selectedTemplate);
+        templateContent = template ? template.content : '';
+      }
+      
+      onCreateFile(fileName, templateContent);
     }
 
     setShowCreateDialog(false);
     setInputValue('');
+    setSelectedTemplate('');
   };
 
   const handleCreateCancel = () => {
     setShowCreateDialog(false);
     setInputValue('');
+    setSelectedTemplate('');
   };
 
   const toggleFolder = (folderPath) => {
@@ -453,6 +482,26 @@ const FileTree = ({
                   autoFocus
                 />
               </div>
+              
+              {createType === 'file' && templates.length > 0 && (
+                <div>
+                  <label htmlFor="template-select">
+                    Template (optional):
+                  </label>
+                  <select
+                    id="template-select"
+                    value={selectedTemplate}
+                    onChange={(e) => setSelectedTemplate(e.target.value)}
+                  >
+                    <option value="">No template (blank file)</option>
+                    {templates.map((template) => (
+                      <option key={template.name} value={template.name}>
+                        {template.name} {template.description && `- ${template.description}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="modal-actions">
                 <button
                   type="button"

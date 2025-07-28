@@ -656,7 +656,964 @@ app.post('/api/pull', async (req, res) => {
   }
 });
 
-// Backend index page with integrated API monitor
+/**
+ * Template management endpoints
+ */
+
+// Get all templates
+app.get('/api/templates', async (req, res) => {
+  try {
+    const templatesDir = path.join(__dirname, 'templates');
+    
+    // Create templates directory if it doesn't exist
+    try {
+      await fs.access(templatesDir);
+    } catch {
+      await fs.mkdir(templatesDir, { recursive: true });
+    }
+    
+    const files = await fs.readdir(templatesDir);
+    const templates = [];
+    
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const filePath = path.join(templatesDir, file);
+        const templateData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+        templates.push(templateData);
+      }
+    }
+    
+    res.json(templates);
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    res.status(500).json({error: 'Failed to fetch templates'});
+  }
+});
+
+// Get specific template
+app.get('/api/templates/:templateName', async (req, res) => {
+  try {
+    const templateName = req.params.templateName;
+    const templatesDir = path.join(__dirname, 'templates');
+    const templateFile = `${templateName.replace('.md', '')}.json`;
+    const filePath = path.join(templatesDir, templateFile);
+    
+    const templateData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+    res.json(templateData);
+  } catch (error) {
+    console.error('Error fetching template:', error);
+    res.status(404).json({error: 'Template not found'});
+  }
+});
+
+// Create new template
+app.post('/api/templates', async (req, res) => {
+  try {
+    const { name, content, description } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({error: 'Template name is required'});
+    }
+    
+    const templatesDir = path.join(__dirname, 'templates');
+    
+    // Create templates directory if it doesn't exist
+    try {
+      await fs.access(templatesDir);
+    } catch {
+      await fs.mkdir(templatesDir, { recursive: true });
+    }
+    
+    const templateFile = `${name.replace('.md', '')}.json`;
+    const filePath = path.join(templatesDir, templateFile);
+    
+    // Check if template already exists
+    try {
+      await fs.access(filePath);
+      return res.status(400).json({error: 'Template already exists'});
+    } catch {
+      // Template doesn't exist, continue
+    }
+    
+    const templateData = {
+      name,
+      content: content || '',
+      description: description || '',
+      createdAt: new Date().toISOString()
+    };
+    
+    await fs.writeFile(filePath, JSON.stringify(templateData, null, 2));
+    res.json({message: 'Template created successfully', template: templateData});
+  } catch (error) {
+    console.error('Error creating template:', error);
+    res.status(500).json({error: 'Failed to create template'});
+  }
+});
+
+// Update template
+app.put('/api/templates/:templateName', async (req, res) => {
+  try {
+    const templateName = req.params.templateName;
+    const { name, content, description } = req.body;
+    
+    const templatesDir = path.join(__dirname, 'templates');
+    const oldTemplateFile = `${templateName.replace('.md', '')}.json`;
+    const oldFilePath = path.join(templatesDir, oldTemplateFile);
+    
+    // Read existing template
+    const existingTemplate = JSON.parse(await fs.readFile(oldFilePath, 'utf8'));
+    
+    // Update template data
+    const updatedTemplate = {
+      ...existingTemplate,
+      name: name || existingTemplate.name,
+      content: content !== undefined ? content : existingTemplate.content,
+      description: description !== undefined ? description : existingTemplate.description,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // If name changed, create new file and delete old one
+    if (name && name !== templateName) {
+      const newTemplateFile = `${name.replace('.md', '')}.json`;
+      const newFilePath = path.join(templatesDir, newTemplateFile);
+      
+      // Check if new name already exists
+      try {
+        await fs.access(newFilePath);
+        return res.status(400).json({error: 'Template with new name already exists'});
+      } catch {
+        // New name doesn't exist, continue
+      }
+      
+      await fs.writeFile(newFilePath, JSON.stringify(updatedTemplate, null, 2));
+      await fs.unlink(oldFilePath);
+    } else {
+      await fs.writeFile(oldFilePath, JSON.stringify(updatedTemplate, null, 2));
+    }
+    
+    res.json({message: 'Template updated successfully', template: updatedTemplate});
+  } catch (error) {
+    console.error('Error updating template:', error);
+    res.status(500).json({error: 'Failed to update template'});
+  }
+});
+
+// Delete template
+app.delete('/api/templates/:templateName', async (req, res) => {
+  try {
+    const templateName = req.params.templateName;
+    const templatesDir = path.join(__dirname, 'templates');
+    const templateFile = `${templateName.replace('.md', '')}.json`;
+    const filePath = path.join(templatesDir, templateFile);
+    
+    await fs.unlink(filePath);
+    res.json({message: 'Template deleted successfully'});
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    res.status(500).json({error: 'Failed to delete template'});
+  }
+});
+
+// Helper functions for server pages
+function getSharedStyles() {
+  return `<style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #f7f8fa;
+      min-height: 100vh;
+      color: #172b4d;
+      margin: 0;
+      padding: 0;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: #ffffff;
+      border-right: 1px solid #e5e8ec;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid #e5e8ec;
+      background: #ffffff;
+    }
+
+    .sidebar-header h1 {
+      color: #172b4d;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-section-title {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #5e6c84;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: #172b4d;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 400;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: #f4f5f7;
+      color: #0052cc;
+    }
+
+    .nav-item.active {
+      background: #e4edfc;
+      color: #0052cc;
+      font-weight: 500;
+      border-left-color: #0052cc;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 2rem;
+      background: #f7f8fa;
+      min-height: 100vh;
+    }
+
+    .content-header {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .content-header h1 {
+      color: #172b4d;
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .content-header p {
+      color: #5e6c84;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #dfe1e6;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      background: #ffffff;
+      color: #172b4d;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      line-height: 1;
+    }
+
+    .btn-primary {
+      background: #0052cc;
+      color: white;
+      border-color: #0052cc;
+    }
+
+    .btn-primary:hover {
+      background: #0747a6;
+      border-color: #0747a6;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: #f4f5f7;
+      border-color: #c1c7d0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .settings-section {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .settings-card {
+      padding: 2rem;
+    }
+
+    .settings-card h2 {
+      color: #172b4d;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .settings-description {
+      color: #5e6c84;
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+
+    .settings-form {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #e5e8ec;
+    }
+
+    .settings-form h3 {
+      color: #172b4d;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .settings-actions h3 {
+      color: #172b4d;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #172b4d;
+      font-size: 0.875rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #0052cc;
+      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+    }
+
+    .form-group input::placeholder {
+      color: #8993a4;
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-card h3 {
+      color: #0052cc;
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card p {
+      color: #5e6c84;
+      font-size: 0.875rem;
+      font-weight: 400;
+    }
+
+    .api-calls-table {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      overflow-x: auto;
+    }
+
+    .api-calls-table h2 {
+      color: #172b4d;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .controls {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .controls label {
+      color: #172b4d;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .controls input, .controls select {
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #dfe1e6;
+      background: #ffffff;
+      color: #172b4d;
+      font-size: 0.875rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      max-height: 60vh;
+      border-radius: 6px;
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e8ec;
+    }
+
+    th {
+      background: #f4f5f7;
+      font-weight: 500;
+      color: #172b4d;
+      position: sticky;
+      top: 0;
+      font-size: 0.875rem;
+    }
+
+    tr:hover {
+      background: #f4f5f7;
+    }
+
+    .method-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .method-get { background: #36b37e; }
+    .method-post { background: #0052cc; }
+    .method-put { background: #ff8b00; }
+    .method-delete { background: #de350b; }
+    .method-patch { background: #6554c0; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .status-2xx { background: #36b37e; }
+    .status-3xx { background: #ff8b00; }
+    .status-4xx { background: #ff991f; }
+    .status-5xx { background: #de350b; }
+
+    .duration {
+      font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+
+    .timestamp {
+      font-size: 0.875rem;
+      color: #5e6c84;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 1rem;
+      }
+      
+      .dashboard-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      table {
+        font-size: 0.8rem;
+      }
+      
+      th, td {
+        padding: 0.5rem;
+      }
+    }
+  </style>`;
+}
+
+function getNavigation(activeSection) {
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>🏗️ Architecture Artifacts</h1>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a href="/" class="nav-item ${activeSection === 'overview' ? 'active' : ''}">
+            Dashboard
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Settings</div>
+          <a href="/settings" class="nav-item ${activeSection === 'settings' ? 'active' : ''}">
+            Git Repository
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Monitoring</div>
+          <a href="/monitoring/api" class="nav-item ${activeSection === 'monitoring' ? 'active' : ''}">
+            API Monitor
+          </a>
+        </div>
+      </nav>
+    </aside>
+  `;
+}
+
+function getMonitoringScript() {
+  return `<script>
+    let allCalls = [];
+    let autoRefreshInterval;
+
+    async function fetchApiCalls() {
+      try {
+        console.log('Fetching API calls...');
+        const response = await fetch('/api-monitor-data');
+        console.log('Response received:', response.status);
+        const data = await response.json();
+        console.log('Data received:', data.length, 'calls');
+        allCalls = data;
+        updateStats(data);
+        filterCalls();
+      } catch (error) {
+        console.error('Failed to fetch API calls:', error);
+        document.getElementById('stats').innerHTML = \`
+          <div class="stat-card" style="background: rgba(231, 76, 60, 0.8);">
+            <h3>Error</h3>
+            <p>Failed to load API data</p>
+          </div>
+        \`;
+      }
+    }
+
+    function updateStats(calls) {
+      console.log('Updating stats with', calls.length, 'calls');
+      const totalCalls = calls.length;
+      const successCalls = calls.filter(c => c.statusCode >= 200 && c.statusCode < 300).length;
+      const errorCalls = calls.filter(c => c.statusCode >= 400).length;
+      const avgDuration = calls.length > 0 ? Math.round(calls.reduce((sum, c) => sum + c.duration, 0) / calls.length) : 0;
+
+      const statsElement = document.getElementById('stats');
+      if (!statsElement) {
+        console.error('Stats element not found!');
+        return;
+      }
+      
+      statsElement.innerHTML = 
+        '<div class="stat-card">' +
+          '<h3>' + totalCalls + '</h3>' +
+          '<p>Total API Calls</p>' +
+        '</div>' +
+        '<div class="stat-card">' +
+          '<h3>' + successCalls + '</h3>' +
+          '<p>Successful Calls</p>' +
+        '</div>' +
+        '<div class="stat-card">' +
+          '<h3>' + errorCalls + '</h3>' +
+          '<p>Error Calls</p>' +
+        '</div>' +
+        '<div class="stat-card">' +
+          '<h3>' + avgDuration + 'ms</h3>' +
+          '<p>Avg Duration</p>' +
+        '</div>';
+      
+      console.log('Stats updated successfully');
+    }
+
+    function filterCalls() {
+      const methodFilter = document.getElementById('methodFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      let filteredCalls = allCalls;
+
+      if (methodFilter) {
+        filteredCalls = filteredCalls.filter(call => call.method === methodFilter);
+      }
+
+      if (statusFilter) {
+        filteredCalls = filteredCalls.filter(call => {
+          const statusClass = Math.floor(call.statusCode / 100);
+          return statusClass.toString() === statusFilter;
+        });
+      }
+
+      updateTable(filteredCalls);
+    }
+
+    function updateTable(calls) {
+      console.log('Updating table with', calls.length, 'calls');
+      const tbody = document.getElementById('tableBody');
+      if (!tbody) {
+        console.error('Table body element not found!');
+        return;
+      }
+      
+      if (calls.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #7f8c8d;">No API calls recorded yet. Make some API requests to see data here.</td></tr>';
+        return;
+      }
+      
+      const rows = calls.map(call => {
+        return '<tr>' +
+          '<td class="timestamp">' + formatTime(call.timestamp) + '</td>' +
+          '<td><span class="method-badge method-' + call.method.toLowerCase() + '">' + call.method + '</span></td>' +
+          '<td>' + call.url + '</td>' +
+          '<td><span class="status-badge status-' + Math.floor(call.statusCode/100) + 'xx">' + call.statusCode + '</span></td>' +
+          '<td class="duration">' + call.duration + 'ms</td>' +
+          '<td>' + formatBytes(call.responseSize) + '</td>' +
+          '<td>' + (call.ip || 'Unknown') + '</td>' +
+        '</tr>';
+      });
+      
+      tbody.innerHTML = rows.join('');
+      console.log('Table updated successfully');
+    }
+
+    function formatTime(timestamp) {
+      return new Date(timestamp).toLocaleString();
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function refreshData() {
+      fetchApiCalls();
+    }
+    
+    async function testApiCall() {
+      console.log('Making test API call...');
+      try {
+        const response = await fetch('/api/files');
+        console.log('Test API call completed:', response.status);
+        setTimeout(() => fetchApiCalls(), 1000);
+      } catch (error) {
+        console.error('Test API call failed:', error);
+      }
+    }
+
+    function toggleAutoRefresh() {
+      const autoRefreshCheckbox = document.getElementById('autoRefresh');
+      if (autoRefreshCheckbox.checked) {
+        autoRefreshInterval = setInterval(fetchApiCalls, 5000);
+      } else {
+        clearInterval(autoRefreshInterval);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, initializing API monitor...');
+      fetchApiCalls();
+      toggleAutoRefresh();
+    });
+    
+    if (document.readyState !== 'loading') {
+      console.log('DOM already loaded, initializing API monitor...');
+      fetchApiCalls();
+      toggleAutoRefresh();
+    }
+  </script>`;
+}
+
+// Settings page with Git integration
+app.get('/settings', (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Architecture Artifacts</title>
+  ${getSharedStyles()}
+</head>
+<body>
+  <div class="app">
+    ${getNavigation('settings')}
+    <main class="main-content">
+      <div class="content-header">
+        <h1>Settings</h1>
+        <p>Configure your repository and system settings</p>
+      </div>
+      
+      <div class="settings-section">
+        <div class="settings-card">
+          <h2>Git Repository</h2>
+          <p class="settings-description">Manage your Git repository connection and operations</p>
+          
+          <form id="cloneForm" class="settings-form">
+            <h3>Clone Repository</h3>
+            <div class="form-group">
+              <label for="repo-url">Repository URL:</label>
+              <input
+                id="repo-url"
+                type="url"
+                placeholder="https://github.com/username/repository.git"
+                required
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="branch">Branch:</label>
+              <input
+                id="branch"
+                type="text"
+                value="main"
+                placeholder="main"
+              />
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+              Clone Repository
+            </button>
+          </form>
+
+          <div class="settings-actions">
+            <h3>Repository Actions</h3>
+            <button id="pullBtn" class="btn btn-secondary">
+              Pull Latest Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.getElementById('cloneForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const repoUrl = document.getElementById('repo-url').value;
+      const branch = document.getElementById('branch').value;
+      
+      try {
+        const response = await fetch('/api/clone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repoUrl, branch })
+        });
+        
+        if (response.ok) {
+          alert('Repository cloned successfully');
+          document.getElementById('repo-url').value = '';
+        } else {
+          const error = await response.json();
+          alert('Error: ' + error.error);
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+
+    document.getElementById('pullBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/pull', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ branch: 'main' })
+        });
+        
+        if (response.ok) {
+          alert('Repository updated successfully');
+        } else {
+          const error = await response.json();
+          alert('Error: ' + error.error);
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
+// API monitoring page
+app.get('/monitoring/api', (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Monitor - Architecture Artifacts</title>
+  ${getSharedStyles()}
+</head>
+<body>
+  <div class="app">
+    ${getNavigation('monitoring')}
+    <main class="main-content">
+      <div class="content-header">
+        <h1>API Monitor</h1>
+        <p>Monitor API calls and system performance</p>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
+          <button class="btn btn-secondary" onclick="testApiCall()">Test API</button>
+        </div>
+      </div>
+
+      <div class="dashboard-stats" id="stats">
+        <!-- Stats will be populated by JavaScript -->
+      </div>
+
+      <div class="api-calls-table">
+        <h2>Recent API Calls</h2>
+        <div class="controls">
+          <label>
+            Auto-refresh:
+            <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" checked>
+          </label>
+          <label>
+            Filter by method:
+            <select id="methodFilter" onchange="filterCalls()">
+              <option value="">All Methods</option>
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+              <option value="PATCH">PATCH</option>
+            </select>
+          </label>
+          <label>
+            Filter by status:
+            <select id="statusFilter" onchange="filterCalls()">
+              <option value="">All Status</option>
+              <option value="2">2xx Success</option>
+              <option value="3">3xx Redirect</option>
+              <option value="4">4xx Client Error</option>
+              <option value="5">5xx Server Error</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-container">
+          <table id="apiCallsTable">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Method</th>
+                <th>URL</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Size</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- API calls will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  ${getMonitoringScript()}
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
+// Backend index page with navigation overview
 app.get('/', (req, res) => {
   // Check if this is for the backend (no client build available or not in production)
   const isBackendRequest = process.env.NODE_ENV !== 'production' || !req.get('accept')?.includes('text/html');
@@ -667,480 +1624,170 @@ app.get('/', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Architecture Artifacts - Server Backend</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-        sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      background-attachment: fixed;
-      min-height: 100vh;
-      color: #2c3e50;
-    }
-
-    .app {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .app-header {
-      background: rgba(44, 62, 80, 0.8);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-
-    .app-header h1 {
-      color: white;
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .btn {
-      padding: 0.5rem 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      background: rgba(52, 152, 219, 0.8);
-      color: white;
-    }
-
-    .btn:hover {
-      background: #2980b9;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-    }
-
-    .dashboard-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 16px;
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card h3 {
-      color: white;
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-card p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .api-calls-table {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      overflow-x: auto;
-    }
-
-    .api-calls-table h2 {
-      color: white;
-      margin-bottom: 1rem;
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
-
-    .table-container {
-      overflow-x: auto;
-      max-height: 60vh;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.9);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-
-    th, td {
-      padding: 0.75rem;
-      text-align: left;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    th {
-      background: #ecf0f1;
-      font-weight: 600;
-      color: #2c3e50;
-      position: sticky;
-      top: 0;
-    }
-
-    tr:hover {
-      background: rgba(52, 152, 219, 0.1);
-    }
-
-    .method-badge {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .method-get { background: #27ae60; }
-    .method-post { background: #3498db; }
-    .method-put { background: #f39c12; }
-    .method-delete { background: #e74c3c; }
-    .method-patch { background: #9b59b6; }
-
-    .status-badge {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .status-2xx { background: #27ae60; }
-    .status-3xx { background: #f39c12; }
-    .status-4xx { background: #e67e22; }
-    .status-5xx { background: #e74c3c; }
-
-    .duration {
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.85rem;
-    }
-
-    .timestamp {
-      font-size: 0.8rem;
-      color: #7f8c8d;
-    }
-
-    .controls {
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .controls label {
-      color: white;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .controls input, .controls select {
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.9);
-      color: #2c3e50;
-    }
-
-    @media (max-width: 768px) {
-      .dashboard-stats {
-        grid-template-columns: 1fr;
-      }
-      
-      .main-content {
-        padding: 1rem;
-      }
-      
-      table {
-        font-size: 0.8rem;
-      }
-      
-      th, td {
-        padding: 0.5rem;
-      }
-    }
-  </style>
+  <title>Dashboard - Architecture Artifacts</title>
+  ${getSharedStyles()}
 </head>
 <body>
   <div class="app">
-    <header class="app-header">
-      <h1>🏗️ Server Backend - API Monitor</h1>
-      <div class="header-actions">
-        <a href="/api-monitor" class="btn">Full Dashboard</a>
-        <button class="btn" onclick="refreshData()">Refresh</button>
-        <button class="btn" onclick="testApiCall()">Test API</button>
-      </div>
-    </header>
-
+    ${getNavigation('overview')}
     <main class="main-content">
-      <div class="dashboard-stats" id="stats">
-        <!-- Stats will be populated by JavaScript -->
-      </div>
-
-      <div class="api-calls-table">
-        <h2>Recent API Calls</h2>
-        <div class="controls">
-          <label>
-            Auto-refresh:
-            <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" checked>
-          </label>
-          <label>
-            Filter by method:
-            <select id="methodFilter" onchange="filterCalls()">
-              <option value="">All Methods</option>
-              <option value="GET">GET</option>
-              <option value="POST">POST</option>
-              <option value="PUT">PUT</option>
-              <option value="DELETE">DELETE</option>
-              <option value="PATCH">PATCH</option>
-            </select>
-          </label>
-          <label>
-            Filter by status:
-            <select id="statusFilter" onchange="filterCalls()">
-              <option value="">All Status</option>
-              <option value="2">2xx Success</option>
-              <option value="3">3xx Redirect</option>
-              <option value="4">4xx Client Error</option>
-              <option value="5">5xx Server Error</option>
-            </select>
-          </label>
+      <div class="content-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p>Overview of your Architecture Artifacts system</p>
         </div>
-        <div class="table-container">
-          <table id="apiCallsTable">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Method</th>
-                <th>URL</th>
-                <th>Status</th>
-                <th>Duration</th>
-                <th>Size</th>
-                <th>IP</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- API calls will be populated by JavaScript -->
-            </tbody>
-          </table>
+      </div>
+      
+      <div class="dashboard-overview">
+        <div class="overview-section">
+          <h2>Quick Actions</h2>
+          <div class="action-grid">
+            <a href="/settings" class="action-card">
+              <div class="action-icon">⚙️</div>
+              <h3>Settings</h3>
+              <p>Configure Git repository and system settings</p>
+            </a>
+            
+            <a href="/monitoring/api" class="action-card">
+              <div class="action-icon">📊</div>
+              <h3>API Monitor</h3>
+              <p>Monitor API calls and system performance</p>
+            </a>
+          </div>
+        </div>
+        
+        <div class="overview-section">
+          <h2>System Status</h2>
+          <div class="status-grid">
+            <div class="status-card">
+              <div class="status-indicator green"></div>
+              <div class="status-content">
+                <h3>Server Status</h3>
+                <p>Running normally</p>
+              </div>
+            </div>
+            
+            <div class="status-card">
+              <div class="status-indicator blue"></div>
+              <div class="status-content">
+                <h3>API Endpoints</h3>
+                <p>All endpoints operational</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
-  <script>
-    let allCalls = [];
-    let autoRefreshInterval;
-
-    async function fetchApiCalls() {
-      try {
-        console.log('Fetching API calls...');
-        const response = await fetch('/api-monitor-data');
-        console.log('Response received:', response.status);
-        const data = await response.json();
-        console.log('Data received:', data.length, 'calls');
-        allCalls = data;
-        updateStats(data);
-        filterCalls();
-      } catch (error) {
-        console.error('Failed to fetch API calls:', error);
-        // Show error in the stats area
-        document.getElementById('stats').innerHTML = \`
-          <div class="stat-card" style="background: rgba(231, 76, 60, 0.8);">
-            <h3>Error</h3>
-            <p>Failed to load API data</p>
-          </div>
-        \`;
-      }
-    }
-
-    function updateStats(calls) {
-      console.log('Updating stats with', calls.length, 'calls');
-      const totalCalls = calls.length;
-      const successCalls = calls.filter(c => c.statusCode >= 200 && c.statusCode < 300).length;
-      const errorCalls = calls.filter(c => c.statusCode >= 400).length;
-      const avgDuration = calls.length > 0 ? Math.round(calls.reduce((sum, c) => sum + c.duration, 0) / calls.length) : 0;
-
-      const statsElement = document.getElementById('stats');
-      if (!statsElement) {
-        console.error('Stats element not found!');
-        return;
-      }
-      
-      statsElement.innerHTML = 
-        '<div class="stat-card">' +
-          '<h3>' + totalCalls + '</h3>' +
-          '<p>Total API Calls</p>' +
-        '</div>' +
-        '<div class="stat-card">' +
-          '<h3>' + successCalls + '</h3>' +
-          '<p>Successful Calls</p>' +
-        '</div>' +
-        '<div class="stat-card">' +
-          '<h3>' + errorCalls + '</h3>' +
-          '<p>Error Calls</p>' +
-        '</div>' +
-        '<div class="stat-card">' +
-          '<h3>' + avgDuration + 'ms</h3>' +
-          '<p>Avg Duration</p>' +
-        '</div>';
-      
-      console.log('Stats updated successfully');
-    }
-
-    function filterCalls() {
-      const methodFilter = document.getElementById('methodFilter').value;
-      const statusFilter = document.getElementById('statusFilter').value;
-
-      let filteredCalls = allCalls;
-
-      if (methodFilter) {
-        filteredCalls = filteredCalls.filter(call => call.method === methodFilter);
-      }
-
-      if (statusFilter) {
-        filteredCalls = filteredCalls.filter(call => {
-          const statusClass = Math.floor(call.statusCode / 100);
-          return statusClass.toString() === statusFilter;
-        });
-      }
-
-      updateTable(filteredCalls);
-    }
-
-    function updateTable(calls) {
-      console.log('Updating table with', calls.length, 'calls');
-      const tbody = document.getElementById('tableBody');
-      if (!tbody) {
-        console.error('Table body element not found!');
-        return;
-      }
-      
-      if (calls.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #7f8c8d;">No API calls recorded yet. Make some API requests to see data here.</td></tr>';
-        return;
-      }
-      
-      const rows = calls.map(call => {
-        return '<tr>' +
-          '<td class="timestamp">' + formatTime(call.timestamp) + '</td>' +
-          '<td><span class="method-badge method-' + call.method.toLowerCase() + '">' + call.method + '</span></td>' +
-          '<td>' + call.url + '</td>' +
-          '<td><span class="status-badge status-' + Math.floor(call.statusCode/100) + 'xx">' + call.statusCode + '</span></td>' +
-          '<td class="duration">' + call.duration + 'ms</td>' +
-          '<td>' + formatBytes(call.responseSize) + '</td>' +
-          '<td>' + (call.ip || 'Unknown') + '</td>' +
-        '</tr>';
-      });
-      
-      tbody.innerHTML = rows.join('');
-      console.log('Table updated successfully');
-    }
-
-    function formatTime(timestamp) {
-      return new Date(timestamp).toLocaleString();
-    }
-
-    function formatBytes(bytes) {
-      if (bytes === 0) return '0 B';
-      const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    }
-
-    function refreshData() {
-      fetchApiCalls();
+  <style>
+    .dashboard-overview {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
     
-    async function testApiCall() {
-      console.log('Making test API call...');
-      try {
-        const response = await fetch('/api/files');
-        console.log('Test API call completed:', response.status);
-        setTimeout(() => fetchApiCalls(), 1000); // Refresh after 1 second
-      } catch (error) {
-        console.error('Test API call failed:', error);
-      }
+    .overview-section {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
-
-    function toggleAutoRefresh() {
-      const autoRefreshCheckbox = document.getElementById('autoRefresh');
-      if (autoRefreshCheckbox.checked) {
-        autoRefreshInterval = setInterval(fetchApiCalls, 5000); // Refresh every 5 seconds
-      } else {
-        clearInterval(autoRefreshInterval);
-      }
-    }
-
-    // Initial load - wait for DOM to be ready
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, initializing API monitor...');
-      fetchApiCalls();
-      toggleAutoRefresh(); // Start auto-refresh by default
-    });
     
-    // Also try immediate execution in case DOM is already loaded
-    if (document.readyState === 'loading') {
-      // DOM is still loading
-    } else {
-      // DOM is already loaded
-      console.log('DOM already loaded, initializing API monitor...');
-      fetchApiCalls();
-      toggleAutoRefresh();
+    .overview-section h2 {
+      color: #172b4d;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-  </script>
+    
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    
+    .action-card {
+      display: block;
+      padding: 1.5rem;
+      background: #f4f5f7;
+      border: 1px solid #dfe1e6;
+      border-radius: 6px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+    }
+    
+    .action-card:hover {
+      background: #e4edfc;
+      border-color: #0052cc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .action-card h3 {
+      color: #172b4d;
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .action-card p {
+      color: #5e6c84;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .status-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f4f5f7;
+      border: 1px solid #dfe1e6;
+      border-radius: 6px;
+    }
+    
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .status-indicator.green {
+      background: #36b37e;
+    }
+    
+    .status-indicator.blue {
+      background: #0052cc;
+    }
+    
+    .status-content h3 {
+      color: #172b4d;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .status-content p {
+      color: #5e6c84;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  </style>
 </body>
 </html>`;
     
@@ -1150,492 +1797,6 @@ app.get('/', (req, res) => {
   
   // If in production and client build exists, serve the React app
   // This will be handled by the static middleware below
-});
-
-// API Monitoring Dashboard Routes
-app.get('/api-monitor', (req, res) => {
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Monitor - Architecture Artifacts</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-        sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      background-attachment: fixed;
-      min-height: 100vh;
-      color: #2c3e50;
-    }
-
-    .app {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .app-header {
-      background: rgba(44, 62, 80, 0.8);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-
-    .app-header h1 {
-      color: white;
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .btn {
-      padding: 0.5rem 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      background: rgba(52, 152, 219, 0.8);
-      color: white;
-    }
-
-    .btn:hover {
-      background: #2980b9;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-    }
-
-    .dashboard-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 16px;
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card h3 {
-      color: white;
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-card p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .api-calls-table {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      overflow-x: auto;
-    }
-
-    .api-calls-table h2 {
-      color: white;
-      margin-bottom: 1rem;
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
-
-    .table-container {
-      overflow-x: auto;
-      max-height: 60vh;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.9);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-
-    th, td {
-      padding: 0.75rem;
-      text-align: left;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    th {
-      background: #ecf0f1;
-      font-weight: 600;
-      color: #2c3e50;
-      position: sticky;
-      top: 0;
-    }
-
-    tr:hover {
-      background: rgba(52, 152, 219, 0.1);
-    }
-
-    .method-badge {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .method-get { background: #27ae60; }
-    .method-post { background: #3498db; }
-    .method-put { background: #f39c12; }
-    .method-delete { background: #e74c3c; }
-    .method-patch { background: #9b59b6; }
-
-    .status-badge {
-      display: inline-block;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .status-2xx { background: #27ae60; }
-    .status-3xx { background: #f39c12; }
-    .status-4xx { background: #e67e22; }
-    .status-5xx { background: #e74c3c; }
-
-    .duration {
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.85rem;
-    }
-
-    .timestamp {
-      font-size: 0.8rem;
-      color: #7f8c8d;
-    }
-
-    .controls {
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .controls label {
-      color: white;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .controls input, .controls select {
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.9);
-      color: #2c3e50;
-    }
-
-    @media (max-width: 768px) {
-      .dashboard-stats {
-        grid-template-columns: 1fr;
-      }
-      
-      .main-content {
-        padding: 1rem;
-      }
-      
-      table {
-        font-size: 0.8rem;
-      }
-      
-      th, td {
-        padding: 0.5rem;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <header class="app-header">
-      <h1>API Monitor Dashboard</h1>
-      <div class="header-actions">
-        <a href="/" class="btn">Back to App</a>
-        <button class="btn" onclick="refreshData()">Refresh</button>
-      </div>
-    </header>
-
-    <main class="main-content">
-      <div class="dashboard-stats" id="stats">
-        <!-- Stats will be populated by JavaScript -->
-      </div>
-
-      <div class="api-calls-table">
-        <h2>Recent API Calls</h2>
-        <div class="controls">
-          <label>
-            Auto-refresh:
-            <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" checked>
-          </label>
-          <label>
-            Filter by method:
-            <select id="methodFilter" onchange="filterCalls()">
-              <option value="">All Methods</option>
-              <option value="GET">GET</option>
-              <option value="POST">POST</option>
-              <option value="PUT">PUT</option>
-              <option value="DELETE">DELETE</option>
-              <option value="PATCH">PATCH</option>
-            </select>
-          </label>
-          <label>
-            Filter by status:
-            <select id="statusFilter" onchange="filterCalls()">
-              <option value="">All Status</option>
-              <option value="2">2xx Success</option>
-              <option value="3">3xx Redirect</option>
-              <option value="4">4xx Client Error</option>
-              <option value="5">5xx Server Error</option>
-            </select>
-          </label>
-        </div>
-        <div class="table-container">
-          <table id="apiCallsTable">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Method</th>
-                <th>URL</th>
-                <th>Status</th>
-                <th>Duration</th>
-                <th>Size</th>
-                <th>IP</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- API calls will be populated by JavaScript -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <script>
-    let allCalls = [];
-    let autoRefreshInterval;
-
-    async function fetchApiCalls() {
-      try {
-        console.log('Fetching API calls...');
-        const response = await fetch('/api-monitor-data');
-        console.log('Response received:', response.status);
-        const data = await response.json();
-        console.log('Data received:', data.length, 'calls');
-        allCalls = data;
-        updateStats(data);
-        filterCalls();
-      } catch (error) {
-        console.error('Failed to fetch API calls:', error);
-        // Show error in the stats area
-        document.getElementById('stats').innerHTML = \`
-          <div class="stat-card" style="background: rgba(231, 76, 60, 0.8);">
-            <h3>Error</h3>
-            <p>Failed to load API data</p>
-          </div>
-        \`;
-      }
-    }
-
-    function updateStats(calls) {
-      console.log('Updating stats with', calls.length, 'calls');
-      const totalCalls = calls.length;
-      const successCalls = calls.filter(c => c.statusCode >= 200 && c.statusCode < 300).length;
-      const errorCalls = calls.filter(c => c.statusCode >= 400).length;
-      const avgDuration = calls.length > 0 ? Math.round(calls.reduce((sum, c) => sum + c.duration, 0) / calls.length) : 0;
-
-      const statsElement = document.getElementById('stats');
-      if (!statsElement) {
-        console.error('Stats element not found!');
-        return;
-      }
-      
-      statsElement.innerHTML = 
-        '<div class="stat-card">' +
-          '<h3>' + totalCalls + '</h3>' +
-          '<p>Total API Calls</p>' +
-        '</div>' +
-        '<div class="stat-card">' +
-          '<h3>' + successCalls + '</h3>' +
-          '<p>Successful Calls</p>' +
-        '</div>' +
-        '<div class="stat-card">' +
-          '<h3>' + errorCalls + '</h3>' +
-          '<p>Error Calls</p>' +
-        '</div>' +
-        '<div class="stat-card">' +
-          '<h3>' + avgDuration + 'ms</h3>' +
-          '<p>Avg Duration</p>' +
-        '</div>';
-      
-      console.log('Stats updated successfully');
-    }
-
-    function filterCalls() {
-      const methodFilter = document.getElementById('methodFilter').value;
-      const statusFilter = document.getElementById('statusFilter').value;
-
-      let filteredCalls = allCalls;
-
-      if (methodFilter) {
-        filteredCalls = filteredCalls.filter(call => call.method === methodFilter);
-      }
-
-      if (statusFilter) {
-        filteredCalls = filteredCalls.filter(call => {
-          const statusClass = Math.floor(call.statusCode / 100);
-          return statusClass.toString() === statusFilter;
-        });
-      }
-
-      updateTable(filteredCalls);
-    }
-
-    function updateTable(calls) {
-      console.log('Updating table with', calls.length, 'calls');
-      const tbody = document.getElementById('tableBody');
-      if (!tbody) {
-        console.error('Table body element not found!');
-        return;
-      }
-      
-      if (calls.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #7f8c8d;">No API calls recorded yet. Make some API requests to see data here.</td></tr>';
-        return;
-      }
-      
-      const rows = calls.map(call => {
-        return '<tr>' +
-          '<td class="timestamp">' + formatTime(call.timestamp) + '</td>' +
-          '<td><span class="method-badge method-' + call.method.toLowerCase() + '">' + call.method + '</span></td>' +
-          '<td>' + call.url + '</td>' +
-          '<td><span class="status-badge status-' + Math.floor(call.statusCode/100) + 'xx">' + call.statusCode + '</span></td>' +
-          '<td class="duration">' + call.duration + 'ms</td>' +
-          '<td>' + formatBytes(call.responseSize) + '</td>' +
-          '<td>' + (call.ip || 'Unknown') + '</td>' +
-        '</tr>';
-      });
-      
-      tbody.innerHTML = rows.join('');
-      console.log('Table updated successfully');
-    }
-
-    function formatTime(timestamp) {
-      return new Date(timestamp).toLocaleString();
-    }
-
-    function formatBytes(bytes) {
-      if (bytes === 0) return '0 B';
-      const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    }
-
-    function refreshData() {
-      fetchApiCalls();
-    }
-    
-    async function testApiCall() {
-      console.log('Making test API call...');
-      try {
-        const response = await fetch('/api/files');
-        console.log('Test API call completed:', response.status);
-        setTimeout(() => fetchApiCalls(), 1000); // Refresh after 1 second
-      } catch (error) {
-        console.error('Test API call failed:', error);
-      }
-    }
-
-    function toggleAutoRefresh() {
-      const autoRefreshCheckbox = document.getElementById('autoRefresh');
-      if (autoRefreshCheckbox.checked) {
-        autoRefreshInterval = setInterval(fetchApiCalls, 5000); // Refresh every 5 seconds
-      } else {
-        clearInterval(autoRefreshInterval);
-      }
-    }
-
-    // Initial load - wait for DOM to be ready
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, initializing API monitor...');
-      fetchApiCalls();
-      toggleAutoRefresh(); // Start auto-refresh by default
-    });
-    
-    // Also try immediate execution in case DOM is already loaded
-    if (document.readyState === 'loading') {
-      // DOM is still loading
-    } else {
-      // DOM is already loaded
-      console.log('DOM already loaded, initializing API monitor...');
-      fetchApiCalls();
-      toggleAutoRefresh();
-    }
-  </script>
-</body>
-</html>`;
-  
-  res.send(html);
 });
 
 // API endpoint to get monitoring data

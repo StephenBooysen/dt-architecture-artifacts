@@ -235,4 +235,82 @@ export const renameItem = async (itemPath, newName) => {
   }
 };
 
+/**
+ * Fetches all available templates.
+ * @return {Promise<Array>} The templates array.
+ */
+export const fetchTemplates = async () => {
+  try {
+    const response = await api.get('/templates');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches a specific template's content.
+ * @param {string} templateName - The name of the template.
+ * @return {Promise<Object>} The template data.
+ */
+export const fetchTemplate = async (templateName) => {
+  try {
+    const response = await api.get(`/templates/${templateName}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching template:', error);
+    throw error;
+  }
+};
+
+/**
+ * Creates a new template.
+ * @param {Object} templateData - The template data.
+ * @param {string} templateData.name - The template name.
+ * @param {string} templateData.content - The template content.
+ * @param {string} templateData.description - The template description.
+ * @return {Promise<Object>} The create response.
+ */
+export const createTemplate = async (templateData) => {
+  try {
+    const response = await api.post('/templates', templateData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating template:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an existing template.
+ * @param {string} templateName - The current template name.
+ * @param {Object} templateData - The updated template data.
+ * @return {Promise<Object>} The update response.
+ */
+export const updateTemplate = async (templateName, templateData) => {
+  try {
+    const response = await api.put(`/templates/${templateName}`, templateData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating template:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a template.
+ * @param {string} templateName - The name of the template to delete.
+ * @return {Promise<Object>} The delete response.
+ */
+export const deleteTemplate = async (templateName) => {
+  try {
+    const response = await api.delete(`/templates/${templateName}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    throw error;
+  }
+};
+
 export default api;
