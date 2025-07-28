@@ -40,9 +40,11 @@ import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
  * @param {Function} props.onRename - Callback for renaming the current file.
  * @param {string} props.defaultMode - Default editor mode (edit, preview, split).
  * @param {Object} props.fileData - Complete file data including type and encoding.
+ * @param {Function} props.onSave - Callback for saving the file.
+ * @param {boolean} props.hasChanges - Whether the file has unsaved changes.
  * @return {JSX.Element} The MarkdownEditor component.
  */
-const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defaultMode = 'edit', fileData}) => {
+const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defaultMode = 'edit', fileData, onSave, hasChanges}) => {
   const [activeTab, setActiveTab] = useState(defaultMode);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -110,17 +112,18 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
 
   if (isLoading) {
     return (
-      <div className="loading">
-        <span>Loading editor...</span>
+      <div className="d-flex justify-content-center align-items-center p-5 loading">
+        <div className="spinner-border text-primary me-2" role="status"></div>
+        <span className="text-muted">Loading editor...</span>
       </div>
     );
   }
 
   if (!fileName) {
     return (
-      <div className="empty-state">
-        <h3>No file selected</h3>
-        <p>Select a file from the sidebar to start viewing.</p>
+      <div className="text-center p-5 empty-state">
+        <h3 className="h4 text-muted mb-3">No file selected</h3>
+        <p className="text-muted mb-0">Select a file from the sidebar to start viewing.</p>
       </div>
     );
   }
@@ -165,57 +168,69 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
 
   // Default markdown editor for markdown files
   return (
-    <div className="markdown-editor">
-      <div className="editor-header">
-        <div>
+    <div className="markdown-editor d-flex flex-column h-100">
+      <div className="d-flex justify-content-between align-items-center py-3 px-3 mb-3 editor-header flex-shrink-0">
+        <div className="d-flex align-items-center">
           <h2 
-            className="editor-filename" 
+            className="h5 mb-0 text-primary editor-filename" 
             onClick={handleFileNameClick}
             title="Click to rename file"
+            style={{cursor: 'pointer', lineHeight: '1.5'}}
           >
             {fileName}
           </h2>
         </div>
-        <div className="editor-tabs">
+        <div className="d-flex gap-2 editor-tabs">
           <button
-            className={`editor-tab ${activeTab === 'edit' ? 'active' : ''}`}
+            className={`btn btn-sm ${activeTab === 'edit' ? 'btn-primary' : 'btn-outline-secondary'} editor-tab`}
             onClick={() => handleTabChange('edit')}>
             Edit
           </button>
           <button
-            className={`editor-tab ${activeTab === 'preview' ? 'active' : ''}`}
+            className={`btn btn-sm ${activeTab === 'preview' ? 'btn-primary' : 'btn-outline-secondary'} editor-tab`}
             onClick={() => handleTabChange('preview')}>
             Preview
           </button>
           <button
-            className={`editor-tab ${activeTab === 'split' ? 'active' : ''}`}
+            className={`btn btn-sm ${activeTab === 'split' ? 'btn-primary' : 'btn-outline-secondary'} editor-tab`}
             onClick={() => handleTabChange('split')}>
             Split View
           </button>
           <button
-            className="editor-tab preview-window-btn"
+            className="btn btn-outline-secondary btn-sm editor-tab preview-window-btn"
             onClick={handleOpenPreviewWindow}
             disabled={!fileName}
             title="Open preview in new window">
-            🔗 Preview Window
+            <i className="bi bi-box-arrow-up-right me-1"></i>Preview Window
+          </button>
+          
+          <div className="vr mx-2"></div>
+          
+          <button
+            className="btn btn-success btn-sm"
+            onClick={onSave}
+            disabled={!fileName || !hasChanges || isLoading}
+            title="Save file">
+            <i className="bi bi-floppy me-1"></i>Save
           </button>
         </div>
       </div>
 
-      <div className="editor-content">
+      <div className="editor-content flex-grow-1 d-flex flex-column">
         {activeTab === 'edit' && (
-          <div className="editor-pane">
+          <div className="editor-pane flex-grow-1">
             <textarea
-              className="editor-textarea"
+              className="form-control editor-textarea h-100"
               value={content}
               onChange={(e) => onChange(e.target.value)}
               placeholder="Start writing your markdown here..."
+              style={{fontFamily: 'monospace', resize: 'none'}}
             />
           </div>
         )}
 
         {activeTab === 'preview' && (
-          <div className="preview-pane">
+          <div className="preview-pane bg-light border rounded p-3 flex-grow-1" style={{overflow: 'auto'}}>
             <div className="preview-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -246,16 +261,17 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
         )}
 
         {activeTab === 'split' && (
-          <>
-            <div className="editor-pane">
+          <div className="d-flex gap-3 flex-grow-1">
+            <div className="editor-pane" style={{width: '50%'}}>
               <textarea
-                className="editor-textarea"
+                className="form-control editor-textarea h-100"
                 value={content}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="Start writing your markdown here..."
+                style={{fontFamily: 'monospace', resize: 'none'}}
               />
             </div>
-            <div className="preview-pane">
+            <div className="preview-pane bg-light border rounded p-3 h-100" style={{width: '50%', overflow: 'auto'}}>
               <div className="preview-content">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -283,45 +299,53 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
                 </ReactMarkdown>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
       {showRenameDialog && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Rename File</h2>
-            <form onSubmit={handleRenameSubmit} className="modal-form">
-              <div>
-                <label htmlFor="rename-filename">New File Name:</label>
-                <p style={{fontSize: '0.9rem', color: '#7f8c8d'}}>
-                  Current: {fileName}
-                </p>
-                <input
-                  id="rename-filename"
-                  type="text"
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.target.value)}
-                  placeholder="Enter new filename"
-                  required
-                  autoFocus
-                />
+        <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Rename File</h5>
+                <button type="button" className="btn-close" onClick={handleRenameCancel}></button>
               </div>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleRenameCancel}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!renameValue.trim()}>
-                  Rename
-                </button>
-              </div>
-            </form>
+              <form onSubmit={handleRenameSubmit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label htmlFor="rename-filename" className="form-label">New File Name:</label>
+                    <p className="small text-muted mb-2">
+                      Current: {fileName}
+                    </p>
+                    <input
+                      id="rename-filename"
+                      type="text"
+                      className="form-control"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      placeholder="Enter new filename"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleRenameCancel}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={!renameValue.trim()}>
+                    Rename
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

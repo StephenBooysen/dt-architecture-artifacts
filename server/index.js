@@ -657,6 +657,139 @@ app.post('/api/pull', async (req, res) => {
 });
 
 /**
+ * Search endpoints
+ */
+
+// Search files by name
+app.get('/api/search/files', async (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query) {
+      return res.json([]);
+    }
+
+    const searchResults = [];
+    
+    // Recursive function to search through files
+    const searchInDirectory = async (dirPath) => {
+      try {
+        const items = await fs.readdir(dirPath, { withFileTypes: true });
+        
+        for (const item of items) {
+          const fullPath = path.join(dirPath, item.name);
+          const relativePath = path.relative(contentDir, fullPath);
+          
+          if (item.isDirectory()) {
+            await searchInDirectory(fullPath);
+          } else if (item.isFile() && item.name.endsWith('.md')) {
+            // Check if filename contains the search query (case insensitive)
+            if (item.name.toLowerCase().includes(query.toLowerCase())) {
+              searchResults.push({
+                name: item.name,
+                path: relativePath.replace(/\\/g, '/'),
+                type: 'file'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        // Skip directories that can't be read
+        console.error('Error reading directory:', dirPath, error.message);
+      }
+    };
+
+    await searchInDirectory(contentDir);
+    
+    res.json(searchResults.slice(0, 10)); // Limit results
+  } catch (error) {
+    console.error('Error searching files:', error);
+    res.status(500).json({error: 'Failed to search files'});
+  }
+});
+
+// Search content within files
+app.get('/api/search/content', async (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query) {
+      return res.json([]);
+    }
+
+    const searchResults = [];
+    const searchRegex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    
+    // Recursive function to search through file contents
+    const searchInDirectory = async (dirPath) => {
+      try {
+        const items = await fs.readdir(dirPath, { withFileTypes: true });
+        
+        for (const item of items) {
+          const fullPath = path.join(dirPath, item.name);
+          const relativePath = path.relative(contentDir, fullPath);
+          
+          if (item.isDirectory()) {
+            await searchInDirectory(fullPath);
+          } else if (item.isFile() && item.name.endsWith('.md')) {
+            try {
+              const content = await fs.readFile(fullPath, 'utf8');
+              const matches = [];
+              let match;
+              
+              // Find all matches in the content
+              while ((match = searchRegex.exec(content)) !== null) {
+                const start = Math.max(0, match.index - 50);
+                const end = Math.min(content.length, match.index + query.length + 50);
+                const preview = content.substring(start, end);
+                
+                // Highlight the matched text
+                const highlightedPreview = preview.replace(
+                  searchRegex, 
+                  `<mark>$&</mark>`
+                );
+                
+                matches.push({
+                  fileName: item.name,
+                  filePath: relativePath.replace(/\\/g, '/'),
+                  preview: (start > 0 ? '...' : '') + highlightedPreview + (end < content.length ? '...' : ''),
+                  matchIndex: match.index
+                });
+                
+                // Limit matches per file
+                if (matches.length >= 3) break;
+              }
+              
+              if (matches.length > 0) {
+                searchResults.push(...matches);
+              }
+            } catch (error) {
+              // Skip files that can't be read
+              console.error('Error reading file:', fullPath, error.message);
+            }
+          }
+        }
+      } catch (error) {
+        // Skip directories that can't be read
+        console.error('Error reading directory:', dirPath, error.message);
+      }
+    };
+
+    await searchInDirectory(contentDir);
+    
+    // Sort by relevance (files with more matches first)
+    searchResults.sort((a, b) => {
+      const aCount = (a.preview.match(/<mark>/g) || []).length;
+      const bCount = (b.preview.match(/<mark>/g) || []).length;
+      return bCount - aCount;
+    });
+    
+    res.json(searchResults.slice(0, 20)); // Limit results
+  } catch (error) {
+    console.error('Error searching content:', error);
+    res.status(500).json({error: 'Failed to search content'});
+  }
+});
+
+/**
  * Template management endpoints
  */
 
@@ -816,51 +949,107 @@ app.delete('/api/templates/:templateName', async (req, res) => {
 
 // Helper functions for server pages
 function getSharedStyles() {
-  return `<style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+  return `
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+    :root {
+      --confluence-primary: #0052cc;
+      --confluence-primary-hover: #0747a6;
+      --confluence-secondary: #6b778c;
+      --confluence-text: #172b4d;
+      --confluence-text-subtle: #6b778c;
+      --confluence-bg: #f7f8fa;
+      --confluence-bg-card: #ffffff;
+      --confluence-border: #e5e8ec;
+      --confluence-border-subtle: #f4f5f7;
+      --confluence-success: #36b37e;
+      --confluence-danger: #de350b;
+      --confluence-warning: #ffab00;
+      --confluence-info: #0052cc;
+    }
+
+    /* Bootstrap overrides for Confluence theme */
+    .btn-primary {
+      --bs-btn-bg: var(--confluence-primary);
+      --bs-btn-border-color: var(--confluence-primary);
+      --bs-btn-hover-bg: var(--confluence-primary-hover);
+      --bs-btn-hover-border-color: var(--confluence-primary-hover);
+      --bs-btn-active-bg: var(--confluence-primary-hover);
+      --bs-btn-active-border-color: var(--confluence-primary-hover);
+      font-weight: 500;
+      border-radius: 4px;
+    }
+
+    .btn-secondary {
+      --bs-btn-bg: #f4f5f7;
+      --bs-btn-border-color: #dfe1e6;
+      --bs-btn-color: var(--confluence-text);
+      --bs-btn-hover-bg: #e4e6ea;
+      --bs-btn-hover-border-color: #c1c7d0;
+      --bs-btn-hover-color: var(--confluence-text);
+      --bs-btn-active-bg: #e4e6ea;
+      --bs-btn-active-border-color: #c1c7d0;
+      font-weight: 500;
+      border-radius: 4px;
+    }
+
+    .form-control, .form-select {
+      border: 2px solid var(--confluence-border);
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--confluence-primary);
+      box-shadow: 0 0 0 0.2rem rgba(0, 82, 204, 0.25);
+    }
+
+    .card {
+      border: 1px solid var(--confluence-border);
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(9, 30, 66, 0.08);
+    }
+
+    .card-header {
+      background-color: var(--confluence-bg-card);
+      border-bottom: 1px solid var(--confluence-border);
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
         sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background: #f7f8fa;
-      min-height: 100vh;
-      color: #172b4d;
-      margin: 0;
-      padding: 0;
+      background-color: var(--confluence-bg);
+      color: var(--confluence-text);
+      font-size: 0.875rem;
+      line-height: 1.5;
     }
 
     .app {
       min-height: 100vh;
-      display: flex;
     }
 
     .sidebar {
       width: 240px;
-      background: #ffffff;
-      border-right: 1px solid #e5e8ec;
+      background: var(--confluence-bg-card);
+      border-right: 2px solid var(--confluence-border);
       position: fixed;
       left: 0;
       top: 0;
       height: 100vh;
       overflow-y: auto;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+      box-shadow: 2px 0 8px rgba(0, 82, 204, 0.06);
     }
 
     .sidebar-header {
       padding: 1.5rem 1rem;
-      border-bottom: 1px solid #e5e8ec;
-      background: #ffffff;
+      border-bottom: 2px solid var(--confluence-border);
+      background: var(--confluence-bg-card);
     }
 
     .sidebar-header h1 {
-      color: #172b4d;
+      color: var(--confluence-text);
       font-size: 1.25rem;
       font-weight: 600;
       margin: 0;
@@ -878,7 +1067,7 @@ function getSharedStyles() {
       padding: 0.5rem 1rem;
       font-size: 0.75rem;
       font-weight: 600;
-      color: #5e6c84;
+      color: var(--confluence-text-subtle);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 0.5rem;
@@ -887,7 +1076,7 @@ function getSharedStyles() {
     .nav-item {
       display: block;
       padding: 0.75rem 1rem;
-      color: #172b4d;
+      color: var(--confluence-text);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 400;
@@ -896,22 +1085,23 @@ function getSharedStyles() {
     }
 
     .nav-item:hover {
-      background: #f4f5f7;
-      color: #0052cc;
+      background: var(--confluence-border-subtle);
+      color: var(--confluence-primary);
+      text-decoration: none;
     }
 
     .nav-item.active {
-      background: #e4edfc;
-      color: #0052cc;
+      background: #e6f3ff;
+      color: var(--confluence-primary);
       font-weight: 500;
-      border-left-color: #0052cc;
+      border-left-color: var(--confluence-primary);
     }
 
     .main-content {
       margin-left: 240px;
       flex: 1;
       padding: 2rem;
-      background: #f7f8fa;
+      background: var(--confluence-bg);
       min-height: 100vh;
     }
 
@@ -923,14 +1113,14 @@ function getSharedStyles() {
     }
 
     .content-header h1 {
-      color: #172b4d;
+      color: var(--confluence-text);
       font-size: 1.75rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
 
     .content-header p {
-      color: #5e6c84;
+      color: var(--confluence-text-subtle);
       font-size: 0.875rem;
       margin: 0;
     }
@@ -1222,34 +1412,35 @@ function getSharedStyles() {
         padding: 0.5rem;
       }
     }
-  </style>`;
+  </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>`;
 }
 
 function getNavigation(activeSection) {
   return `
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h1>🏗️ Architecture Artifacts</h1>
+        <h1><i class="bi bi-building me-2"></i>Architecture Artifacts</h1>
       </div>
       <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-title">Overview</div>
           <a href="/" class="nav-item ${activeSection === 'overview' ? 'active' : ''}">
-            Dashboard
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
           </a>
         </div>
         
         <div class="nav-section">
           <div class="nav-section-title">Settings</div>
           <a href="/settings" class="nav-item ${activeSection === 'settings' ? 'active' : ''}">
-            Git Repository
+            <i class="bi bi-git me-2"></i>Git Repository
           </a>
         </div>
         
         <div class="nav-section">
           <div class="nav-section-title">Monitoring</div>
           <a href="/monitoring/api" class="nav-item ${activeSection === 'monitoring' ? 'active' : ''}">
-            API Monitor
+            <i class="bi bi-graph-up me-2"></i>API Monitor
           </a>
         </div>
       </nav>

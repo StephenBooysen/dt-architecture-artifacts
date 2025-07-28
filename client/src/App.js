@@ -42,6 +42,8 @@ import {
   createTemplate,
   updateTemplate,
   deleteTemplate,
+  searchFiles,
+  searchContent,
 } from './services/api';
 import './App.css';
 
@@ -67,6 +69,11 @@ function App() {
   });
   const [templates, setTemplates] = useState([]);
   const [isTemplatesLoading, setIsTemplatesLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   useEffect(() => {
     loadFiles();
@@ -392,44 +399,189 @@ function App() {
     console.log('Template selected:', template);
   };
 
+  const handleSearchChange = useCallback(async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setHighlightedIndex(-1);
+    
+    if (query.trim().length > 0) {
+      try {
+        const fileSuggestions = await searchFiles(query);
+        setSearchSuggestions(fileSuggestions.slice(0, 5)); // Limit to 5 suggestions
+        setShowSearchResults(true);
+      } catch (error) {
+        console.error('Error fetching file suggestions:', error);
+        setSearchSuggestions([]);
+      }
+    } else {
+      setSearchSuggestions([]);
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  }, []);
+
+  const handleSearchSubmit = useCallback(async () => {
+    if (searchQuery.trim().length === 0) return;
+    
+    try {
+      const contentResults = await searchContent(searchQuery);
+      setSearchResults(contentResults);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Error searching content:', error);
+      toast.error('Search failed');
+    }
+  }, [searchQuery]);
+
+  const handleSearchKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearchSubmit();
+    } else if (e.key === 'Escape') {
+      setShowSearchResults(false);
+      setSearchQuery('');
+      setSearchSuggestions([]);
+      setSearchResults([]);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex((prev) => 
+        prev < searchSuggestions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex((prev) => prev > 0 ? prev - 1 : -1);
+    }
+  }, [searchSuggestions.length, handleSearchSubmit]);
+
+  const handleSearchResultClick = useCallback(async (result) => {
+    await handleFileSelect(result.filePath);
+    setShowSearchResults(false);
+    setSearchQuery('');
+    setSearchSuggestions([]);
+    setSearchResults([]);
+    
+    // Expand folders to show the selected file
+    const pathParts = result.filePath.split('/');
+    const newExpanded = new Set(expandedFolders);
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      const parentPath = pathParts.slice(0, i + 1).join('/');
+      newExpanded.add(parentPath);
+    }
+    setExpandedFolders(newExpanded);
+  }, [handleFileSelect, expandedFolders]);
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.position-relative')) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Architecture Artifacts Editor</h1>
-        <div className="header-actions">
-          <button
-            className="btn btn-secondary sidebar-toggle"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-          >
-            {sidebarCollapsed ? '☰' : '✕'}
-          </button>
-          <div className="editor-mode-toggle">
-            <label htmlFor="editor-mode-select">Default mode:</label>
-            <select
-              id="editor-mode-select"
-              value={defaultEditorMode}
-              onChange={(e) => handleEditorModeChange(e.target.value)}
-              className="editor-mode-select"
-            >
-              <option value="edit">Edit</option>
-              <option value="preview">Preview</option>
-              <option value="split">Split View</option>
-            </select>
+        <nav className="navbar navbar-expand-lg">
+          <div className="container-fluid">
+            <div className="d-flex align-items-center w-100">
+              <button
+                className="btn btn-secondary btn-sm sidebar-toggle me-3"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+              >
+                <i className={`bi ${sidebarCollapsed ? 'bi-list' : 'bi-x-lg'}`}></i>
+              </button>
+              
+              <a className="navbar-brand fw-medium me-3" href="#">Architecture Artifacts Editor</a>
+              
+              <div className="flex-grow-1 me-3">
+                <div className="position-relative">
+                  <input
+                    type="text"
+                    className="form-control form-control-sm pe-5"
+                    placeholder="Search files and content..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onKeyDown={handleSearchKeyDown}
+                    onFocus={() => setShowSearchResults(true)}
+                  />
+                  <button 
+                    className="btn btn-sm btn-outline-secondary position-absolute top-50 end-0 translate-middle-y me-1"
+                    style={{border: 'none', padding: '0.25rem 0.5rem'}}
+                    onClick={handleSearchSubmit}
+                  >
+                    <i className="bi bi-search"></i>
+                  </button>
+                  
+                  {showSearchResults && (searchSuggestions.length > 0 || searchResults.length > 0) && (
+                    <div className="position-absolute w-100 bg-white border rounded-bottom shadow-sm mt-1" style={{zIndex: 1050, maxHeight: '300px', overflowY: 'auto'}}>
+                      {searchSuggestions.length > 0 && (
+                        <div>
+                          <div className="px-3 py-2 bg-light border-bottom small text-muted">Files</div>
+                          {searchSuggestions.map((file, index) => (
+                            <div
+                              key={index}
+                              className="px-3 py-2 cursor-pointer border-bottom search-suggestion"
+                              onClick={() => handleFileSelect(file.path)}
+                              onMouseEnter={() => setHighlightedIndex(index)}
+                            >
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-file-earmark-text me-2 text-muted"></i>
+                                <span>{file.name}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {searchResults.length > 0 && (
+                        <div>
+                          <div className="px-3 py-2 bg-light border-bottom small text-muted">Content Results</div>
+                          {searchResults.map((result, index) => (
+                            <div
+                              key={index}
+                              className="px-3 py-2 cursor-pointer border-bottom search-result"
+                              onClick={() => handleSearchResultClick(result)}
+                            >
+                              <div className="fw-medium text-primary">{result.fileName}</div>
+                              <div className="small text-muted" dangerouslySetInnerHTML={{__html: result.preview}}></div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center gap-3">
+                <div className="d-flex align-items-center gap-2 editor-mode-toggle">
+                  <label htmlFor="editor-mode-select" className="form-label mb-0 small fw-medium">Default mode:</label>
+                  <select
+                    id="editor-mode-select"
+                    value={defaultEditorMode}
+                    onChange={(e) => handleEditorModeChange(e.target.value)}
+                    className="form-select form-select-sm"
+                  >
+                    <option value="edit">Edit</option>
+                    <option value="preview">Preview</option>
+                    <option value="split">Split View</option>
+                  </select>
+                </div>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => setShowPublishModal(true)}
+                  disabled={!hasChanges || isLoading}>
+                  Publish
+                </button>
+              </div>
+            </div>
           </div>
-          <button
-            className="btn btn-primary"
-            onClick={handleSave}
-            disabled={!selectedFile || !hasChanges || isFileLoading}>
-            Save
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowPublishModal(true)}
-            disabled={!hasChanges || isLoading}>
-            Publish
-          </button>
-        </div>
+        </nav>
       </header>
 
       <main className="app-main">
@@ -471,12 +623,16 @@ function App() {
             onRename={handleRenameItem}
             defaultMode={defaultEditorMode}
             fileData={fileData}
+            onSave={handleSave}
+            hasChanges={hasChanges}
           />
         </section>
       </main>
 
       <footer className="app-footer">
-        <p>© 2025 All rights reserved.</p>
+        <div className="container-fluid">
+          <p className="mb-0 text-center small">© 2025 All rights reserved.</p>
+        </div>
       </footer>
 
       {showPublishModal && (

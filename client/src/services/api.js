@@ -313,4 +313,34 @@ export const deleteTemplate = async (templateName) => {
   }
 };
 
+/**
+ * Searches for files by name.
+ * @param {string} query - The search query.
+ * @return {Promise<Array>} Array of file suggestions.
+ */
+export const searchFiles = async (query) => {
+  try {
+    const response = await api.get(`/search/files?q=${encodeURIComponent(query)}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error searching files:', error);
+    throw error;
+  }
+};
+
+/**
+ * Searches for content within files.
+ * @param {string} query - The search query.
+ * @return {Promise<Array>} Array of content search results.
+ */
+export const searchContent = async (query) => {
+  try {
+    const response = await api.get(`/search/content?q=${encodeURIComponent(query)}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error searching content:', error);
+    throw error;
+  }
+};
+
 export default api;

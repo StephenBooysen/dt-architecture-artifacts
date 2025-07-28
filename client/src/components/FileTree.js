@@ -352,7 +352,7 @@ const FileTree = ({
             onContextMenu={(e) => handleContextMenu(e, item.path, 'directory')}>
             <div className="folder-content">
               <span className="icon">
-                {isCollapsed ? '📁' : '📂'}
+                <i className={`bi ${isCollapsed ? 'bi-folder' : 'bi-folder-open'}`}></i>
               </span>
               <span>{item.name}</span>
             </div>
@@ -365,7 +365,7 @@ const FileTree = ({
                 }}
                 onContextMenu={(e) => e.stopPropagation()}
                 title="Create folder">
-                📁+
+                <i className="bi bi-folder-plus"></i>
               </button>
               <button
                 className="action-btn"
@@ -375,7 +375,7 @@ const FileTree = ({
                 }}
                 onContextMenu={(e) => e.stopPropagation()}
                 title="Create file">
-                📄+
+                <i className="bi bi-file-earmark-plus"></i>
               </button>
             </div>
           </div>
@@ -392,7 +392,9 @@ const FileTree = ({
         style={{paddingLeft: `${paddingLeft}rem`}}
         onClick={() => onFileSelect(item.path)}
         onContextMenu={(e) => handleContextMenu(e, item.path, 'file')}>
-        <span className="icon">📄</span>
+        <span className="icon">
+          <i className="bi bi-file-earmark-text"></i>
+        </span>
         <span>{item.name}</span>
       </div>
     );
@@ -418,23 +420,23 @@ const FileTree = ({
       />
       
       <div className="file-tree-header">
-        <h3 style={{marginBottom: '1rem', color: '#2c3e50'}}>
-          Files {isUploading && <small style={{color: '#3498db'}}>Uploading...</small>}
+        <h3 className="h5 mb-3 fw-semibold text-confluence-text">
+          Files {isUploading && <small className="text-primary">Uploading...</small>}
         </h3>
-        <div className="file-tree-toolbar">
+        <div className="d-flex gap-2 file-tree-toolbar">
           <button
-            className="btn btn-secondary"
+            className="btn btn-secondary btn-sm"
             onClick={() => handleCreateClick('folder')}
             disabled={isLoading}
             title="Create new folder">
-            📁+
+            <i className="bi bi-folder-plus"></i>
           </button>
           <button
-            className="btn btn-secondary"
+            className="btn btn-secondary btn-sm"
             onClick={() => handleCreateClick('file')}
             disabled={isLoading}
             title="Create new file">
-            📄+
+            <i className="bi bi-file-earmark-plus"></i>
           </button>
         </div>
       </div>
@@ -443,9 +445,9 @@ const FileTree = ({
         className="file-tree-content"
         onContextMenu={(e) => handleContextMenu(e, '')}>
         {files.length === 0 ? (
-          <div className="empty-state">
-            <h3>No files found</h3>
-            <p>Create some markdown files to get started.</p>
+          <div className="text-center p-4 empty-state">
+            <h3 className="h6 fw-medium mb-2">No files found</h3>
+            <p className="mb-0 small text-muted">Create some markdown files to get started.</p>
           </div>
         ) : (
           files.map((file) => renderFileItem(file))
@@ -453,70 +455,79 @@ const FileTree = ({
       </div>
 
       {showCreateDialog && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>
-              Create New {createType === 'folder' ? 'Folder' : 'File'}
-            </h2>
-            <form onSubmit={handleCreateSubmit} className="modal-form">
-              <div>
-                <label htmlFor="create-name">
-                  {createType === 'folder' ? 'Folder' : 'File'} Name:
-                </label>
-                {createPath && (
-                  <p style={{fontSize: '0.9rem', color: '#7f8c8d'}}>
-                    Location: {createPath}/
-                  </p>
-                )}
-                <input
-                  id="create-name"
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={
-                    createType === 'folder'
-                      ? 'Enter folder name'
-                      : 'Enter file name (without .md extension)'
-                  }
-                  required
-                  autoFocus
-                />
+        <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Create New {createType === 'folder' ? 'Folder' : 'File'}
+                </h5>
+                <button type="button" className="btn-close" onClick={handleCreateCancel}></button>
               </div>
-              
-              {createType === 'file' && templates.length > 0 && (
-                <div>
-                  <label htmlFor="template-select">
-                    Template (optional):
-                  </label>
-                  <select
-                    id="template-select"
-                    value={selectedTemplate}
-                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                  >
-                    <option value="">No template (blank file)</option>
-                    {templates.map((template) => (
-                      <option key={template.name} value={template.name}>
-                        {template.name} {template.description && `- ${template.description}`}
-                      </option>
-                    ))}
-                  </select>
+              <form onSubmit={handleCreateSubmit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label htmlFor="create-name" className="form-label">
+                      {createType === 'folder' ? 'Folder' : 'File'} Name:
+                    </label>
+                    {createPath && (
+                      <p className="small text-muted mb-2">
+                        Location: {createPath}/
+                      </p>
+                    )}
+                    <input
+                      id="create-name"
+                      type="text"
+                      className="form-control"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={
+                        createType === 'folder'
+                          ? 'Enter folder name'
+                          : 'Enter file name (without .md extension)'
+                      }
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  
+                  {createType === 'file' && templates.length > 0 && (
+                    <div className="mb-3">
+                      <label htmlFor="template-select" className="form-label">
+                        Template (optional):
+                      </label>
+                      <select
+                        id="template-select"
+                        className="form-select"
+                        value={selectedTemplate}
+                        onChange={(e) => setSelectedTemplate(e.target.value)}
+                      >
+                        <option value="">No template (blank file)</option>
+                        {templates.map((template) => (
+                          <option key={template.name} value={template.name}>
+                            {template.name} {template.description && `- ${template.description}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCreateCancel}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!inputValue.trim()}>
-                  Create {createType === 'folder' ? 'Folder' : 'File'}
-                </button>
-              </div>
-            </form>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleCreateCancel}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={!inputValue.trim()}>
+                    Create {createType === 'folder' ? 'Folder' : 'File'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
@@ -534,7 +545,9 @@ const FileTree = ({
             <div
               className="context-menu-item"
               onClick={() => handleCreateClick('folder', contextMenu.path)}>
-              <span className="context-menu-icon">📁</span>
+              <span className="context-menu-icon">
+                <i className="bi bi-folder-plus"></i>
+              </span>
               New Folder
             </div>
           )}
@@ -542,7 +555,9 @@ const FileTree = ({
             <div
               className="context-menu-item"
               onClick={() => handleCreateClick('file', contextMenu.path)}>
-              <span className="context-menu-icon">📄</span>
+              <span className="context-menu-icon">
+                <i className="bi bi-file-earmark-plus"></i>
+              </span>
               New File
             </div>
           )}
@@ -550,7 +565,9 @@ const FileTree = ({
             <div
               className="context-menu-item"
               onClick={() => handleUploadClick(contextMenu.path)}>
-              <span className="context-menu-icon">📤</span>
+              <span className="context-menu-icon">
+                <i className="bi bi-upload"></i>
+              </span>
               Upload File
             </div>
           )}
@@ -564,13 +581,17 @@ const FileTree = ({
               <div
                 className="context-menu-item"
                 onClick={() => handleRenameClick(contextMenu.path)}>
-                <span className="context-menu-icon">✏️</span>
+                <span className="context-menu-icon">
+                  <i className="bi bi-pencil"></i>
+                </span>
                 Rename
               </div>
               <div
                 className="context-menu-item delete-item"
                 onClick={() => handleDeleteClick(contextMenu.path)}>
-                <span className="context-menu-icon">🗑️</span>
+                <span className="context-menu-icon">
+                  <i className="bi bi-trash"></i>
+                </span>
                 Delete
               </div>
             </>
@@ -579,40 +600,48 @@ const FileTree = ({
       )}
 
       {showRenameDialog && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Rename Item</h2>
-            <form onSubmit={handleRenameSubmit} className="modal-form">
-              <div>
-                <label htmlFor="rename-name">New Name:</label>
-                <p style={{fontSize: '0.9rem', color: '#7f8c8d'}}>
-                  Current: {renameItemPath}
-                </p>
-                <input
-                  id="rename-name"
-                  type="text"
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.target.value)}
-                  placeholder="Enter new name"
-                  required
-                  autoFocus
-                />
+        <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Rename Item</h5>
+                <button type="button" className="btn-close" onClick={handleRenameCancel}></button>
               </div>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleRenameCancel}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!renameValue.trim()}>
-                  Rename
-                </button>
-              </div>
-            </form>
+              <form onSubmit={handleRenameSubmit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label htmlFor="rename-name" className="form-label">New Name:</label>
+                    <p className="small text-muted mb-2">
+                      Current: {renameItemPath}
+                    </p>
+                    <input
+                      id="rename-name"
+                      type="text"
+                      className="form-control"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      placeholder="Enter new name"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleRenameCancel}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={!renameValue.trim()}>
+                    Rename
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
