@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Architecture Artifacts Search for Edge",
+  "version": "1.0.0",
+  "description": "Search and preview architecture documentation from your Architecture Artifacts server - Microsoft Edge version",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:5000/*",
+    "http://127.0.0.1:5000/*",
+    "https://*.architectureartifacts.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Architecture Artifacts Search",
+    "default_icon": {
+      "16": "icons/icon-16.svg",
+      "32": "icons/icon-32.svg",
+      "48": "icons/icon-48.svg",
+      "128": "icons/icon-128.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.svg",
+    "32": "icons/icon-32.svg",
+    "48": "icons/icon-48.svg",
+    "128": "icons/icon-128.svg"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

@@ -22,28 +22,30 @@
     "cors": "*",
     "dotenv": "*",
     "express": "*",
-
     "express-rate-limit": "*",
     "helmet": "*",
     "jsonwebtoken": "*",
     "multer": "^2.0.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "simple-git": "*"
   },
   "devDependencies": {
-    "concurrently": "*",
-    "nodemon": "*",
     "@babel/core": "^7.22.0",
-    "@babel/preset-env": "^7.22.0",
-    "@babel/preset-react": "^7.22.0",
     "@babel/plugin-proposal-class-properties": "^7.18.0",
     "@babel/plugin-transform-runtime": "^7.22.0",
-    "babel-jest": "^29.5.0",
-    "jest": "^29.5.0",
-    "jest-environment-jsdom": "^29.5.0",
+    "@babel/preset-env": "^7.22.0",
+    "@babel/preset-react": "^7.22.0",
+    "@babel/register": "^7.27.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
+    "babel-jest": "^29.5.0",
+    "concurrently": "*",
     "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "nodemon": "*",
     "supertest": "^6.3.3"
   }
 }

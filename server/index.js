@@ -27,6 +27,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const EventEmitter = require('events');
+const { renderComponent } = require('./utils/reactRenderer');
 require('dotenv').config();
 
 const app = express();
@@ -2143,6 +2144,23 @@ app.get('/', (req, res) => {
   
   // If in production and client build exists, serve the React app
   // This will be handled by the static middleware below
+});
+
+// Test React rendering - Simple version
+app.get('/test-react', (req, res) => {
+  try {
+    // Test without using the renderComponent function first
+    const React = require('react');
+    const { renderToString } = require('react-dom/server');
+    
+    const element = React.createElement('div', null, 'Hello from React SSR!');
+    const html = renderToString(element);
+    
+    res.send(`<!DOCTYPE html><html><body>${html}</body></html>`);
+  } catch (error) {
+    console.error('React rendering error:', error);
+    res.status(500).send(`React rendering error: ${error.message}`);
+  }
 });
 
 // API endpoint to get monitoring data

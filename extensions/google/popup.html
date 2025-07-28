@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Artifacts Search</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="extension-container">
+    <header class="extension-header">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
+          <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
+        </svg>
+        <h1>Architecture Artifacts</h1>
+      </div>
+      <div class="settings-btn" id="settingsBtn" title="Settings">⚙️</div>
+    </header>
+
+    <div class="search-section">
+      <div class="search-container">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search documentation..." 
+          class="search-input"
+          autocomplete="off"
+        >
+        <button id="searchBtn" class="search-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="search-types">
+        <label class="search-type">
+          <input type="radio" name="searchType" value="content" checked>
+          <span>Content</span>
+        </label>
+        <label class="search-type">
+          <input type="radio" name="searchType" value="files">
+          <span>Files</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+      <div class="loading" id="loadingIndicator" style="display: none;">
+        <div class="spinner"></div>
+        <span>Searching...</span>
+      </div>
+      
+      <div class="results-list" id="resultsList"></div>
+      
+      <div class="no-results" id="noResults" style="display: none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="8" stroke="#6b778c" stroke-width="2"/>
+          <path d="M21 21L16.65 16.65" stroke="#6b778c" stroke-width="2"/>
+        </svg>
+        <p>No results found</p>
+        <small>Try adjusting your search terms</small>
+      </div>
+    </div>
+
+    <div class="preview-section" id="previewSection" style="display: none;">
+      <div class="preview-header">
+        <button id="backBtn" class="back-button">← Back</button>
+        <h3 id="previewTitle" class="preview-title"></h3>
+      </div>
+      <div class="preview-content" id="previewContent"></div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel" style="display: none;">
+      <div class="settings-header">
+        <h3>Settings</h3>
+        <button id="closeSettingsBtn" class="close-button">×</button>
+      </div>
+      <div class="settings-content">
+        <div class="setting-group">
+          <label for="serverUrl">Server URL:</label>
+          <input 
+            type="url" 
+            id="serverUrl" 
+            placeholder="http://localhost:5000"
+            value="http://localhost:5000"
+          >
+          <small>Enter your Architecture Artifacts server URL</small>
+        </div>
+        <button id="saveSettingsBtn" class="save-button">Save Settings</button>
+      </div>
+    </div>
+
+    <footer class="extension-footer">
+      <small>Architecture Artifacts v1.0.0</small>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
