@@ -123,7 +123,7 @@ class ArchitectureArtifactsExtension {
     
     try {
       const endpoint = searchType === 'files' ? '/api/search/files' : '/api/search/content';
-      const url = `${this.serverUrl}${endpoint}?query=${encodeURIComponent(query)}`;
+      const url = `${this.serverUrl}${endpoint}?q=${encodeURIComponent(query)}`;
       
       const response = await fetch(url);
       
@@ -160,9 +160,9 @@ class ArchitectureArtifactsExtension {
     const div = document.createElement('div');
     div.className = 'result-item';
     
-    const title = result.file || result.path || 'Untitled';
-    const path = result.path || result.file || '';
-    const snippet = result.snippet || result.content || '';
+       const title = result.fileName || result.filePath || 'Untitled';
+    const path = result.filePath || result.fileName || '';
+    const snippet = result.preview || '';
     
     // Highlight search terms
     const highlightedSnippet = this.highlightSearchTerms(snippet, query);
@@ -198,7 +198,7 @@ class ArchitectureArtifactsExtension {
   async showPreview(result) {
     this.showPreviewView();
     
-    const filePath = result.path || result.file;
+    const filePath = result.filePath || result.fileName;
     this.previewTitle.textContent = filePath || 'Preview';
     
     try {
@@ -245,7 +245,7 @@ class ArchitectureArtifactsExtension {
       // Inline code
       .replace(/`([^`]*)`/gim, '<code>$1</code>')
       // Links
-      .replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/gim, '<a href="$2" target="_blank">$1</a>')
+      //.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/gim, '<a href="$2" target="_blank">$1</a>')
       // Line breaks
       .replace(/\\n/gim, '<br>');
   }

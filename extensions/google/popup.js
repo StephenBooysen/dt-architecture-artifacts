@@ -7,9 +7,6 @@ class ArchitectureArtifactsExtension {
     this.initializeElements();
     this.loadSettings();
     this.bindEvents();
-
-    console.log('Architecture Artifacts Extension initialized');
-    debugger
   }
 
   initializeElements() {
@@ -205,8 +202,6 @@ class ArchitectureArtifactsExtension {
     this.previewTitle.textContent = filePath || 'Preview';
     
     try {
-
-      console.log(`Fetching file content from: ${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`);
       // Fetch full file content
       const response = await fetch(`${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`);
       
