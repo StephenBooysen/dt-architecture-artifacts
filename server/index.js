@@ -725,6 +725,7 @@ app.get('/api/search/files', async (req, res) => {
     };
 
     await searchInDirectory(contentDir);
+    console.log(`Search results: ${JSON.stringify(searchResults)}`);
     
     res.json(searchResults.slice(0, 10)); // Limit results
   } catch (error) {
@@ -809,6 +810,7 @@ app.get('/api/search/content', async (req, res) => {
       return bCount - aCount;
     });
     
+    console.log(`Content search results: ${JSON.stringify(searchResults)}`);
     res.json(searchResults.slice(0, 20)); // Limit results
   } catch (error) {
     console.error('Error searching content:', error);
