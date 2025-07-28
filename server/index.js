@@ -1468,6 +1468,19 @@ function getSharedStyles() {
     .sidebar-toggle {
       padding: 0.5rem;
       font-size: 1rem;
+      cursor: pointer;
+      border: 1px solid var(--confluence-border);
+      background: var(--confluence-bg-card);
+      transition: all 0.2s ease;
+    }
+    
+    .sidebar-toggle:hover {
+      background: var(--confluence-border-subtle);
+      border-color: var(--confluence-primary);
+    }
+    
+    .sidebar-toggle:active {
+      transform: scale(0.95);
     }
 
     @media (max-width: 768px) {
@@ -1584,10 +1597,22 @@ function getSidebarToggleScript() {
     let sidebarCollapsed = false;
     
     function toggleSidebar() {
+      console.log('Toggle sidebar clicked'); // Debug log
       const sidebar = document.getElementById('sidebar');
       const icon = document.getElementById('sidebar-toggle-icon');
       
+      if (!sidebar) {
+        console.error('Sidebar element not found');
+        return;
+      }
+      
+      if (!icon) {
+        console.error('Sidebar toggle icon not found');
+        return;
+      }
+      
       sidebarCollapsed = !sidebarCollapsed;
+      console.log('Sidebar collapsed:', sidebarCollapsed); // Debug log
       
       if (sidebarCollapsed) {
         sidebar.style.marginLeft = '-250px';
@@ -1597,6 +1622,20 @@ function getSidebarToggleScript() {
         icon.className = 'bi bi-x-lg';
       }
     }
+    
+    // Ensure the function is available globally
+    window.toggleSidebar = toggleSidebar;
+    
+    // Also add event listener approach as backup
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.querySelector('.sidebar-toggle');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleSidebar();
+        });
+      }
+    });
   </script>
   `;
 }
