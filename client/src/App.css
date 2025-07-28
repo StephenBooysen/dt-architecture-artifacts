@@ -599,6 +599,30 @@ mark {
   border-radius: 2px;
 }
 
+/* Preview pane scrolling fixes */
+.preview-pane {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.preview-pane::-webkit-scrollbar {
+  width: 8px;
+}
+
+.preview-pane::-webkit-scrollbar-track {
+  background: var(--confluence-border-subtle);
+  border-radius: 4px;
+}
+
+.preview-pane::-webkit-scrollbar-thumb {
+  background: var(--confluence-secondary);
+  border-radius: 4px;
+}
+
+.preview-pane::-webkit-scrollbar-thumb:hover {
+  background: var(--confluence-text-subtle);
+}
+
 /* Utility classes following Bootstrap naming */
 .text-confluence-primary { color: var(--confluence-primary) !important; }
 .text-confluence-secondary { color: var(--confluence-secondary) !important; }

@@ -64,11 +64,29 @@ const PreviewWindow = () => {
   }, []);
 
   return (
-    <div className="preview-window">
-      <div className="preview-window-header">
-        <h1>{fileName || 'Markdown Preview'}</h1>
+    <div className="preview-window" style={{
+      height: '100vh', 
+      width: '100vw',
+      display: 'flex', 
+      flexDirection: 'column',
+      padding: '0 20px 20px 0',
+      boxSizing: 'border-box'
+    }}>
+      <div className="preview-window-header" style={{
+        flexShrink: 0, 
+        padding: '1rem', 
+        borderBottom: '1px solid #e5e8ec',
+        marginRight: '-20px'
+      }}>
+        <h1 style={{margin: 0, fontSize: '1.25rem'}}>{fileName || 'Markdown Preview'}</h1>
       </div>
-      <div className="preview-window-content">
+      <div className="preview-window-content" style={{
+        flex: 1, 
+        overflow: 'auto', 
+        padding: '1rem',
+        marginRight: '-20px',
+        paddingRight: '1rem'
+      }}>
         {isLoading ? (
           <div className="loading">Loading file content...</div>
         ) : error ? (

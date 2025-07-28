@@ -224,13 +224,13 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
               value={content}
               onChange={(e) => onChange(e.target.value)}
               placeholder="Start writing your markdown here..."
-              style={{fontFamily: 'monospace', resize: 'none'}}
+              style={{fontFamily: 'monospace', resize: 'none', overflowY: 'auto'}}
             />
           </div>
         )}
 
         {activeTab === 'preview' && (
-          <div className="preview-pane bg-light border rounded p-3 flex-grow-1" style={{overflow: 'auto'}}>
+          <div className="preview-pane bg-light border rounded p-3 flex-grow-1" style={{overflow: 'auto', maxHeight: '100%'}}>
             <div className="preview-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -268,10 +268,10 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
                 value={content}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="Start writing your markdown here..."
-                style={{fontFamily: 'monospace', resize: 'none'}}
+                style={{fontFamily: 'monospace', resize: 'none', overflowY: 'auto'}}
               />
             </div>
-            <div className="preview-pane bg-light border rounded p-3 h-100" style={{width: '50%', overflow: 'auto'}}>
+            <div className="preview-pane bg-light border rounded p-3 h-100" style={{width: '50%', overflow: 'auto', maxHeight: '100%'}}>
               <div className="preview-content">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}

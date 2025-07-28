@@ -113,16 +113,8 @@ function patchEmitter(emitter) {
 const eventEmitter = new EventEmitter();
 patchEmitter(eventEmitter);
 
-// lets cache
-const cache = require('./services/caching')(
-  'memory',
-  { 'express-app': app },
-  eventEmitter,
-);
-cache.put('currentdate', new Date());
-
 const log = require('./services/logging')('', { 'express-app': app }, eventEmitter);
-cache.get('currentdate').then((value) => log.log(value));
+log.log("Hello world");
 
 // Apply API call logging to all API routes
 app.use('/api', logApiCall);
@@ -1060,29 +1052,76 @@ function getSharedStyles() {
 
     .app {
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header styles */
+    .app-header {
+      background: var(--confluence-bg-card);
+      border-bottom: 2px solid var(--confluence-border);
+      box-shadow: 0 2px 8px rgba(0, 82, 204, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header .navbar-brand {
+      color: var(--confluence-text) !important;
+      font-size: 1.25rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .app-header .navbar-brand:hover {
+      color: var(--confluence-text) !important;
+    }
+
+    /* Main layout */
+    .app-main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
     }
 
     .sidebar {
-      width: 240px;
       background: var(--confluence-bg-card);
       border-right: 2px solid var(--confluence-border);
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
+      display: flex;
+      position: relative;
+      min-width: 250px;
+      max-width: 600px;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar-content {
+      flex: 1;
       overflow-y: auto;
-      box-shadow: 2px 0 8px rgba(0, 82, 204, 0.06);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Editor section */
+    .editor-section {
+      flex: 1;
+      background: var(--confluence-bg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
     }
 
     .sidebar-header {
-      padding: 1.5rem 1rem;
-      border-bottom: 2px solid var(--confluence-border);
+      padding: 1rem;
+      border-bottom: 1px solid var(--confluence-border);
       background: var(--confluence-bg-card);
     }
 
-    .sidebar-header h1 {
+    .sidebar-header h2 {
       color: var(--confluence-text);
-      font-size: 1.25rem;
+      font-size: 1rem;
       font-weight: 600;
       margin: 0;
     }
@@ -1129,13 +1168,6 @@ function getSharedStyles() {
       border-left-color: var(--confluence-primary);
     }
 
-    .main-content {
-      margin-left: 240px;
-      flex: 1;
-      padding: 2rem;
-      background: var(--confluence-bg);
-      min-height: 100vh;
-    }
 
     .content-header {
       margin-bottom: 2rem;
@@ -1421,15 +1453,37 @@ function getSharedStyles() {
       color: #5e6c84;
     }
 
+    /* Footer */
+    .app-footer {
+      background: var(--confluence-bg-card);
+      border-top: 1px solid var(--confluence-border);
+      padding: 0.75rem 1.5rem;
+      text-align: center;
+      color: var(--confluence-text-subtle);
+      font-size: 0.75rem;
+    }
+
+    /* Sidebar toggle functionality */
+    .sidebar-toggle {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
+      .app-header {
+        padding: 0.5rem 1rem;
       }
       
-      .main-content {
-        margin-left: 0;
-        padding: 1rem;
+      .app-header h1 {
+        font-size: 1rem;
+      }
+      
+      .sidebar {
+        min-width: 200px;
+      }
+      
+      .editor-section {
+        padding: 0.75rem;
       }
       
       .dashboard-stats {
@@ -1448,35 +1502,101 @@ function getSharedStyles() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>`;
 }
 
-function getNavigation(activeSection) {
+function getHeader() {
   return `
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h1><i class="bi bi-building me-2"></i>Architecture Artifacts</h1>
-      </div>
-      <nav class="sidebar-nav">
-        <div class="nav-section">
-          <div class="nav-section-title">Overview</div>
-          <a href="/" class="nav-item ${activeSection === 'overview' ? 'active' : ''}">
-            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-          </a>
-        </div>
-        
-        <div class="nav-section">
-          <div class="nav-section-title">Settings</div>
-          <a href="/settings" class="nav-item ${activeSection === 'settings' ? 'active' : ''}">
-            <i class="bi bi-git me-2"></i>Git Repository
-          </a>
-        </div>
-        
-        <div class="nav-section">
-          <div class="nav-section-title">Monitoring</div>
-          <a href="/monitoring/api" class="nav-item ${activeSection === 'monitoring' ? 'active' : ''}">
-            <i class="bi bi-graph-up me-2"></i>API Monitor
-          </a>
+    <header class="app-header">
+      <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+          <div class="d-flex align-items-center w-100">
+            <button
+              class="btn btn-secondary btn-sm sidebar-toggle me-3"
+              onclick="toggleSidebar()"
+              title="Toggle sidebar"
+            >
+              <i class="bi bi-list" id="sidebar-toggle-icon"></i>
+            </button>
+            
+            <a class="navbar-brand fw-medium me-3" href="/">Architecture Artifacts Server</a>
+            
+            <div class="ms-auto">
+              <span class="badge bg-success">Server Running</span>
+            </div>
+          </div>
         </div>
       </nav>
-    </aside>
+    </header>
+  `;
+}
+
+function getNavigation(activeSection) {
+  return `
+    <main class="app-main">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+          <div class="sidebar-header">
+            <h2><i class="bi bi-building me-2"></i>Navigation</h2>
+          </div>
+          <nav class="sidebar-nav">
+            <div class="nav-section">
+              <div class="nav-section-title">Overview</div>
+              <a href="/" class="nav-item ${activeSection === 'overview' ? 'active' : ''}">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+              </a>
+            </div>
+            
+            <div class="nav-section">
+              <div class="nav-section-title">Settings</div>
+              <a href="/settings" class="nav-item ${activeSection === 'settings' ? 'active' : ''}">
+                <i class="bi bi-git me-2"></i>Git Repository
+              </a>
+            </div>
+            
+            <div class="nav-section">
+              <div class="nav-section-title">Monitoring</div>
+              <a href="/monitoring/api" class="nav-item ${activeSection === 'monitoring' ? 'active' : ''}">
+                <i class="bi bi-graph-up me-2"></i>API Monitor
+              </a>
+            </div>
+          </nav>
+        </div>
+      </aside>
+      <section class="editor-section">
+  `;
+}
+
+function getFooter() {
+  return `
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="container-fluid">
+        <p class="mb-0 text-center small">© 2025 Architecture Artifacts Server - All rights reserved.</p>
+      </div>
+    </footer>
+  `;
+}
+
+function getSidebarToggleScript() {
+  return `
+  <script>
+    let sidebarCollapsed = false;
+    
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const icon = document.getElementById('sidebar-toggle-icon');
+      
+      sidebarCollapsed = !sidebarCollapsed;
+      
+      if (sidebarCollapsed) {
+        sidebar.style.marginLeft = '-250px';
+        icon.className = 'bi bi-list';
+      } else {
+        sidebar.style.marginLeft = '0';
+        icon.className = 'bi bi-x-lg';
+      }
+    }
+  </script>
   `;
 }
 
@@ -1651,54 +1771,54 @@ app.get('/settings', (req, res) => {
 </head>
 <body>
   <div class="app">
+    ${getHeader()}
     ${getNavigation('settings')}
-    <main class="main-content">
-      <div class="content-header">
-        <h1>Settings</h1>
-        <p>Configure your repository and system settings</p>
-      </div>
-      
-      <div class="settings-section">
-        <div class="settings-card">
-          <h2>Git Repository</h2>
-          <p class="settings-description">Manage your Git repository connection and operations</p>
-          
-          <form id="cloneForm" class="settings-form">
-            <h3>Clone Repository</h3>
-            <div class="form-group">
-              <label for="repo-url">Repository URL:</label>
-              <input
-                id="repo-url"
-                type="url"
-                placeholder="https://github.com/username/repository.git"
-                required
-              />
-            </div>
+        <div class="content-header">
+          <h1>Settings</h1>
+          <p>Configure your repository and system settings</p>
+        </div>
+        
+        <div class="settings-section">
+          <div class="settings-card">
+            <h2>Git Repository</h2>
+            <p class="settings-description">Manage your Git repository connection and operations</p>
             
-            <div class="form-group">
-              <label for="branch">Branch:</label>
-              <input
-                id="branch"
-                type="text"
-                value="main"
-                placeholder="main"
-              />
-            </div>
-            
-            <button type="submit" class="btn btn-primary">
-              Clone Repository
-            </button>
-          </form>
+            <form id="cloneForm" class="settings-form">
+              <h3>Clone Repository</h3>
+              <div class="form-group">
+                <label for="repo-url">Repository URL:</label>
+                <input
+                  id="repo-url"
+                  type="url"
+                  placeholder="https://github.com/username/repository.git"
+                  required
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="branch">Branch:</label>
+                <input
+                  id="branch"
+                  type="text"
+                  value="main"
+                  placeholder="main"
+                />
+              </div>
+              
+              <button type="submit" class="btn btn-primary">
+                Clone Repository
+              </button>
+            </form>
 
-          <div class="settings-actions">
-            <h3>Repository Actions</h3>
-            <button id="pullBtn" class="btn btn-secondary">
-              Pull Latest Changes
-            </button>
+            <div class="settings-actions">
+              <h3>Repository Actions</h3>
+              <button id="pullBtn" class="btn btn-secondary">
+                Pull Latest Changes
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+    ${getFooter()}
   </div>
 
   <script>
@@ -1745,6 +1865,7 @@ app.get('/settings', (req, res) => {
       }
     });
   </script>
+  ${getSidebarToggleScript()}
 </body>
 </html>`;
   
@@ -1763,73 +1884,74 @@ app.get('/monitoring/api', (req, res) => {
 </head>
 <body>
   <div class="app">
+    ${getHeader()}
     ${getNavigation('monitoring')}
-    <main class="main-content">
-      <div class="content-header">
-        <h1>API Monitor</h1>
-        <p>Monitor API calls and system performance</p>
-        <div class="header-actions">
-          <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
-          <button class="btn btn-secondary" onclick="testApiCall()">Test API</button>
+        <div class="content-header">
+          <h1>API Monitor</h1>
+          <p>Monitor API calls and system performance</p>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
+            <button class="btn btn-secondary" onclick="testApiCall()">Test API</button>
+          </div>
         </div>
-      </div>
 
-      <div class="dashboard-stats" id="stats">
-        <!-- Stats will be populated by JavaScript -->
-      </div>
+        <div class="dashboard-stats" id="stats">
+          <!-- Stats will be populated by JavaScript -->
+        </div>
 
-      <div class="api-calls-table">
-        <h2>Recent API Calls</h2>
-        <div class="controls">
-          <label>
-            Auto-refresh:
-            <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" checked>
-          </label>
-          <label>
-            Filter by method:
-            <select id="methodFilter" onchange="filterCalls()">
-              <option value="">All Methods</option>
-              <option value="GET">GET</option>
-              <option value="POST">POST</option>
-              <option value="PUT">PUT</option>
-              <option value="DELETE">DELETE</option>
-              <option value="PATCH">PATCH</option>
-            </select>
-          </label>
-          <label>
-            Filter by status:
-            <select id="statusFilter" onchange="filterCalls()">
-              <option value="">All Status</option>
-              <option value="2">2xx Success</option>
-              <option value="3">3xx Redirect</option>
-              <option value="4">4xx Client Error</option>
-              <option value="5">5xx Server Error</option>
-            </select>
-          </label>
+        <div class="api-calls-table">
+          <h2>Recent API Calls</h2>
+          <div class="controls">
+            <label>
+              Auto-refresh:
+              <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" checked>
+            </label>
+            <label>
+              Filter by method:
+              <select id="methodFilter" onchange="filterCalls()">
+                <option value="">All Methods</option>
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+              </select>
+            </label>
+            <label>
+              Filter by status:
+              <select id="statusFilter" onchange="filterCalls()">
+                <option value="">All Status</option>
+                <option value="2">2xx Success</option>
+                <option value="3">3xx Redirect</option>
+                <option value="4">4xx Client Error</option>
+                <option value="5">5xx Server Error</option>
+              </select>
+            </label>
+          </div>
+          <div class="table-container">
+            <table id="apiCallsTable">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Method</th>
+                  <th>URL</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Size</th>
+                  <th>IP</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- API calls will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="table-container">
-          <table id="apiCallsTable">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Method</th>
-                <th>URL</th>
-                <th>Status</th>
-                <th>Duration</th>
-                <th>Size</th>
-                <th>IP</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- API calls will be populated by JavaScript -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
+    ${getFooter()}
   </div>
 
   ${getMonitoringScript()}
+  ${getSidebarToggleScript()}
 </body>
 </html>`;
   
@@ -1852,55 +1974,55 @@ app.get('/', (req, res) => {
 </head>
 <body>
   <div class="app">
+    ${getHeader()}
     ${getNavigation('overview')}
-    <main class="main-content">
-      <div class="content-header">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Overview of your Architecture Artifacts system</p>
-        </div>
-      </div>
-      
-      <div class="dashboard-overview">
-        <div class="overview-section">
-          <h2>Quick Actions</h2>
-          <div class="action-grid">
-            <a href="/settings" class="action-card">
-              <div class="action-icon">⚙️</div>
-              <h3>Settings</h3>
-              <p>Configure Git repository and system settings</p>
-            </a>
-            
-            <a href="/monitoring/api" class="action-card">
-              <div class="action-icon">📊</div>
-              <h3>API Monitor</h3>
-              <p>Monitor API calls and system performance</p>
-            </a>
+        <div class="content-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Overview of your Architecture Artifacts system</p>
           </div>
         </div>
         
-        <div class="overview-section">
-          <h2>System Status</h2>
-          <div class="status-grid">
-            <div class="status-card">
-              <div class="status-indicator green"></div>
-              <div class="status-content">
-                <h3>Server Status</h3>
-                <p>Running normally</p>
-              </div>
+        <div class="dashboard-overview">
+          <div class="overview-section">
+            <h2>Quick Actions</h2>
+            <div class="action-grid">
+              <a href="/settings" class="action-card">
+                <div class="action-icon">⚙️</div>
+                <h3>Settings</h3>
+                <p>Configure Git repository and system settings</p>
+              </a>
+              
+              <a href="/monitoring/api" class="action-card">
+                <div class="action-icon">📊</div>
+                <h3>API Monitor</h3>
+                <p>Monitor API calls and system performance</p>
+              </a>
             </div>
-            
-            <div class="status-card">
-              <div class="status-indicator blue"></div>
-              <div class="status-content">
-                <h3>API Endpoints</h3>
-                <p>All endpoints operational</p>
+          </div>
+          
+          <div class="overview-section">
+            <h2>System Status</h2>
+            <div class="status-grid">
+              <div class="status-card">
+                <div class="status-indicator green"></div>
+                <div class="status-content">
+                  <h3>Server Status</h3>
+                  <p>Running normally</p>
+                </div>
+              </div>
+              
+              <div class="status-card">
+                <div class="status-indicator blue"></div>
+                <div class="status-content">
+                  <h3>API Endpoints</h3>
+                  <p>All endpoints operational</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </main>
+    ${getFooter()}
   </div>
 
   <style>
@@ -2011,6 +2133,7 @@ app.get('/', (req, res) => {
       margin: 0;
     }
   </style>
+  ${getSidebarToggleScript()}
 </body>
 </html>`;
     
