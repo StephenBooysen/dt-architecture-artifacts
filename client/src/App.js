@@ -70,9 +70,6 @@ function AppContent() {
   const [isResizing, setIsResizing] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
-  const [defaultEditorMode, setDefaultEditorMode] = useState(() => {
-    return localStorage.getItem('editorDefaultMode') || 'edit';
-  });
   const [templates, setTemplates] = useState([]);
   const [isTemplatesLoading, setIsTemplatesLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -388,10 +385,6 @@ function AppContent() {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  const handleEditorModeChange = useCallback((mode) => {
-    setDefaultEditorMode(mode);
-    localStorage.setItem('editorDefaultMode', mode);
-  }, []);
 
   const handleFileUpload = useCallback(async (filePath) => {
     // Refresh file tree after upload
@@ -751,19 +744,6 @@ function AppContent() {
               </div>
 
               <div className="d-flex align-items-center gap-3">
-                <div className="d-flex align-items-center gap-2 editor-mode-toggle">
-                  
-                  <select
-                    id="editor-mode-select"
-                    value={defaultEditorMode}
-                    onChange={(e) => handleEditorModeChange(e.target.value)}
-                    className="form-select form-select-sm"
-                  >
-                    <option value="edit">Edit</option>
-                    <option value="preview">Preview</option>
-                    <option value="split">Split View</option>
-                  </select>
-                </div>
                 
                 {isAuthenticated ? (
                   <>
@@ -857,7 +837,6 @@ function AppContent() {
             fileName={selectedFile}
             isLoading={isFileLoading}
             onRename={handleRenameItem}
-            defaultMode={defaultEditorMode}
             fileData={fileData}
             onSave={handleSave}
             hasChanges={hasChanges}

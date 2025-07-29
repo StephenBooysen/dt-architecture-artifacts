@@ -48,27 +48,13 @@ import { useTheme } from '../contexts/ThemeContext';
  * @param {boolean} props.hasChanges - Whether the file has unsaved changes.
  * @return {JSX.Element} The MarkdownEditor component.
  */
-const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defaultMode = 'edit', fileData, onSave, hasChanges}) => {
+const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileData, onSave, hasChanges}) => {
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState(defaultMode);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
 
   const fileType = fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN;
   const isMarkdown = fileType === FILE_TYPES.MARKDOWN;
-  
-  useEffect(() => {
-    if (fileName) {
-      // Only set activeTab for markdown files, other files will use their specific viewers
-      if (isMarkdown) {
-        setActiveTab(defaultMode);
-      }
-    }
-  }, [fileName, defaultMode, isMarkdown]);
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
 
   const handleFileNameClick = () => {
     if (fileName && onRename) {
@@ -187,21 +173,6 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
         </div>
         <div className="d-flex gap-2 editor-tabs">
           <button
-            className={`btn btn-sm ${activeTab === 'edit' ? 'btn-primary' : 'btn-outline-secondary'} editor-tab`}
-            onClick={() => handleTabChange('edit')}>
-            Edit
-          </button>
-          <button
-            className={`btn btn-sm ${activeTab === 'preview' ? 'btn-primary' : 'btn-outline-secondary'} editor-tab`}
-            onClick={() => handleTabChange('preview')}>
-            Preview
-          </button>
-          <button
-            className={`btn btn-sm ${activeTab === 'split' ? 'btn-primary' : 'btn-outline-secondary'} editor-tab`}
-            onClick={() => handleTabChange('split')}>
-            Split View
-          </button>
-          <button
             className="btn btn-outline-secondary btn-sm editor-tab preview-window-btn"
             onClick={handleOpenPreviewWindow}
             disabled={!fileName}
@@ -222,92 +193,16 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
       </div>
 
       <div className="editor-content flex-grow-1 d-flex flex-column">
-        {activeTab === 'edit' && (
-          <div className="editor-pane flex-grow-1">
-            <MDEditor
-              value={content}
-              onChange={(val) => onChange(val || '')}
-              preview="edit"
-              hideToolbar={false}
-              data-color-mode={isDark ? 'dark' : 'light'}
-              height="100%"
-            />
-          </div>
-        )}
-
-        {activeTab === 'preview' && (
-          <div className="preview-pane border rounded p-3 flex-grow-1" style={{overflow: 'auto', maxHeight: '100%'}}>
-            <div className="preview-content">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code({node, inline, className, children, ...props}) {
-                    const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={isDark ? darcula : tomorrow}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  },
-                }}
-              >
-                {content}
-              </ReactMarkdown>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'split' && (
-          <div className="d-flex gap-3 flex-grow-1">
-            <div className="editor-pane" style={{width: '50%'}}>
-              <MDEditor
-                value={content}
-                onChange={(val) => onChange(val || '')}
-                preview="edit"
-                hideToolbar={false}
-                data-color-mode={isDark ? 'dark' : 'light'}
-                height="100%"
-              />
-            </div>
-            <div className="preview-pane border rounded p-3 h-100" style={{width: '50%', overflow: 'auto', maxHeight: '100%'}}>
-              <div className="preview-content">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    code({node, inline, className, children, ...props}) {
-                      const match = /language-(\w+)/.exec(className || '');
-                      return !inline && match ? (
-                        <SyntaxHighlighter
-                          style={isDark ? darcula : tomorrow}
-                          language={match[1]}
-                          PreTag="div"
-                          {...props}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
-                      ) : (
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      );
-                    },
-                  }}
-                >
-                  {content}
-                </ReactMarkdown>
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="editor-pane flex-grow-1">
+          <MDEditor
+            value={content}
+            onChange={(val) => onChange(val || '')}
+            preview="edit"
+            hideToolbar={false}
+            data-color-mode={isDark ? 'dark' : 'light'}
+            height="100%"
+          />
+        </div>
       </div>
 
       {showRenameDialog && (
