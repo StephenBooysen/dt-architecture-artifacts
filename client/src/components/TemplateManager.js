@@ -227,7 +227,7 @@ const TemplateManager = ({
       {/* Create Template Modal */}
       {showCreateModal && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Create New Template</h5>
@@ -290,7 +290,7 @@ const TemplateManager = ({
       {/* Edit Template Modal */}
       {showEditModal && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Edit Template</h5>
