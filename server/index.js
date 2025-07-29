@@ -95,7 +95,29 @@ function logApiCall(req, res, next) {
   next();
 }
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://cdn.jsdelivr.net"
+      ],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  }
+}));
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
@@ -1146,7 +1168,7 @@ function getMonitoringScript() {
 }
 
 // Settings page with Git integration
-app.get('/settings', (req, res) => {
+app.get('/settings', requireServerAuth, (req, res) => {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1260,7 +1282,7 @@ app.get('/settings', (req, res) => {
 });
 
 // API monitoring page
-app.get('/monitoring/api', (req, res) => {
+app.get('/monitoring/api', requireServerAuth, (req, res) => {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1346,18 +1368,196 @@ app.get('/monitoring/api', (req, res) => {
   res.send(html);
 });
 
-// Backend index page with navigation overview
-app.get('/', (req, res) => {
-  // Check if this is for the backend (no client build available or not in production)
-  const isBackendRequest = process.env.NODE_ENV !== 'production' || !req.get('accept')?.includes('text/html');
+// Authentication middleware for server pages
+function requireServerAuth(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  // Check if it's the landing or login page - allow those
+  if (req.path === '/server-landing' || req.path === '/server-login') {
+    return next();
+  }
+  res.redirect('/server-landing');
+}
+
+// Landing page with 5 second delay
+app.get('/server-landing', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/server-dashboard');
+  }
   
-  if (isBackendRequest) {
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Architecture Artifacts</title>
+  <title>Architecture Artifacts Server</title>
+  ${getSharedStyles()}
+</head>
+<body>
+  <div class="app">
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: var(--confluence-bg);">
+      <div class="text-center" style="max-width: 400px; padding: 2rem;">
+        <div class="mb-4">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-4">
+            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
+            <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
+          </svg>
+        </div>
+        <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
+        <p class="text-muted">Server administration and monitoring interface</p>
+        <div class="mt-4">
+          <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(function() {
+      window.location.href = '/server-login';
+    }, 5000);
+  </script>
+  ${getThemeToggleScript()}
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
+// Server login page
+app.get('/server-login', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/server-dashboard');
+  }
+  
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Login - Architecture Artifacts</title>
+  ${getSharedStyles()}
+</head>
+<body>
+  <div class="app">
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: var(--confluence-bg);">
+      <div class="text-center" style="max-width: 400px; padding: 2rem;">
+        <div class="mb-4">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
+            <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
+          </svg>
+        </div>
+        <h2 class="text-confluence-text mb-3">Server Administration</h2>
+        <p class="text-muted mb-4">Please sign in to access the server interface.</p>
+        
+        <div class="card" style="text-align: left;">
+          <div class="card-body">
+            <form id="loginForm">
+              <div id="error-message" class="alert alert-danger d-none"></div>
+              
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  name="username"
+                  required
+                  autofocus
+                />
+              </div>
+              
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  required
+                />
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                <span class="login-text">Sign In</span>
+                <span class="login-spinner spinner-border spinner-border-sm d-none" role="status"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const loginBtn = document.getElementById('loginBtn');
+      const loginText = loginBtn.querySelector('.login-text');
+      const loginSpinner = loginBtn.querySelector('.login-spinner');
+      const errorMessage = document.getElementById('error-message');
+      
+      // Show loading state
+      loginBtn.disabled = true;
+      loginText.textContent = 'Signing In...';
+      loginSpinner.classList.remove('d-none');
+      errorMessage.classList.add('d-none');
+      
+      try {
+        const formData = new FormData(e.target);
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: formData.get('username'),
+            password: formData.get('password')
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          window.location.href = '/server-dashboard';
+        } else {
+          errorMessage.textContent = data.error || 'Login failed';
+          errorMessage.classList.remove('d-none');
+        }
+      } catch (error) {
+        errorMessage.textContent = 'Network error. Please try again.';
+        errorMessage.classList.remove('d-none');
+      } finally {
+        // Reset loading state
+        loginBtn.disabled = false;
+        loginText.textContent = 'Sign In';
+        loginSpinner.classList.add('d-none');
+      }
+    });
+  </script>
+  ${getThemeToggleScript()}
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
+// Server dashboard (protected)
+app.get('/server-dashboard', requireServerAuth, (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Dashboard - Architecture Artifacts</title>
   ${getSharedStyles()}
 </head>
 <body>
@@ -1366,8 +1566,13 @@ app.get('/', (req, res) => {
     ${getNavigation('overview')}
         <div class="content-header">
           <div>
-            <h1>Dashboard</h1>
-            <p>Overview of your Architecture Artifacts system</p>
+            <h1>Server Dashboard</h1>
+            <p>Welcome back, <strong>${req.user.username}</strong>! Overview of your Architecture Artifacts system</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-outline-secondary btn-sm" onclick="logout()">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </button>
           </div>
         </div>
         
@@ -1520,18 +1725,49 @@ app.get('/', (req, res) => {
       font-size: 0.875rem;
       margin: 0;
     }
+    
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
   </style>
+  
+  <script>
+    async function logout() {
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {          
+          window.location.href = '/server-landing';
+        } else {
+          alert('Logout failed');
+        }
+      } catch (error) {
+        alert('Network error during logout');
+      }
+    }
+  </script>
   ${getSidebarToggleScript()}
   ${getThemeToggleScript()}
 </body>
 </html>`;
-    
-    res.send(html);
-    return;
+  
+  res.send(html);
+});
+
+// Backend index page with navigation overview
+app.get('/', (req, res) => {
+  // Check if user is authenticated, if so redirect to server dashboard
+  if (req.isAuthenticated()) {
+    return res.redirect('/server-dashboard');
   }
   
-  // If in production and client build exists, serve the React app
-  // This will be handled by the static middleware below
+  // For unauthenticated users, redirect to landing page
+  res.redirect('/server-landing');
 });
 
 // Test React rendering - Simple version
