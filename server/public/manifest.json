@@ -1,0 +1,22 @@
+{
+  "short_name": "Architecture API",
+  "name": "Architecture Artifacts API Server",
+  "description": "Backend API server for Architecture Artifacts Editor with comprehensive file management and Git integration",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["productivity", "developer", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+}

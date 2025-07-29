@@ -82,6 +82,7 @@ function AppContent() {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showLandingPage, setShowLandingPage] = useState(true);
 
   useEffect(() => {
     // Only load data if user is authenticated
@@ -101,10 +102,21 @@ function AppContent() {
     return () => window.removeEventListener('authRequired', handleAuthRequired);
   }, [isAuthenticated]);
 
-  // Automatically show login modal if user is not authenticated
+  // Show landing page for 5 seconds, then show login modal if not authenticated
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      setShowLoginModal(true);
+    if (!loading) {
+      if (isAuthenticated) {
+        // If user is authenticated, hide landing page immediately
+        setShowLandingPage(false);
+      } else {
+        // If not authenticated, show landing page for 5 seconds
+        const timer = setTimeout(() => {
+          setShowLandingPage(false);
+          setShowLoginModal(true);
+        }, 5000);
+
+        return () => clearTimeout(timer);
+      }
     }
   }, [loading, isAuthenticated]);
 
@@ -461,12 +473,19 @@ function AppContent() {
     
     if (query.trim().length > 0) {
       try {
-        const fileSuggestions = await searchFiles(query);
-        setSearchSuggestions(fileSuggestions.slice(0, 5)); // Limit to 5 suggestions
+        // Search both files and content simultaneously
+        const [fileSuggestions, contentResults] = await Promise.all([
+          searchFiles(query),
+          searchContent(query)
+        ]);
+        
+        setSearchSuggestions(fileSuggestions.slice(0, 5)); // Limit to 5 file suggestions
+        setSearchResults(contentResults.slice(0, 10)); // Limit to 10 content results
         setShowSearchResults(true);
       } catch (error) {
-        console.error('Error fetching file suggestions:', error);
+        console.error('Error fetching search results:', error);
         setSearchSuggestions([]);
+        setSearchResults([]);
       }
     } else {
       setSearchSuggestions([]);
@@ -479,11 +498,17 @@ function AppContent() {
     if (searchQuery.trim().length === 0) return;
     
     try {
-      const contentResults = await searchContent(searchQuery);
-      setSearchResults(contentResults);
+      // Get more comprehensive results when explicitly searching
+      const [fileSuggestions, contentResults] = await Promise.all([
+        searchFiles(searchQuery),
+        searchContent(searchQuery)
+      ]);
+      
+      setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
+      setSearchResults(contentResults.slice(0, 20)); // More content results on submit
       setShowSearchResults(true);
     } catch (error) {
-      console.error('Error searching content:', error);
+      console.error('Error searching:', error);
       toast.error('Search failed');
     }
   }, [searchQuery]);
@@ -574,6 +599,28 @@ function AppContent() {
 
   // Show authentication screen if not authenticated
   if (!isAuthenticated) {
+    // Show landing page for 5 seconds before showing auth options
+    if (showLandingPage) {
+      return (
+        <div className="app">
+          <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
+            <div className="text-center" style={{maxWidth: '400px', padding: '2rem'}}>
+              <div className="mb-4">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
+                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
+                  <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
+                  <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
+                </svg>
+              </div>
+              <h1 className="text-confluence-text mb-3">Architecture Artifacts</h1>
+              <p className="text-muted">Modern documentation workspace for architecture teams</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show authentication options after landing page
     return (
       <div className="app">
         <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
@@ -743,16 +790,10 @@ function AppContent() {
                       </div>
                     </div>
                     <button
-                      className="btn btn-outline-secondary btn-sm me-2"
+                      className="btn btn-outline-secondary btn-sm"
                       onClick={logout}
                     >
                       Logout
-                    </button>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => setShowPublishModal(true)}
-                      disabled={!hasChanges || isLoading}>
-                      Publish
                     </button>
                   </>
                 ) : (
@@ -793,6 +834,8 @@ function AppContent() {
               onFileUpload={handleFileUpload}
               expandedFolders={expandedFolders}
               onFolderToggle={handleFolderToggle}
+              onPublish={() => setShowPublishModal(true)}
+              hasChanges={hasChanges}
             />
             <TemplateManager
               templates={templates}

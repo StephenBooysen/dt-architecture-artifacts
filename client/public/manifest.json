@@ -1,0 +1,22 @@
+{
+  "short_name": "Architecture Editor",
+  "name": "Architecture Artifacts Editor",
+  "description": "A modern markdown editor with glassmorphism theme built for managing architecture documentation",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["productivity", "developer", "documentation"],
+  "lang": "en",
+  "dir": "ltr"
+}
