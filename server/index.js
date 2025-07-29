@@ -872,7 +872,7 @@ function getNavigation(activeSection) {
                 <i class="bi bi-list-columns-reverse me-2"></i>Logging
               </a>
               <a href="/services/measuring" class="nav-item">
-                <i class="bi bi-rules me-2"></i>Measuring
+                <i class="bi bi-speedometer2 me-2"></i>Measuring
               </a>
               <a href="/services/notifying" class="nav-item">
                 <i class="bi bi-envelope-check me-2"></i>Notifying
@@ -1949,6 +1949,19 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
               </div>
             </div>
           </div>
+          
+          <div class="overview-section">
+            <h2>Services</h2>
+            <div class="status-grid">
+              <div class="status-card clickable-card" onclick="navigateToLoggingService()">
+                <div class="status-dot status-offline" id="loggingServiceDot"></div>
+                <div class="status-content">
+                  <h3>Logging Service</h3>
+                  <p id="loggingServiceStatus">Checking status...</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
     ${getFooter()}
   </div>
@@ -2048,6 +2061,42 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       background: #0052cc;
     }
     
+    .status-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    
+    .status-online {
+      background-color: #22c55e;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
+    }
+    
+    .status-offline {
+      background-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    
+    .clickable-card {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .clickable-card:hover {
+      background: #e4edfc;
+      border-color: #0052cc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
     .status-content h3 {
       color: #172b4d;
       font-size: 1rem;
@@ -2085,6 +2134,39 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
         alert('Network error during logout');
       }
     }
+    
+    // Navigate to logging service page
+    function navigateToLoggingService() {
+      window.location.href = '/services/logging';
+    }
+    
+    // Check logging service status
+    async function checkLoggingServiceStatus() {
+      try {
+        const response = await fetch('/api/logging/status');
+        const statusDot = document.getElementById('loggingServiceDot');
+        const statusText = document.getElementById('loggingServiceStatus');
+        
+        if (response.ok) {
+          statusDot.className = 'status-dot status-online';
+          statusText.textContent = 'Service Online';
+        } else {
+          throw new Error('Service unavailable');
+        }
+      } catch (error) {
+        const statusDot = document.getElementById('loggingServiceDot');
+        const statusText = document.getElementById('loggingServiceStatus');
+        statusDot.className = 'status-dot status-offline';
+        statusText.textContent = 'Service Offline';
+      }
+    }
+    
+    // Initialize services status check on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      checkLoggingServiceStatus();
+      // Check status periodically
+      setInterval(checkLoggingServiceStatus, 30000); // Check every 30 seconds
+    });
   </script>
   ${getSidebarToggleScript()}
   ${getThemeToggleScript()}
