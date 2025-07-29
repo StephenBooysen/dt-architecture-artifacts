@@ -28,9 +28,9 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const EventEmitter = require('events');
 const session = require('express-session');
-const passport = require('./auth/passport');
-const userStorage = require('./auth/userStorage');
-const { renderComponent } = require('./utils/reactRenderer');
+const passport = require('./src/auth/passport');
+const userStorage = require('./src/auth/userStorage');
+const { renderComponent } = require('./src/utils/reactRenderer');
 require('dotenv').config();
 
 const app = express();
@@ -139,7 +139,7 @@ function patchEmitter(emitter) {
 const eventEmitter = new EventEmitter();
 patchEmitter(eventEmitter);
 
-const log = require('./services/logging')('', { 'express-app': app }, eventEmitter);
+const log = require('./src/services/logging')('', { 'express-app': app }, eventEmitter);
 log.log("Hello world");
 
 // Apply API call logging to all API routes
@@ -922,7 +922,8 @@ app.get('/api/search/content', async (req, res) => {
 // Get all templates
 app.get('/api/templates', async (req, res) => {
   try {
-    const templatesDir = path.join(__dirname, 'templates');
+    const templatesDir = path.resolve('./content-templates');
+    console.log(templatesDir);
     
     // Create templates directory if it doesn't exist
     try {
@@ -953,7 +954,7 @@ app.get('/api/templates', async (req, res) => {
 app.get('/api/templates/:templateName', async (req, res) => {
   try {
     const templateName = req.params.templateName;
-    const templatesDir = path.join(__dirname, 'templates');
+    const templatesDir = path.resolve('./content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
@@ -974,7 +975,7 @@ app.post('/api/templates', async (req, res) => {
       return res.status(400).json({error: 'Template name is required'});
     }
     
-    const templatesDir = path.join(__dirname, 'templates');
+    const templatesDir = path.resolve('./content-templates');
     
     // Create templates directory if it doesn't exist
     try {
@@ -1015,7 +1016,7 @@ app.put('/api/templates/:templateName', async (req, res) => {
     const templateName = req.params.templateName;
     const { name, content, description } = req.body;
     
-    const templatesDir = path.join(__dirname, 'templates');
+    const templatesDir = path.resolve('./content-templates');
     const oldTemplateFile = `${templateName.replace('.md', '')}.json`;
     const oldFilePath = path.join(templatesDir, oldTemplateFile);
     
@@ -1061,7 +1062,7 @@ app.put('/api/templates/:templateName', async (req, res) => {
 app.delete('/api/templates/:templateName', async (req, res) => {
   try {
     const templateName = req.params.templateName;
-    const templatesDir = path.join(__dirname, 'templates');
+    const templatesDir = path.resolve('./content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
