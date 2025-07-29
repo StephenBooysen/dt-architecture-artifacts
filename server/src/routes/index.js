@@ -651,7 +651,6 @@ router.post('/pull', async (req, res) => {
 
 // Search files by name
 router.get('/search/files', async (req, res) => {
-  console.log(`Search request received: ${JSON.stringify(req.query)}`);
   try {
     const query = req.query.q;
     if (!query) {
@@ -689,7 +688,6 @@ router.get('/search/files', async (req, res) => {
     };
 
     await searchInDirectory(contentDir);
-    console.log(`Search results: ${JSON.stringify(searchResults)}`);
     
     res.json(searchResults.slice(0, 10)); // Limit results
   } catch (error) {

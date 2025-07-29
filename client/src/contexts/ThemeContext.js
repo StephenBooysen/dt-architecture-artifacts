@@ -12,17 +12,13 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    // Check localStorage first, then system preference, fallback to light
+    // Check localStorage first, then fallback to light
     const savedTheme = localStorage.getItem('architecture-artifacts-theme');
     if (savedTheme) {
       return savedTheme;
     }
     
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
+    // Default to light theme regardless of system preference
     return 'light';
   });
 
