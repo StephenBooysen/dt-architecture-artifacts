@@ -844,31 +844,31 @@ function getNavigation(activeSection) {
             <div class="nav-section">
               <div class="nav-section-title">Services</div>
               <a href="/services/caching" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Caching
+                <i class="bi bi-database-check me-2"></i>Caching
               </a>
               <a href="/services/logging" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Logging
+                <i class="bi bi-list-columns-reverse me-2"></i>Logging
               </a>
               <a href="/services/measuring" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Measuring
+                <i class="bi bi-rules me-2"></i>Measuring
               </a>
               <a href="/services/notifying" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Notifying
+                <i class="bi bi-envelope-check me-2"></i>Notifying
               </a>
               <a href="/services/queueing" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Queueing
+                <i class="bi bi-stack me-2"></i>Queueing
               </a>
               <a href="/services/scheduling" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Scheduling
+                <i class="bi bi-clock-history me-2"></i>Scheduling
               </a>
               <a href="/services/searching" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Searching
+                <i class="bi bi-search me-2"></i>Searching
               </a>
               <a href="/services/workflow" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Workflow
+                <i class="bi bi-bounding-box me-2"></i>Workflow
               </a>
               <a href="/services/working" class="nav-item">
-                <i class="bi bi-columns-gap me-2"></i>Working
+                <i class="bi bi-gear-wide me-2"></i>Working
               </a>
             </div>
 
