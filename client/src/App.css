@@ -61,6 +61,49 @@
   font-size: 0.875rem;
 }
 
+/* Dark theme button overrides */
+[data-theme="dark"] .btn-primary {
+  --bs-btn-bg: var(--confluence-bg-card);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .btn-secondary {
+  --bs-btn-bg: var(--confluence-bg-card);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .btn-outline-secondary {
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
@@ -562,26 +605,61 @@ textarea.form-control {
   font-size: 0.875rem;
 }
 
-/* Toast overrides */
+/* Toast overrides with softer Bootstrap 5 colors */
 .Toastify__toast {
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--confluence-border);
 }
 
 .Toastify__toast--success {
-  background: var(--confluence-success);
+  background: #d1e7dd;
+  color: #0f5132;
+  border-color: #badbcc;
 }
 
 .Toastify__toast--error {
-  background: var(--confluence-danger);
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c2c7;
 }
 
 .Toastify__toast--warning {
-  background: var(--confluence-warning);
+  background: #fff3cd;
+  color: #664d03;
+  border-color: #ffecb5;
 }
 
 .Toastify__toast--info {
-  background: var(--confluence-info);
+  background: #cff4fc;
+  color: #055160;
+  border-color: #b6effb;
+}
+
+/* Dark theme toast overrides */
+[data-theme="dark"] .Toastify__toast--success {
+  background: #0f5132;
+  color: #d1e7dd;
+  border-color: #2d5a41;
+}
+
+[data-theme="dark"] .Toastify__toast--error {
+  background: #721c24;
+  color: #f8d7da;
+  border-color: #a52834;
+}
+
+[data-theme="dark"] .Toastify__toast--warning {
+  background: #664d03;
+  color: #fff3cd;
+  border-color: #997404;
+}
+
+[data-theme="dark"] .Toastify__toast--info {
+  background: #055160;
+  color: #cff4fc;
+  border-color: #0a6e7f;
 }
 
 /* Responsive styles */
@@ -613,6 +691,16 @@ textarea.form-control {
 }
 
 /* Search functionality */
+.search-dropdown {
+  background-color: var(--confluence-bg-card);
+  border-color: var(--confluence-border) !important;
+}
+
+.search-section-header {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text-subtle);
+}
+
 .search-suggestion:hover,
 .search-result:hover {
   background-color: var(--confluence-border-subtle);
@@ -620,7 +708,13 @@ textarea.form-control {
 
 .search-suggestion.highlighted,
 .search-result.highlighted {
-  background-color: #e6f3ff;
+  background-color: var(--confluence-primary);
+  color: white;
+}
+
+.search-suggestion,
+.search-result {
+  color: var(--confluence-text);
 }
 
 .cursor-pointer {
@@ -659,6 +753,53 @@ mark {
   background: var(--confluence-text-subtle);
 }
 
+/* Preview pane theme-aware styles */
+.preview-pane {
+  background-color: var(--confluence-bg-card);
+  color: var(--confluence-text);
+  border: 1px solid var(--confluence-border) !important;
+}
+
+.preview-content {
+  color: var(--confluence-text);
+}
+
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+  color: var(--confluence-text);
+}
+
+.preview-content p,
+.preview-content li,
+.preview-content td,
+.preview-content th {
+  color: var(--confluence-text);
+}
+
+.preview-content blockquote {
+  border-left-color: var(--confluence-border);
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text);
+}
+
+.preview-content table {
+  border-color: var(--confluence-border);
+}
+
+.preview-content th,
+.preview-content td {
+  border-color: var(--confluence-border);
+}
+
+.preview-content code {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text);
+}
+
 /* User authentication styles */
 .user-avatar {
   display: flex;
@@ -691,6 +832,85 @@ mark {
 .d-flex.align-items-center.me-3:has(.user-info):hover {
   background: rgba(0, 82, 204, 0.1);
   border-color: rgba(0, 82, 204, 0.2);
+}
+
+/* WYSIWYG Editor (MDEditor) Theme Integration */
+.w-md-editor {
+  background-color: var(--confluence-bg-card) !important;
+  border: 1px solid var(--confluence-border) !important;
+  height: 100% !important;
+}
+
+.editor-pane .w-md-editor {
+  height: 100% !important;
+}
+
+.editor-pane {
+  height: 100%;
+}
+
+.w-md-editor.w-md-editor-dark {
+  background-color: var(--confluence-bg-card) !important;
+  border: 1px solid var(--confluence-border) !important;
+}
+
+.w-md-editor-text-container,
+.w-md-editor-text-container > .w-md-editor-text,
+.w-md-editor-text {
+  background-color: var(--confluence-bg-card) !important;
+  color: var(--confluence-text) !important;
+  border: none !important;
+}
+
+.w-md-editor-bar {
+  background-color: var(--confluence-bg-card) !important;
+  border-bottom: 1px solid var(--confluence-border) !important;
+}
+
+.w-md-editor-bar button {
+  color: var(--confluence-text) !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+.w-md-editor-bar button:hover {
+  background-color: var(--confluence-border-subtle) !important;
+  border-color: var(--confluence-border) !important;
+}
+
+.w-md-editor-bar button.active {
+  background-color: var(--confluence-primary) !important;
+  color: white !important;
+}
+
+.w-md-editor-bar .w-md-editor-bar-divider {
+  background-color: var(--confluence-border) !important;
+}
+
+/* Dark theme specific overrides for MDEditor */
+[data-theme="dark"] .w-md-editor {
+  background-color: var(--confluence-bg-card) !important;
+  border-color: var(--confluence-border) !important;
+}
+
+[data-theme="dark"] .w-md-editor-text-container,
+[data-theme="dark"] .w-md-editor-text-container > .w-md-editor-text,
+[data-theme="dark"] .w-md-editor-text {
+  background-color: var(--confluence-bg-card) !important;
+  color: var(--confluence-text) !important;
+}
+
+[data-theme="dark"] .w-md-editor-bar {
+  background-color: var(--confluence-bg-card) !important;
+  border-bottom-color: var(--confluence-border) !important;
+}
+
+[data-theme="dark"] .w-md-editor-bar button {
+  color: var(--confluence-text) !important;
+}
+
+[data-theme="dark"] .w-md-editor-bar button:hover {
+  background-color: var(--confluence-border-subtle) !important;
 }
 
 /* Utility classes following Bootstrap naming */

@@ -23,12 +23,16 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
-import {tomorrow} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {tomorrow, darcula} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import MDEditor from '@uiw/react-md-editor';
+import '@uiw/react-md-editor/markdown-editor.css';
+import '@uiw/react-markdown-preview/markdown.css';
 import PDFViewer from './PDFViewer';
 import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import FileDownloader from './FileDownloader';
 import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
+import { useTheme } from '../contexts/ThemeContext';
 
 /**
  * MarkdownEditor component for editing and previewing different file types.
@@ -45,6 +49,7 @@ import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
  * @return {JSX.Element} The MarkdownEditor component.
  */
 const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defaultMode = 'edit', fileData, onSave, hasChanges}) => {
+  const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState(defaultMode);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -219,18 +224,19 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
       <div className="editor-content flex-grow-1 d-flex flex-column">
         {activeTab === 'edit' && (
           <div className="editor-pane flex-grow-1">
-            <textarea
-              className="form-control editor-textarea h-100"
+            <MDEditor
               value={content}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder="Start writing your markdown here..."
-              style={{fontFamily: 'monospace', resize: 'none', overflowY: 'auto'}}
+              onChange={(val) => onChange(val || '')}
+              preview="edit"
+              hideToolbar={false}
+              data-color-mode={isDark ? 'dark' : 'light'}
+              height="100%"
             />
           </div>
         )}
 
         {activeTab === 'preview' && (
-          <div className="preview-pane bg-light border rounded p-3 flex-grow-1" style={{overflow: 'auto', maxHeight: '100%'}}>
+          <div className="preview-pane border rounded p-3 flex-grow-1" style={{overflow: 'auto', maxHeight: '100%'}}>
             <div className="preview-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -239,7 +245,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
                     const match = /language-(\w+)/.exec(className || '');
                     return !inline && match ? (
                       <SyntaxHighlighter
-                        style={tomorrow}
+                        style={isDark ? darcula : tomorrow}
                         language={match[1]}
                         PreTag="div"
                         {...props}
@@ -263,15 +269,16 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
         {activeTab === 'split' && (
           <div className="d-flex gap-3 flex-grow-1">
             <div className="editor-pane" style={{width: '50%'}}>
-              <textarea
-                className="form-control editor-textarea h-100"
+              <MDEditor
                 value={content}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder="Start writing your markdown here..."
-                style={{fontFamily: 'monospace', resize: 'none', overflowY: 'auto'}}
+                onChange={(val) => onChange(val || '')}
+                preview="edit"
+                hideToolbar={false}
+                data-color-mode={isDark ? 'dark' : 'light'}
+                height="100%"
               />
             </div>
-            <div className="preview-pane bg-light border rounded p-3 h-100" style={{width: '50%', overflow: 'auto', maxHeight: '100%'}}>
+            <div className="preview-pane border rounded p-3 h-100" style={{width: '50%', overflow: 'auto', maxHeight: '100%'}}>
               <div className="preview-content">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -280,7 +287,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
                       const match = /language-(\w+)/.exec(className || '');
                       return !inline && match ? (
                         <SyntaxHighlighter
-                          style={tomorrow}
+                          style={isDark ? darcula : tomorrow}
                           language={match[1]}
                           PreTag="div"
                           {...props}

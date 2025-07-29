@@ -700,7 +700,6 @@ router.get('/search/files', async (req, res) => {
 
 // Search content within files
 router.get('/search/content', async (req, res) => {
-  console.log(`Content search request received: ${JSON.stringify(req.query)}`);
   try {
     const query = req.query.q;
     if (!query) {
@@ -774,7 +773,6 @@ router.get('/search/content', async (req, res) => {
       return bCount - aCount;
     });
     
-    console.log(`Content search results: ${JSON.stringify(searchResults)}`);
     res.json(searchResults.slice(0, 20)); // Limit results
   } catch (error) {
     console.error('Error searching content:', error);

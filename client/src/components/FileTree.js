@@ -51,6 +51,8 @@ const FileTree = ({
   onFileUpload,
   expandedFolders = new Set(),
   onFolderToggle,
+  onPublish,
+  hasChanges,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
@@ -420,9 +422,18 @@ const FileTree = ({
       />
       
       <div className="file-tree-header">
-        <h3 className="h5 mb-3 fw-semibold text-confluence-text">
-          Files {isUploading && <small className="text-primary">Uploading...</small>}
-        </h3>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h3 className="h5 mb-0 fw-semibold text-confluence-text">
+            Files {isUploading && <small className="text-primary">Uploading...</small>}
+          </h3>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={onPublish}
+            disabled={!hasChanges || isLoading}
+            title="Publish changes">
+            <i className="bi bi-cloud-upload me-1"></i>Publish
+          </button>
+        </div>
         <div className="d-flex gap-2 file-tree-toolbar">
           <button
             className="btn btn-secondary btn-sm"

@@ -142,7 +142,7 @@ const eventEmitter = new EventEmitter();
 patchEmitter(eventEmitter);
 
 const log = require('./src/services/logging')('', { 'express-app': app }, eventEmitter);
-log.log("Hello world");
+//log.log("Hello world");
 
 // Apply API call logging to all API routes
 app.use('/api', logApiCall);
@@ -225,6 +225,39 @@ function getSharedStyles() {
       border-radius: 4px;
     }
 
+    /* Dark theme button overrides */
+    [data-theme="dark"] .btn-primary {
+      --bs-btn-bg: var(--confluence-bg-card);
+      --bs-btn-border-color: var(--confluence-border);
+      --bs-btn-color: var(--confluence-text);
+      --bs-btn-hover-bg: var(--confluence-border-subtle);
+      --bs-btn-hover-border-color: var(--confluence-border);
+      --bs-btn-hover-color: var(--confluence-text);
+      --bs-btn-active-bg: var(--confluence-border-subtle);
+      --bs-btn-active-border-color: var(--confluence-border);
+    }
+
+    [data-theme="dark"] .btn-secondary {
+      --bs-btn-bg: var(--confluence-bg-card);
+      --bs-btn-border-color: var(--confluence-border);
+      --bs-btn-color: var(--confluence-text);
+      --bs-btn-hover-bg: var(--confluence-border-subtle);
+      --bs-btn-hover-border-color: var(--confluence-border);
+      --bs-btn-hover-color: var(--confluence-text);
+      --bs-btn-active-bg: var(--confluence-border-subtle);
+      --bs-btn-active-border-color: var(--confluence-border);
+    }
+
+    [data-theme="dark"] .btn-outline-secondary {
+      --bs-btn-color: var(--confluence-text);
+      --bs-btn-border-color: var(--confluence-border);
+      --bs-btn-hover-bg: var(--confluence-border-subtle);
+      --bs-btn-hover-border-color: var(--confluence-border);
+      --bs-btn-hover-color: var(--confluence-text);
+      --bs-btn-active-bg: var(--confluence-border-subtle);
+      --bs-btn-active-border-color: var(--confluence-border);
+    }
+
     .form-control, .form-select {
       border: 2px solid var(--confluence-border);
       border-radius: 4px;
@@ -298,7 +331,16 @@ function getSharedStyles() {
       position: relative;
       min-width: 250px;
       max-width: 600px;
-      transition: margin-left 0.3s ease;
+      width: 250px;
+      transition: width 0.3s ease, min-width 0.3s ease, opacity 0.3s ease;
+      overflow: hidden;
+    }
+    
+    .sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+      opacity: 0;
+      border-right: none;
     }
 
     .sidebar-content {
@@ -700,6 +742,12 @@ function getSharedStyles() {
       
       .sidebar {
         min-width: 200px;
+        width: 200px;
+      }
+      
+      .sidebar.collapsed {
+        min-width: 0;
+        width: 0;
       }
       
       .editor-section {
@@ -746,6 +794,7 @@ function getHeader() {
             </a>
             
             <div class="ms-auto d-flex align-items-center gap-2">
+              <span class="badge bg-success">Server Running</span>
               <button
                 class="btn btn-outline-secondary btn-sm"
                 onclick="toggleTheme()"
@@ -754,7 +803,6 @@ function getHeader() {
               >
                 <i class="bi bi-moon" id="theme-toggle-icon"></i>
               </button>
-              <span class="badge bg-success">Server Running</span>
             </div>
           </div>
         </div>
@@ -836,10 +884,10 @@ function getSidebarToggleScript() {
       console.log('Sidebar collapsed:', sidebarCollapsed); // Debug log
       
       if (sidebarCollapsed) {
-        sidebar.style.marginLeft = '-250px';
+        sidebar.classList.add('collapsed');
         icon.className = 'bi bi-layout-sidebar';
       } else {
-        sidebar.style.marginLeft = '0';
+        sidebar.classList.remove('collapsed');
         icon.className = 'bi bi-aspect-ratio';
       }
     }
