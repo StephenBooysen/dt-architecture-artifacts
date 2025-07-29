@@ -25,10 +25,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
 import TemplateManager from './components/TemplateManager';
+import LoginModal from './components/Auth/LoginModal';
+import RegisterModal from './components/Auth/RegisterModal';
 import {
   fetchFiles,
   fetchFile,
@@ -48,10 +51,11 @@ import {
 import './App.css';
 
 /**
- * Main App component for the Architecture Artifacts Editor.
- * @return {JSX.Element} The App component.
+ * AppContent component that handles the authenticated application logic.
+ * @return {JSX.Element} The AppContent component.
  */
-function App() {
+function AppContent() {
+  const { user, logout, isAuthenticated } = useAuth();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
@@ -74,11 +78,23 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
     loadFiles();
     loadTemplates();
-  }, []);
+    
+    // Listen for auth required events from API
+    const handleAuthRequired = () => {
+      if (!isAuthenticated) {
+        setShowLoginModal(true);
+      }
+    };
+    
+    window.addEventListener('authRequired', handleAuthRequired);
+    return () => window.removeEventListener('authRequired', handleAuthRequired);
+  }, [isAuthenticated]);
 
   const loadFiles = async (force = false) => {
     try {
@@ -174,9 +190,23 @@ function App() {
 
     try {
       setIsLoading(true);
-      await saveFile(selectedFile, fileContent);
-      setHasChanges(false);
-      toast.success('File saved successfully');
+      
+      // Check if this is a template file
+      if (fileData?.isTemplate && selectedFile.startsWith('templates/')) {
+        const templateName = selectedFile.replace('templates/', '');
+        await handleTemplateEdit(templateName, {
+          name: templateName,
+          content: fileContent,
+          description: fileData.description || ''
+        });
+        setHasChanges(false);
+        toast.success('Template saved successfully');
+      } else {
+        // Regular file save
+        await saveFile(selectedFile, fileContent);
+        setHasChanges(false);
+        toast.success('File saved successfully');
+      }
     } catch (error) {
       toast.error('Failed to save file');
     } finally {
@@ -394,9 +424,22 @@ function App() {
     }
   };
 
-  const handleTemplateSelect = async (template) => {
-    // This could be used for future functionality if needed
-    console.log('Template selected:', template);
+  const handleTemplateSelect = async (template, action = 'use') => {
+    if (action === 'edit') {
+      // Edit template in main editor
+      setSelectedFile(`templates/${template.name}`);
+      setFileContent(template.content || '');
+      setFileData({
+        content: template.content || '',
+        path: `templates/${template.name}`,
+        fileType: 'markdown',
+        isTemplate: true
+      });
+      setHasChanges(false);
+    } else {
+      // Use template (existing functionality)
+      console.log('Template selected for use:', template);
+    }
   };
 
   const handleSearchChange = useCallback(async (e) => {
@@ -470,6 +513,21 @@ function App() {
     setExpandedFolders(newExpanded);
   }, [handleFileSelect, expandedFolders]);
 
+  // Auth handlers
+  const handleAuthSuccess = (userData) => {
+    toast.success(`Welcome, ${userData.username}!`);
+  };
+
+  const handleSwitchToRegister = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
+  };
+
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -493,7 +551,7 @@ function App() {
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                 title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
               >
-                <i className={`bi ${sidebarCollapsed ? 'bi-list' : 'bi-x-lg'}`}></i>
+                <i className={`bi ${sidebarCollapsed ? 'bi-layout-sidebar' : 'bi-aspect-ratio'}`}></i>
               </button>
               
               <a className="navbar-brand fw-medium me-3" href="#">Architecture Artifacts Editor</a>
@@ -572,12 +630,38 @@ function App() {
                     <option value="split">Split View</option>
                   </select>
                 </div>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => setShowPublishModal(true)}
-                  disabled={!hasChanges || isLoading}>
-                  Publish
-                </button>
+                {isAuthenticated ? (
+                  <>
+                    <span className="text-muted small me-2">Welcome, {user?.username}</span>
+                    <button
+                      className="btn btn-outline-secondary btn-sm me-2"
+                      onClick={logout}
+                    >
+                      Logout
+                    </button>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setShowPublishModal(true)}
+                      disabled={!hasChanges || isLoading}>
+                      Publish
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="btn btn-outline-primary btn-sm me-2"
+                      onClick={() => setShowLoginModal(true)}
+                    >
+                      Login
+                    </button>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setShowRegisterModal(true)}
+                    >
+                      Register
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -608,6 +692,7 @@ function App() {
               onTemplateEdit={handleTemplateEdit}
               onTemplateDelete={handleTemplateDelete}
               isLoading={isTemplatesLoading}
+              selectedFile={selectedFile}
             />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
@@ -642,6 +727,20 @@ function App() {
         />
       )}
 
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleAuthSuccess}
+        onSwitchToRegister={handleSwitchToRegister}
+      />
+      
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSuccess={handleAuthSuccess}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
+
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -654,6 +753,18 @@ function App() {
         pauseOnHover
       />
     </div>
+  );
+}
+
+/**
+ * Main App component that provides authentication context.
+ * @return {JSX.Element} The App component.
+ */
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

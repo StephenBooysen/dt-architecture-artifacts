@@ -125,7 +125,14 @@ class ArchitectureArtifactsExtension {
       const endpoint = searchType === 'files' ? '/api/search/files' : '/api/search/content';
       const url = `${this.serverUrl}${endpoint}?q=${encodeURIComponent(query)}`;
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: 'include' // Include cookies for authentication
+      });
+      
+      if (response.status === 401) {
+        this.showError('Authentication required. Please log in to your Architecture Artifacts server.');
+        return;
+      }
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -203,7 +210,19 @@ class ArchitectureArtifactsExtension {
     
     try {
       // Fetch full file content
-      const response = await fetch(`${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`);
+      const response = await fetch(`${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`, {
+        credentials: 'include' // Include cookies for authentication
+      });
+      
+      if (response.status === 401) {
+        this.previewContent.innerHTML = `
+          <div style="color: #de350b; padding: 20px; text-align: center;">
+            <p>Authentication required</p>
+            <small>Please log in to your Architecture Artifacts server</small>
+          </div>
+        `;
+        return;
+      }
       
       if (!response.ok) {
         throw new Error(`Failed to fetch file: ${response.status}`);

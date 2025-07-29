@@ -26,7 +26,23 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include cookies for authentication
 });
+
+// Add a response interceptor to handle authentication errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Redirect to login or show auth modal
+      const authEvent = new CustomEvent('authRequired', { 
+        detail: { error: error.response.data } 
+      });
+      window.dispatchEvent(authEvent);
+    }
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Fetches the file tree structure from the API.
@@ -339,6 +355,86 @@ export const searchContent = async (query) => {
     return response.data;
   } catch (error) {
     console.error('Error searching content:', error);
+    throw error;
+  }
+};
+
+/**
+ * Authentication API functions
+ */
+
+/**
+ * Registers a new user.
+ * @param {Object} userData - The user registration data.
+ * @param {string} userData.username - The username.
+ * @param {string} userData.password - The password.
+ * @return {Promise<Object>} The registration response.
+ */
+export const registerUser = async (userData) => {
+  try {
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error registering user:', error);
+    throw error;
+  }
+};
+
+/**
+ * Logs in a user.
+ * @param {Object} credentials - The login credentials.
+ * @param {string} credentials.username - The username.
+ * @param {string} credentials.password - The password.
+ * @return {Promise<Object>} The login response.
+ */
+export const loginUser = async (credentials) => {
+  try {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+  } catch (error) {
+    console.error('Error logging in:', error);
+    throw error;
+  }
+};
+
+/**
+ * Logs out the current user.
+ * @return {Promise<Object>} The logout response.
+ */
+export const logoutUser = async () => {
+  try {
+    const response = await api.post('/auth/logout');
+    return response.data;
+  } catch (error) {
+    console.error('Error logging out:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gets the current user information.
+ * @return {Promise<Object>} The current user data.
+ */
+export const getCurrentUser = async () => {
+  try {
+    const response = await api.get('/auth/me');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gets all users (admin only).
+ * @return {Promise<Array>} Array of users.
+ */
+export const getAllUsers = async () => {
+  try {
+    const response = await api.get('/auth/users');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting users:', error);
     throw error;
   }
 };

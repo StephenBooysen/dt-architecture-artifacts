@@ -27,6 +27,9 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const EventEmitter = require('events');
+const session = require('express-session');
+const passport = require('./auth/passport');
+const userStorage = require('./auth/userStorage');
 const { renderComponent } = require('./utils/reactRenderer');
 require('dotenv').config();
 
@@ -91,8 +94,27 @@ function logApiCall(req, res, next) {
 }
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 /**
  * Patch our emitter to capture all events
@@ -129,6 +151,78 @@ app.use('/api/', limiter);
 
 /** @const {string} Path to the content directory where files are stored */
 const contentDir = path.join(__dirname, '../content');
+
+/**
+ * Authentication middleware to protect routes
+ */
+function requireAuth(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'Authentication required' });
+}
+
+/**
+ * Optional authentication middleware (allows both authenticated and unauthenticated access)
+ */
+function optionalAuth(req, res, next) {
+  next();
+}
+
+// Authentication routes
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+    
+    const user = await userStorage.createUser(username, password);
+    res.json({ message: 'User created successfully', user });
+  } catch (error) {
+    if (error.message === 'User already exists') {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+});
+
+app.post('/api/auth/login', passport.authenticate('local'), (req, res) => {
+  res.json({ message: 'Login successful', user: req.user });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
+    res.json({ message: 'Logout successful' });
+  });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ user: req.user });
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
+app.get('/api/auth/users', requireAuth, (req, res) => {
+  try {
+    const users = userStorage.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
 
 /**
  * Configure multer storage for file uploads.
@@ -273,7 +367,7 @@ async function getDirectoryTree(dirPath, relativePath = '') {
 }
 
 // Create new folder - must come before wildcard routes
-app.post('/api/folders', async (req, res) => {
+app.post('/api/folders', requireAuth, async (req, res) => {
   try {
     const {folderPath} = req.body;
     
@@ -299,7 +393,7 @@ app.post('/api/folders', async (req, res) => {
 });
 
 // Create new file - must come before wildcard routes
-app.post('/api/files', async (req, res) => {
+app.post('/api/files', requireAuth, async (req, res) => {
   try {
     const {filePath, content = ''} = req.body;
     
@@ -494,7 +588,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-app.post('/api/files/*', async (req, res) => {
+app.post('/api/files/*', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const {content} = req.body;
@@ -512,7 +606,7 @@ app.post('/api/files/*', async (req, res) => {
   }
 });
 
-app.delete('/api/files/*', async (req, res) => {
+app.delete('/api/files/*', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const fullPath = path.join(contentDir, filePath);
@@ -591,7 +685,7 @@ app.put('/api/rename/*', async (req, res) => {
   }
 });
 
-app.post('/api/commit', async (req, res) => {
+app.post('/api/commit', requireAuth, async (req, res) => {
   try {
     const {message} = req.body;
     if (!message) {
@@ -1531,7 +1625,7 @@ function getHeader() {
               onclick="toggleSidebar()"
               title="Toggle sidebar"
             >
-              <i class="bi bi-list" id="sidebar-toggle-icon"></i>
+              <i class="bi bi-aspect-ratio" id="sidebar-toggle-icon"></i>
             </button>
             
             <a class="navbar-brand fw-medium me-3" href="/">Architecture Artifacts Server</a>
@@ -1620,10 +1714,10 @@ function getSidebarToggleScript() {
       
       if (sidebarCollapsed) {
         sidebar.style.marginLeft = '-250px';
-        icon.className = 'bi bi-list';
+        icon.className = 'bi bi-layout-sidebar';
       } else {
         sidebar.style.marginLeft = '0';
-        icon.className = 'bi bi-x-lg';
+        icon.className = 'bi bi-aspect-ratio';
       }
     }
     
