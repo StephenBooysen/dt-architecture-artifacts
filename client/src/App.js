@@ -744,17 +744,6 @@ function AppContent() {
               </div>
 
               <div className="d-flex align-items-center gap-3">
-                <nav className="d-flex align-items-center gap-2 me-3">
-                  <a
-                    href="/services/logging"
-                    className="btn btn-sm btn-outline-secondary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <i className="bi bi-journal-text me-1"></i>
-                    Logging Service
-                  </a>
-                </nav>
                 
                 {isAuthenticated ? (
                   <>
