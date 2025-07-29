@@ -840,6 +840,38 @@ function getNavigation(activeSection) {
                 <i class="bi bi-graph-up me-2"></i>API Monitor
               </a>
             </div>
+
+            <div class="nav-section">
+              <div class="nav-section-title">Services</div>
+              <a href="/services/caching" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Caching
+              </a>
+              <a href="/services/logging" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Logging
+              </a>
+              <a href="/services/measuring" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Measuring
+              </a>
+              <a href="/services/notifying" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Notifying
+              </a>
+              <a href="/services/queueing" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Queueing
+              </a>
+              <a href="/services/scheduling" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Scheduling
+              </a>
+              <a href="/services/searching" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Searching
+              </a>
+              <a href="/services/workflow" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Workflow
+              </a>
+              <a href="/services/working" class="nav-item">
+                <i class="bi bi-columns-gap me-2"></i>Working
+              </a>
+            </div>
+
           </nav>
         </div>
       </aside>
