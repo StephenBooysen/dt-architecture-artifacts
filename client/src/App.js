@@ -55,7 +55,7 @@ import './App.css';
  * @return {JSX.Element} The AppContent component.
  */
 function AppContent() {
-  const { user, login, logout, isAuthenticated } = useAuth();
+  const { user, login, logout, isAuthenticated, loading } = useAuth();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
@@ -82,8 +82,11 @@ function AppContent() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
-    loadFiles();
-    loadTemplates();
+    // Only load data if user is authenticated
+    if (isAuthenticated) {
+      loadFiles();
+      loadTemplates();
+    }
     
     // Listen for auth required events from API
     const handleAuthRequired = () => {
@@ -95,6 +98,13 @@ function AppContent() {
     window.addEventListener('authRequired', handleAuthRequired);
     return () => window.removeEventListener('authRequired', handleAuthRequired);
   }, [isAuthenticated]);
+
+  // Automatically show login modal if user is not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      setShowLoginModal(true);
+    }
+  }, [loading, isAuthenticated]);
 
   const loadFiles = async (force = false) => {
     try {
@@ -539,6 +549,75 @@ function AppContent() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <div className="app">
+        <div className="d-flex justify-content-center align-items-center" style={{height: '100vh'}}>
+          <div className="text-center">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3">
+              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
+              <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
+            </svg>
+            <div className="spinner-border text-primary mb-3" role="status"></div>
+            <h5 className="text-confluence-text">Architecture Artifacts Editor</h5>
+            <p className="text-muted">Loading application...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="app">
+        <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
+          <div className="text-center" style={{maxWidth: '400px', padding: '2rem'}}>
+            <div className="mb-4">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3">
+                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
+                <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
+                <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
+              </svg>
+            </div>
+            <h2 className="text-confluence-text mb-3">Welcome to Architecture Artifacts</h2>
+            <p className="text-muted mb-4">Please sign in to access your documentation workspace.</p>
+            <div className="d-flex gap-2 justify-content-center">
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowLoginModal(true)}
+              >
+                Sign In
+              </button>
+              <button
+                className="btn btn-outline-primary"
+                onClick={() => setShowRegisterModal(true)}
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onSuccess={handleAuthSuccess}
+          onSwitchToRegister={handleSwitchToRegister}
+        />
+        
+        <RegisterModal
+          isOpen={showRegisterModal}
+          onClose={() => setShowRegisterModal(false)}
+          onSuccess={handleAuthSuccess}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="app">

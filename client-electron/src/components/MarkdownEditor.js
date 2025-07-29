@@ -172,7 +172,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, defau
       <div className="d-flex justify-content-between align-items-center py-3 px-3 mb-3 editor-header flex-shrink-0">
         <div className="d-flex align-items-center">
           <h2 
-            className="h5 mb-0 text-primary editor-filename" 
+            className="h5 mb-0 text-confluence-text editor-filename" 
             onClick={handleFileNameClick}
             title="Click to rename file"
             style={{cursor: 'pointer', lineHeight: '1.5'}}
