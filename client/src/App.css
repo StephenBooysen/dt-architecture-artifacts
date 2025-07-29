@@ -15,6 +15,23 @@
   --confluence-info: #0052cc;
 }
 
+/* Dark Theme */
+[data-theme="dark"] {
+  --confluence-primary: #4c9aff;
+  --confluence-primary-hover: #2684ff;
+  --confluence-secondary: #8993a4;
+  --confluence-text: #f4f5f7;
+  --confluence-text-subtle: #b3bac5;
+  --confluence-bg: #0d1117;
+  --confluence-bg-card: #161b22;
+  --confluence-border: #30363d;
+  --confluence-border-subtle: #21262d;
+  --confluence-success: #56d364;
+  --confluence-danger: #f85149;
+  --confluence-warning: #e3b341;
+  --confluence-info: #4c9aff;
+}
+
 /* Override Bootstrap variables with Confluence colors */
 .btn-primary {
   --bs-btn-bg: var(--confluence-primary);

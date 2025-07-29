@@ -26,6 +26,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
@@ -56,6 +57,7 @@ import './App.css';
  */
 function AppContent() {
   const { user, login, logout, isAuthenticated, loading } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
@@ -716,6 +718,15 @@ function AppContent() {
                     <option value="split">Split View</option>
                   </select>
                 </div>
+                
+                <button
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={toggleTheme}
+                  title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                >
+                  <i className={`bi ${isDark ? 'bi-sun' : 'bi-moon'}`}></i>
+                </button>
+                
                 {isAuthenticated ? (
                   <>
                     <div className="d-flex align-items-center me-3">
@@ -860,9 +871,11 @@ function AppContent() {
  */
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

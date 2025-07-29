@@ -1096,6 +1096,23 @@ function getSharedStyles() {
       --confluence-info: #0052cc;
     }
 
+    /* Dark Theme */
+    [data-theme="dark"] {
+      --confluence-primary: #4c9aff;
+      --confluence-primary-hover: #2684ff;
+      --confluence-secondary: #8993a4;
+      --confluence-text: #f4f5f7;
+      --confluence-text-subtle: #b3bac5;
+      --confluence-bg: #0d1117;
+      --confluence-bg-card: #161b22;
+      --confluence-border: #30363d;
+      --confluence-border-subtle: #21262d;
+      --confluence-success: #56d364;
+      --confluence-danger: #f85149;
+      --confluence-warning: #e3b341;
+      --confluence-info: #4c9aff;
+    }
+
     /* Bootstrap overrides for Confluence theme */
     .btn-primary {
       --bs-btn-bg: var(--confluence-primary);
@@ -1641,7 +1658,15 @@ function getHeader() {
               Architecture Artifacts Server
             </a>
             
-            <div class="ms-auto">
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                onclick="toggleTheme()"
+                id="theme-toggle-btn"
+                title="Switch theme"
+              >
+                <i class="bi bi-moon" id="theme-toggle-icon"></i>
+              </button>
               <span class="badge bg-success">Server Running</span>
             </div>
           </div>
@@ -1745,6 +1770,51 @@ function getSidebarToggleScript() {
         });
       }
     });
+  </script>
+  `;
+}
+
+function getThemeToggleScript() {
+  return `
+  <script>
+    // Theme management
+    function initTheme() {
+      const savedTheme = localStorage.getItem('architecture-artifacts-theme');
+      const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+      
+      document.documentElement.setAttribute('data-theme', theme);
+      updateThemeIcon(theme);
+    }
+    
+    function toggleTheme() {
+      console.log('Toggle theme clicked'); // Debug log
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('architecture-artifacts-theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+    
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('theme-toggle-icon');
+      if (icon) {
+        if (theme === 'dark') {
+          icon.className = 'bi bi-sun';
+        } else {
+          icon.className = 'bi bi-moon';
+        }
+      }
+    }
+    
+    // Initialize theme on load
+    document.addEventListener('DOMContentLoaded', function() {
+      initTheme();
+    });
+    
+    // Make function available globally
+    window.toggleTheme = toggleTheme;
   </script>
   `;
 }
@@ -2015,6 +2085,7 @@ app.get('/settings', (req, res) => {
     });
   </script>
   ${getSidebarToggleScript()}
+  ${getThemeToggleScript()}
 </body>
 </html>`;
   
@@ -2101,6 +2172,7 @@ app.get('/monitoring/api', (req, res) => {
 
   ${getMonitoringScript()}
   ${getSidebarToggleScript()}
+  ${getThemeToggleScript()}
 </body>
 </html>`;
   
@@ -2283,6 +2355,7 @@ app.get('/', (req, res) => {
     }
   </style>
   ${getSidebarToggleScript()}
+  ${getThemeToggleScript()}
 </body>
 </html>`;
     
