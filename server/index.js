@@ -100,6 +100,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
@@ -1073,6 +1076,7 @@ app.delete('/api/templates/:templateName', async (req, res) => {
 // Helper functions for server pages
 function getSharedStyles() {
   return `
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
@@ -1628,7 +1632,14 @@ function getHeader() {
               <i class="bi bi-aspect-ratio" id="sidebar-toggle-icon"></i>
             </button>
             
-            <a class="navbar-brand fw-medium me-3" href="/">Architecture Artifacts Server</a>
+            <a class="navbar-brand fw-medium me-3 d-flex align-items-center" href="/">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-2">
+                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
+                <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
+              </svg>
+              Architecture Artifacts Server
+            </a>
             
             <div class="ms-auto">
               <span class="badge bg-success">Server Running</span>

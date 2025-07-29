@@ -554,7 +554,14 @@ function AppContent() {
                 <i className={`bi ${sidebarCollapsed ? 'bi-layout-sidebar' : 'bi-aspect-ratio'}`}></i>
               </button>
               
-              <a className="navbar-brand fw-medium me-3" href="#">Architecture Artifacts Editor</a>
+              <a className="navbar-brand fw-medium me-3 d-flex align-items-center" href="#">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="me-2">
+                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
+                  <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
+                  <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
+                </svg>
+                Architecture Artifacts Editor
+              </a>
               
               <div className="flex-grow-1 me-3">
                 <div className="position-relative">
