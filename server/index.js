@@ -1434,26 +1434,27 @@ app.get('/services/logging', requireServerAuth, (req, res) => {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-    .status-dot {
-      width: 16px;
-      height: 16px;
+    .status-indicator {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
       animation: pulse 2s infinite;
-      flex-shrink: 0;
     }
-    .status-online {
-      background-color: #22c55e;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
-    }
-    .status-offline {
-      background-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .recent-logs {
       background: #ffffff;
@@ -1513,8 +1514,9 @@ app.get('/services/logging', requireServerAuth, (req, res) => {
     ${getNavigation('services')}
         <div class="content-header">
           <h1>
-            <div class="status-dot status-offline" id="statusDot"></div>
+            <i class="bi bi-list-columns-reverse"></i>
             Logging Service
+            <div class="status-indicator" id="logging-status"></div>
           </h1>
           <p>Interact with the application logging service</p>
         </div>
@@ -1579,13 +1581,19 @@ app.get('/services/logging', requireServerAuth, (req, res) => {
     async function checkServiceStatus() {
       try {
         const response = await fetch('/api/logging/status');
+        const statusIndicator = document.getElementById('logging-status');
+        
         if (response.ok) {
-          document.getElementById('statusDot').className = 'status-dot status-online';
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Logging service is online';
         } else {
-          throw new Error('Service unavailable');
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Logging service is offline';
         }
       } catch (error) {
-        document.getElementById('statusDot').className = 'status-dot status-offline';
+        const statusIndicator = document.getElementById('logging-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Logging service is offline';
       }
     }
 
@@ -1769,26 +1777,27 @@ app.get('/services/caching', requireServerAuth, (req, res) => {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-    .status-dot {
-      width: 16px;
-      height: 16px;
+    .status-indicator {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
       animation: pulse 2s infinite;
-      flex-shrink: 0;
     }
-    .status-online {
-      background-color: #22c55e;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
-    }
-    .status-offline {
-      background-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .cache-operations {
       display: grid;
@@ -1836,8 +1845,9 @@ app.get('/services/caching', requireServerAuth, (req, res) => {
     ${getNavigation('services')}
         <div class="content-header">
           <h1>
-            <div class="status-dot status-offline" id="statusDot"></div>
+            <i class="bi bi-database-check"></i>
             Caching Service
+            <div class="status-indicator" id="caching-status"></div>
           </h1>
           <p>Interact with the application caching service</p>
         </div>
@@ -1897,13 +1907,19 @@ app.get('/services/caching', requireServerAuth, (req, res) => {
     async function checkServiceStatus() {
       try {
         const response = await fetch('/api/caching/status');
+        const statusIndicator = document.getElementById('caching-status');
+        
         if (response.ok) {
-          document.getElementById('statusDot').className = 'status-dot status-online';
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Caching service is online';
         } else {
-          throw new Error('Service unavailable');
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Caching service is offline';
         }
       } catch (error) {
-        document.getElementById('statusDot').className = 'status-dot status-offline';
+        const statusIndicator = document.getElementById('caching-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Caching service is offline';
       }
     }
 
@@ -2115,26 +2131,27 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-    .status-dot {
-      width: 16px;
-      height: 16px;
+    .status-indicator {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
       animation: pulse 2s infinite;
-      flex-shrink: 0;
     }
-    .status-online {
-      background-color: #22c55e;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
-    }
-    .status-offline {
-      background-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .queue-operations {
       display: grid;
@@ -2206,8 +2223,9 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
     ${getNavigation('services')}
         <div class="content-header">
           <h1>
-            <div class="status-dot status-offline" id="statusDot"></div>
+            <i class="bi bi-stack"></i>
             Queueing Service
+            <div class="status-indicator" id="queueing-status"></div>
           </h1>
           <p>Manage task queues with enqueue and dequeue operations</p>
         </div>
@@ -2287,13 +2305,19 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
     async function checkServiceStatus() {
       try {
         const response = await fetch('/api/queueing/status');
+        const statusIndicator = document.getElementById('queueing-status');
+        
         if (response.ok) {
-          document.getElementById('statusDot').className = 'status-dot status-online';
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Queueing service is online';
         } else {
-          throw new Error('Service unavailable');
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Queueing service is offline';
         }
       } catch (error) {
-        document.getElementById('statusDot').className = 'status-dot status-offline';
+        const statusIndicator = document.getElementById('queueing-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Queueing service is offline';
       }
     }
 
@@ -2521,26 +2545,27 @@ app.get('/services/measuring', requireServerAuth, (req, res) => {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-    .status-dot {
-      width: 16px;
-      height: 16px;
+    .status-indicator {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
       animation: pulse 2s infinite;
-      flex-shrink: 0;
     }
-    .status-online {
-      background-color: #22c55e;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
-    }
-    .status-offline {
-      background-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .date-range-container {
       display: grid;
@@ -2643,8 +2668,9 @@ app.get('/services/measuring', requireServerAuth, (req, res) => {
     ${getNavigation('services')}
         <div class="content-header">
           <h1>
-            <div class="status-dot status-offline" id="statusDot"></div>
+            <i class="bi bi-speedometer2"></i>
             Measuring Service
+            <div class="status-indicator" id="measuring-status"></div>
           </h1>
           <p>Capture metrics and analyze measurements over time</p>
         </div>
@@ -2760,13 +2786,19 @@ app.get('/services/measuring', requireServerAuth, (req, res) => {
     async function checkServiceStatus() {
       try {
         const response = await fetch('/api/measuring/status');
+        const statusIndicator = document.getElementById('measuring-status');
+        
         if (response.ok) {
-          document.getElementById('statusDot').className = 'status-dot status-online';
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Measuring service is online';
         } else {
-          throw new Error('Service unavailable');
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Measuring service is offline';
         }
       } catch (error) {
-        document.getElementById('statusDot').className = 'status-dot status-offline';
+        const statusIndicator = document.getElementById('measuring-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Measuring service is offline';
       }
     }
 
@@ -3091,26 +3123,27 @@ app.get('/services/notifying', requireServerAuth, (req, res) => {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-    .status-dot {
-      width: 16px;
-      height: 16px;
+    .status-indicator {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
       animation: pulse 2s infinite;
-      flex-shrink: 0;
     }
-    .status-online {
-      background-color: #22c55e;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
-    }
-    .status-offline {
-      background-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .subscriber-operations {
       display: grid;
@@ -3246,8 +3279,9 @@ app.get('/services/notifying', requireServerAuth, (req, res) => {
     ${getNavigation('services')}
         <div class="content-header">
           <h1>
-            <div class="status-dot status-offline" id="statusDot"></div>
+            <i class="bi bi-envelope-check"></i>
             Notifying Service
+            <div class="status-indicator" id="notifying-status"></div>
           </h1>
           <p>Manage topics, subscribers, and send notifications</p>
         </div>
@@ -3353,13 +3387,19 @@ app.get('/services/notifying', requireServerAuth, (req, res) => {
     async function checkServiceStatus() {
       try {
         const response = await fetch('/api/notifying/status');
+        const statusIndicator = document.getElementById('notifying-status');
+        
         if (response.ok) {
-          document.getElementById('statusDot').className = 'status-dot status-online';
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Notifying service is online';
         } else {
-          throw new Error('Service unavailable');
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Notifying service is offline';
         }
       } catch (error) {
-        document.getElementById('statusDot').className = 'status-dot status-offline';
+        const statusIndicator = document.getElementById('notifying-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Notifying service is offline';
       }
     }
 
@@ -3718,26 +3758,27 @@ app.get('/services/scheduling', requireServerAuth, (req, res) => {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
-    .status-dot {
-      width: 16px;
-      height: 16px;
+    .status-indicator {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
       animation: pulse 2s infinite;
-      flex-shrink: 0;
     }
-    .status-online {
-      background-color: #22c55e;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
-    }
-    .status-offline {
-      background-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
     }
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .cron-examples {
       background: #f8f9fa;
@@ -3879,8 +3920,9 @@ app.get('/services/scheduling', requireServerAuth, (req, res) => {
     ${getNavigation('services')}
         <div class="content-header">
           <h1>
-            <div class="status-dot status-offline" id="statusDot"></div>
+            <i class="bi bi-clock-history"></i>
             Scheduling Service
+            <div class="status-indicator" id="scheduling-status"></div>
           </h1>
           <p>Create and manage scheduled tasks with cron expressions</p>
         </div>
@@ -3993,13 +4035,19 @@ app.get('/services/scheduling', requireServerAuth, (req, res) => {
     async function checkServiceStatus() {
       try {
         const response = await fetch('/api/scheduling/status');
+        const statusIndicator = document.getElementById('scheduling-status');
+        
         if (response.ok) {
-          document.getElementById('statusDot').className = 'status-dot status-online';
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Scheduling service is online';
         } else {
-          throw new Error('Service unavailable');
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Scheduling service is offline';
         }
       } catch (error) {
-        document.getElementById('statusDot').className = 'status-dot status-offline';
+        const statusIndicator = document.getElementById('scheduling-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Scheduling service is offline';
       }
     }
 
@@ -4205,6 +4253,382 @@ app.get('/services/scheduling', requireServerAuth, (req, res) => {
     });
   </script>
 
+  ${getSidebarToggleScript()}
+  ${getThemeToggleScript()}
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
+// Working Service Page
+app.get('/services/working', requireServerAuth, (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Working Service - Architecture Artifacts</title>
+  ${getSharedStyles()}
+  <style>
+    .working-section {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      margin-bottom: 2rem;
+    }
+    .working-form {
+      padding: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .working-form h2 {
+      color: #172b4d;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #172b4d;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #172b4d;
+      font-size: 14px;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #0052cc;
+      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+    }
+    .content-header h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
+      animation: pulse 2s infinite;
+    }
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    .btn-primary {
+      background: #0052cc;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #0065ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
+    }
+    .btn-danger {
+      background: #de350b;
+      color: #ffffff;
+      margin-left: 1rem;
+    }
+    .btn-danger:hover {
+      background: #ff5630;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(222, 53, 11, 0.3);
+    }
+    .result-display {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f4f5f7;
+      border-radius: 4px;
+      border-left: 4px solid #0052cc;
+      display: none;
+    }
+    .result-display.error {
+      border-left-color: #de350b;
+      background: #ffebe6;
+    }
+    .result-display.success {
+      border-left-color: #36b37e;
+      background: #e3fcef;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .toast.success {
+      border-left: 4px solid #36b37e;
+    }
+    .toast.error {
+      border-left: 4px solid #de350b;
+    }
+    .textarea-control {
+      min-height: 120px;
+      resize: vertical;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    .script-examples {
+      background: #f4f5f7;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: #5e6c84;
+    }
+    .script-examples ul {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  ${getHeader()}
+  ${getNavigation('services')}
+  
+  <div class="content-header">
+    <h1>
+      <i class="bi bi-gear-wide"></i>
+      Working Service
+      <div class="status-indicator" id="working-status"></div>
+    </h1>
+  </div>
+
+  <div class="working-section">
+    <div class="working-form">
+      <h2><i class="bi bi-play-circle me-2"></i>Execute Worker Task</h2>
+      <form id="run-worker-form">
+        <div class="form-group">
+          <label for="script-path">Script Filename</label>
+          <input 
+            type="text" 
+            id="script-path" 
+            name="script-path" 
+            class="form-control" 
+            placeholder="e.g., /path/to/script.js or script.js"
+            required
+          >
+          <div class="script-examples">
+            <strong>Examples:</strong>
+            <ul>
+              <li>absolute path: <code>/home/user/scripts/task.js</code></li>
+              <li>relative path: <code>./scripts/task.js</code></li>
+              <li>filename only: <code>worker-script.js</code></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="worker-data">Data to Pass (JSON format)</label>
+          <textarea 
+            id="worker-data" 
+            name="worker-data" 
+            class="form-control textarea-control" 
+            placeholder='{"key": "value", "numbers": [1, 2, 3], "message": "Hello Worker!"}'
+          ></textarea>
+          <div class="script-examples">
+            <strong>Note:</strong> Data must be valid JSON format. Leave empty if no data is needed.
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-play-fill me-1"></i>Run Worker
+        </button>
+        <button type="button" class="btn btn-danger" onclick="stopWorker()">
+          <i class="bi bi-stop-fill me-1"></i>Stop Worker
+        </button>
+      </form>
+
+      <div id="result-display" class="result-display">
+        <h4>Worker Result:</h4>
+        <pre id="result-content"></pre>
+      </div>
+    </div>
+  </div>
+
+  ${getFooter()}
+
+  <script>
+    let statusCheckInterval;
+
+    // Check service status
+    async function checkWorkingStatus() {
+      try {
+        const response = await fetch('/api/working/status');
+        const statusIndicator = document.getElementById('working-status');
+        
+        if (response.ok) {
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Working service is online';
+        } else {
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Working service is offline';
+        }
+      } catch (error) {
+        const statusIndicator = document.getElementById('working-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Working service is offline';
+      }
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = \`toast \${type}\`;
+      toast.innerHTML = \`
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i class="bi bi-\${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+          <span>\${message}</span>
+        </div>
+      \`;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+
+    // Run worker task
+    document.getElementById('run-worker-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const scriptPath = document.getElementById('script-path').value.trim();
+      const workerDataText = document.getElementById('worker-data').value.trim();
+      const resultDisplay = document.getElementById('result-display');
+      const resultContent = document.getElementById('result-content');
+      
+      if (!scriptPath) {
+        showToast('Script filename is required', 'error');
+        return;
+      }
+
+      let workerData = null;
+      if (workerDataText) {
+        try {
+          workerData = JSON.parse(workerDataText);
+        } catch (error) {
+          showToast('Invalid JSON format in data field', 'error');
+          return;
+        }
+      }
+
+      try {
+        const response = await fetch('/api/working/run', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            task: scriptPath,
+            data: workerData
+          }),
+        });
+
+        const result = await response.text();
+        
+        if (response.ok) {
+          resultDisplay.className = 'result-display success';
+          resultContent.textContent = result || 'Worker task started successfully';
+          showToast('Worker task started successfully', 'success');
+        } else {
+          resultDisplay.className = 'result-display error';
+          resultContent.textContent = result || 'Failed to start worker task';
+          showToast('Failed to start worker task', 'error');
+        }
+        
+        resultDisplay.style.display = 'block';
+      } catch (error) {
+        resultDisplay.className = 'result-display error';
+        resultContent.textContent = 'Error: ' + error.message;
+        resultDisplay.style.display = 'block';
+        showToast('Error starting worker task', 'error');
+      }
+    });
+
+    // Stop worker
+    async function stopWorker() {
+      try {
+        const response = await fetch('/api/working/stop');
+        const result = await response.text();
+        
+        if (response.ok) {
+          showToast('Worker stopped successfully', 'success');
+          
+          const resultDisplay = document.getElementById('result-display');
+          const resultContent = document.getElementById('result-content');
+          resultDisplay.className = 'result-display';
+          resultContent.textContent = 'Worker stopped';
+          resultDisplay.style.display = 'block';
+        } else {
+          showToast('Failed to stop worker', 'error');
+        }
+      } catch (error) {
+        showToast('Error stopping worker', 'error');
+      }
+    }
+
+    // Initialize status checking
+    document.addEventListener('DOMContentLoaded', () => {
+      checkWorkingStatus();
+      statusCheckInterval = setInterval(checkWorkingStatus, 5000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+    });
+  </script>
+  
   ${getSidebarToggleScript()}
   ${getThemeToggleScript()}
 </body>
@@ -4510,6 +4934,14 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
                   <p id="schedulingServiceStatus">Checking status...</p>
                 </div>
               </div>
+              
+              <div class="status-card clickable-card" onclick="navigateToWorkingService()">
+                <div class="status-dot status-offline" id="workingServiceDot"></div>
+                <div class="status-content">
+                  <h3>Working Service</h3>
+                  <p id="workingServiceStatus">Checking status...</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -4715,6 +5147,11 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       window.location.href = '/services/scheduling';
     }
     
+    // Navigate to working service page
+    function navigateToWorkingService() {
+      window.location.href = '/services/working';
+    }
+    
     // Check logging service status
     async function checkLoggingServiceStatus() {
       try {
@@ -4841,6 +5278,27 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       }
     }
     
+    // Check working service status
+    async function checkWorkingServiceStatus() {
+      try {
+        const response = await fetch('/api/working/status');
+        const statusDot = document.getElementById('workingServiceDot');
+        const statusText = document.getElementById('workingServiceStatus');
+        
+        if (response.ok) {
+          statusDot.className = 'status-dot status-online';
+          statusText.textContent = 'Service Online';
+        } else {
+          throw new Error('Service unavailable');
+        }
+      } catch (error) {
+        const statusDot = document.getElementById('workingServiceDot');
+        const statusText = document.getElementById('workingServiceStatus');
+        statusDot.className = 'status-dot status-offline';
+        statusText.textContent = 'Service Offline';
+      }
+    }
+    
     // Initialize services status check on page load
     document.addEventListener('DOMContentLoaded', function() {
       checkLoggingServiceStatus();
@@ -4849,6 +5307,7 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       checkMeasuringServiceStatus();
       checkNotifyingServiceStatus();
       checkSchedulingServiceStatus();
+      checkWorkingServiceStatus();
       
       // Check status periodically
       setInterval(() => {
@@ -4858,6 +5317,7 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
         checkMeasuringServiceStatus();
         checkNotifyingServiceStatus();
         checkSchedulingServiceStatus();
+        checkWorkingServiceStatus();
       }, 30000); // Check every 30 seconds
     });
   </script>

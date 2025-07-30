@@ -11,10 +11,10 @@ content-type: application/json
 }
 
 ### Get a cache record for a key
-http://localhost:5000/api/caching/get/1234
+http://localhost:3000/api/caching/get/1234
 
 
 ### Delete a cache record for a key
-DELETE http://localhost:5000/api/caching/delete/1234
+DELETE http://localhost:3000/api/caching/delete/1234
 
 
