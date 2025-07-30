@@ -1,8 +1,8 @@
 ### Queueing API Status
-GET http://localhost:3000/api/queueing/status
+GET http://localhost:5000/api/queueing/status
 
 ### Queueing API Enqueue
-POST http://localhost:3000/api/queueing/enqueue
+POST http://localhost:5000/api/queueing/enqueue
 Content-Type: application/json
 
 {
@@ -15,8 +15,8 @@ Content-Type: application/json
 }
 
 ### Queueing API Dequeue
-GET http://localhost:3000/api/queueing/dequeue
+GET http://localhost:5000/api/queueing/dequeue
 
 
 ### Queueing API Size
-GET http://localhost:3000/api/queueing/size
+GET http://localhost:5000/api/queueing/size

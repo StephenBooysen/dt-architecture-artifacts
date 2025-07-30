@@ -1,8 +1,8 @@
 ### Check the API Caching status endpoint.
-http://localhost:3000/api/caching/status
+http://localhost:5000/api/caching/status
 
 ### POST a cache record for a key
-POST http://localhost:3000/api/caching/put/1234 HTTP/1.1
+POST http://localhost:5000/api/caching/put/1234 HTTP/1.1
 content-type: application/json
 
 {
@@ -11,10 +11,10 @@ content-type: application/json
 }
 
 ### Get a cache record for a key
-http://localhost:3000/api/caching/get/1234
+http://localhost:5000/api/caching/get/1234
 
 
 ### Delete a cache record for a key
-DELETE http://localhost:3000/api/caching/delete/1234
+DELETE http://localhost:5000/api/caching/delete/1234
 
 

@@ -82,7 +82,7 @@ function createFilingService(type = 'local', options, eventEmitter) {
       provider = new S3FilingProvider(options, eventEmitter);
       break;
     default:
-      throw new Error(`Unsupported filing provider type: ${type}`);
+      provider = new LocalFilingProvider(options, eventEmitter);
   }
   return new FilingService(provider, eventEmitter);
 }

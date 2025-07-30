@@ -17,7 +17,9 @@ function createQueue(type, options, eventEmitter) {
     Routes(options, eventEmitter, queue);
     return queue;
   } else {
-    throw new Error('Unsupported queue type: ' + type);
+    const queue = new InMemoryQueue(options, eventEmitter);
+    Routes(options, eventEmitter, queue);
+    return queue;
   }
 }
 

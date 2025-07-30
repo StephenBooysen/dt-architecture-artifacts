@@ -1,9 +1,9 @@
 ### Notifying API Status
-GET http://localhost:3000/api/notifying/status
+GET http://localhost:5000/api/notifying/status
 
 
 ### Create Notifying Topic
-POST http://localhost:3000/api/notifying/topic
+POST http://localhost:5000/api/notifying/topic
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### Subscribe to Notifying Topic
-POST http://localhost:3000/api/notifying/subscribe/topic/example2-topic
+POST http://localhost:5000/api/notifying/subscribe/topic/example2-topic
 Content-Type: application/json
 
 {
@@ -19,7 +19,7 @@ Content-Type: application/json
 }
 
 ### Unsubscribe from Notifying Topic
-POST http://localhost:3000/api/notifying/unsubscribe/topic/example2-topic
+POST http://localhost:5000/api/notifying/unsubscribe/topic/example2-topic
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ### Notifying API Send
-POST http://localhost:3000/api/notifying/notify/topic/example2-topic
+POST http://localhost:5000/api/notifying/notify/topic/example2-topic
 Content-Type: application/json
 
 {

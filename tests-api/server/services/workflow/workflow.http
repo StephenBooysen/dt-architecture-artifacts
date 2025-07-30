@@ -1,8 +1,8 @@
 ### Workflow API Status
-GET http://localhost:3000/api/workflow/status
+GET http://localhost:5000/api/workflow/status
 
 ### Workflow API Start
-POST http://localhost:3000/api/workflow/defineworkflow
+POST http://localhost:5000/api/workflow/defineworkflow
 Content-Type: application/json
 
 {
@@ -16,7 +16,7 @@ Content-Type: application/json
 
 
 ### Workflow API Start
-POST http://localhost:3000/api/workflow/start
+POST http://localhost:5000/api/workflow/start
 Content-Type: application/json
 
 {

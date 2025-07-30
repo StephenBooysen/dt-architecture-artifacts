@@ -1,8 +1,8 @@
 ### Scheduling API Status
-GET http://localhost:3000/api/scheduling/status
+GET http://localhost:5000/api/scheduling/status
 
 ### Scheduling API Schedule
-POST http://localhost:3000/api/scheduling/schedule
+POST http://localhost:5000/api/scheduling/schedule
 Content-Type: application/json
 
 {
@@ -16,4 +16,4 @@ Content-Type: application/json
 }
 
 ### Scheduling API Cancel
-DELETE http://localhost:3000/api/scheduling/cancel/someTaskId
+DELETE http://localhost:5000/api/scheduling/cancel/someTaskId
