@@ -11,10 +11,10 @@
 - Templates: Add templates list view and remove from left nav - done
 - Templates: replace fields like {datetime}, {date}, {user}, {dayofweek}, {folder}, {filename} - done
 - Markdown: Left nav to not refresh completely - done
-- Security: Make login look like server login - Done
-- Markdowm: Left nav: Recent Files
-- Markdowm: Left nav: (show as starred in search)
-- Markdowm: Comments
+- Security: Make login look like server login - done
+- Markdowm: Left nav: Recent Files - done
+- Markdowm: Left nav: (show as starred in search) - done
+- Markdowm: Comments - done
 
 
 #### Server

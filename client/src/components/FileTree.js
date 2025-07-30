@@ -37,6 +37,7 @@ import { fetchTemplates } from '../services/api';
  * @param {Function} props.onFileUpload - Callback for file upload.
  * @param {Set} props.expandedFolders - Set of folder paths that should be expanded.
  * @param {Function} props.onFolderToggle - Callback when a folder is expanded/collapsed.
+ * @param {Function} props.onViewChange - Callback for view changes (recent, starred).
  * @return {JSX.Element} The FileTree component.
  */
 const FileTree = ({
@@ -53,6 +54,7 @@ const FileTree = ({
   onFolderToggle,
   onPublish,
   hasChanges,
+  onViewChange,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
@@ -411,7 +413,7 @@ const FileTree = ({
   }
 
   return (
-    <div className="file-tree">
+    <div className="file-tree d-flex flex-column h-100">
       {/* Hidden file input for upload */}
       <input
         type="file"
@@ -421,7 +423,53 @@ const FileTree = ({
         accept="*/*"
       />
       
-      <div className="file-tree-header">
+      <div className="file-tree-header flex-shrink-0">
+        {/* Navigation options at the top */}
+        <div className="nav-options mb-3">
+          <div 
+            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer"
+            onClick={() => onViewChange && onViewChange('recent')}
+            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+          >
+            <div className="d-flex align-items-center">
+              <i className="bi bi-clock-history me-2 text-muted"></i>
+              <span className="text-confluence-text">Recent</span>
+            </div>
+            <i className="bi bi-chevron-right text-muted"></i>
+          </div>
+          
+          <div 
+            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
+            onClick={() => onViewChange && onViewChange('starred')}
+            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+          >
+            <div className="d-flex align-items-center">
+              <i className="bi bi-star me-2 text-muted"></i>
+              <span className="text-confluence-text">Starred</span>
+            </div>
+            <i className="bi bi-chevron-right text-muted"></i>
+          </div>
+          
+          <div 
+            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
+            onClick={() => onViewChange && onViewChange('templates')}
+            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+          >
+            <div className="d-flex align-items-center">
+              <i className="bi bi-file-earmark-code me-2 text-muted"></i>
+              <span className="text-confluence-text">Templates</span>
+            </div>
+            <i className="bi bi-chevron-right text-muted"></i>
+          </div>
+        </div>
+        
+        {/* Files section header */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h3 className="h5 mb-0 fw-semibold text-confluence-text">
             Files {isUploading && <small className="text-primary">Uploading...</small>}
@@ -434,6 +482,7 @@ const FileTree = ({
             <i className="bi bi-cloud-upload me-1"></i>Publish
           </button>
         </div>
+        
         <div className="d-flex gap-2 file-tree-toolbar">
           <button
             className="btn btn-secondary btn-sm"
@@ -453,8 +502,13 @@ const FileTree = ({
       </div>
 
       <div 
-        className="file-tree-content"
-        onContextMenu={(e) => handleContextMenu(e, '')}>
+        className="file-tree-content flex-grow-1 overflow-auto"
+        onContextMenu={(e) => handleContextMenu(e, '')}
+        style={{ 
+          maxHeight: 'calc(100vh - 200px)', 
+          overflowY: 'auto',
+          paddingBottom: '1rem'
+        }}>
         {files.length === 0 ? (
           <div className="text-center p-4 empty-state">
             <h3 className="h6 fw-medium mb-2">No files found</h3>

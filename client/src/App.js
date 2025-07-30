@@ -32,6 +32,8 @@ import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
 import TemplateManager from './components/TemplateManager';
 import TemplatesList from './components/TemplatesList';
+import RecentFilesView from './components/RecentFilesView';
+import StarredFilesView from './components/StarredFilesView';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
 import {
@@ -81,7 +83,7 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
-  const [currentView, setCurrentView] = useState('files'); // 'files' or 'templates'
+  const [currentView, setCurrentView] = useState('files'); // 'files', 'templates', 'recent', 'starred'
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
 
   useEffect(() => {
@@ -316,7 +318,11 @@ function AppContent() {
       
       // Check if this is a template file and set editing state
       setIsEditingTemplate(filePath.startsWith('templates/'));
-      setCurrentView('files'); // Switch to files view to show the editor
+      
+      // Switch to files view to show the editor (from any view)
+      if (currentView !== 'files') {
+        setCurrentView('files');
+      }
       
       // Handle downloadable files
       if (data.downloadable) {
@@ -776,6 +782,17 @@ function AppContent() {
     setShowLoginModal(true);
   };
 
+  const handleViewChange = (view) => {
+    setCurrentView(view);
+    // Clear selected file when switching to special views
+    if (view === 'recent' || view === 'starred') {
+      setSelectedFile(null);
+      setFileContent('');
+      setFileData(null);
+      setHasChanges(false);
+    }
+  };
+
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1039,11 +1056,7 @@ function AppContent() {
                 onFolderToggle={handleFolderToggle}
                 onPublish={() => setShowPublishModal(true)}
                 hasChanges={hasChanges}
-              />
-              <TemplateManager
-                templates={templates}
-                onTemplateSelect={handleTemplateSelect}
-                isLoading={isTemplatesLoading}
+                onViewChange={handleViewChange}
               />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
@@ -1059,6 +1072,16 @@ function AppContent() {
               onTemplateDelete={handleTemplateDelete}
               onTemplateSelect={handleTemplateSelect}
               isLoading={isTemplatesLoading}
+            />
+          ) : currentView === 'recent' ? (
+            <RecentFilesView
+              onFileSelect={handleFileSelect}
+              isVisible={currentView === 'recent'}
+            />
+          ) : currentView === 'starred' ? (
+            <StarredFilesView
+              onFileSelect={handleFileSelect}
+              isVisible={currentView === 'starred'}
             />
           ) : (
             <MarkdownEditor

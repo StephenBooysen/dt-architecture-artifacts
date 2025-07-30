@@ -527,4 +527,69 @@ export const deleteComment = async (filePath, commentId) => {
   }
 };
 
+/**
+ * Recent files and starred files management functions
+ */
+
+/**
+ * Gets recent files (edited within specified days).
+ * @param {number} days - Number of days to look back (default: 7).
+ * @return {Promise<Object>} The recent files data.
+ */
+export const getRecentFiles = async (days = 7) => {
+  try {
+    const response = await api.get(`/recent?days=${days}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting recent files:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gets starred files.
+ * @return {Promise<Object>} The starred files data.
+ */
+export const getStarredFiles = async () => {
+  try {
+    const response = await api.get('/starred');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting starred files:', error);
+    throw error;
+  }
+};
+
+/**
+ * Toggles the starred status of a file.
+ * @param {string} filePath - The path to the file.
+ * @param {boolean} starred - The new starred status (optional, toggles if not provided).
+ * @return {Promise<Object>} The response with updated starred status.
+ */
+export const toggleStarredFile = async (filePath, starred = null) => {
+  try {
+    const body = starred !== null ? { starred } : {};
+    const response = await api.post(`/starred/${filePath}`, body);
+    return response.data;
+  } catch (error) {
+    console.error('Error toggling starred status:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gets metadata for a specific file.
+ * @param {string} filePath - The path to the file.
+ * @return {Promise<Object>} The file metadata.
+ */
+export const getFileMetadata = async (filePath) => {
+  try {
+    const response = await api.get(`/metadata/${filePath}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting file metadata:', error);
+    throw error;
+  }
+};
+
 export default api;

@@ -61,14 +61,23 @@ export function getCleanMarkdownContent(markdownContent) {
     return markdownContent || '';
   }
 
-  const startIndex = markdownContent.indexOf(COMMENT_START_MARKER);
+  // Remove both comment blocks and metadata blocks to get clean content
+  let cleanContent = markdownContent;
   
-  if (startIndex === -1) {
-    return markdownContent;
+  // Remove comment block
+  const commentStartIndex = cleanContent.indexOf(COMMENT_START_MARKER);
+  if (commentStartIndex !== -1) {
+    cleanContent = cleanContent.substring(0, commentStartIndex).trimEnd();
+  }
+  
+  // Remove metadata block (from metadataParser)
+  const metadataStartMarker = '<!-- METADATA_DATA_START';
+  const metadataStartIndex = cleanContent.indexOf(metadataStartMarker);
+  if (metadataStartIndex !== -1) {
+    cleanContent = cleanContent.substring(0, metadataStartIndex).trimEnd();
   }
 
-  // Return content up to the comment block, trimming trailing whitespace
-  return markdownContent.substring(0, startIndex).trimEnd();
+  return cleanContent;
 }
 
 /**

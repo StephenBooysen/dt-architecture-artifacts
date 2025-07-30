@@ -34,7 +34,11 @@ import FileDownloader from './FileDownloader';
 import CommentsSection from './CommentsSection';
 import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
 import { getCleanMarkdownContent, injectComments, extractComments } from '../utils/commentParser';
+import { extractMetadata, getCleanMarkdownContentWithoutMetadata, injectMetadata } from '../utils/metadataParser';
+import { getFileMetadata, toggleStarredFile } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
 /**
  * MarkdownEditor component for editing and previewing different file types.
@@ -52,10 +56,13 @@ import { useTheme } from '../contexts/ThemeContext';
  */
 const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileData, onSave, hasChanges}) => {
   const { isDark } = useTheme();
+  const { user } = useAuth();
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [cleanContent, setCleanContent] = useState('');
   const [commentsForFile, setCommentsForFile] = useState([]);
+  const [isStarred, setIsStarred] = useState(false);
+  const [isStarring, setIsStarring] = useState(false);
 
   const fileType = fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN;
   const isMarkdown = fileType === FILE_TYPES.MARKDOWN;
@@ -65,11 +72,14 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
     if (content && isMarkdown) {
       const cleanMarkdown = getCleanMarkdownContent(content);
       const comments = extractComments(content);
+      const metadata = extractMetadata(content);
       setCleanContent(cleanMarkdown);
       setCommentsForFile(comments);
+      setIsStarred(metadata.starred || false);
     } else {
       setCleanContent(content || '');
       setCommentsForFile([]);
+      setIsStarred(false);
     }
   }, [content, isMarkdown]);
 
@@ -129,6 +139,29 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
     // Open preview in new window
     const previewUrl = `/preview?file=${encodedFileName}`;
     window.open(previewUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+  };
+
+  const handleToggleStar = async () => {
+    if (!fileName || !isMarkdown || isStarring) return;
+    
+    try {
+      setIsStarring(true);
+      const newStarredStatus = !isStarred;
+      
+      // Call API to toggle starred status
+      await toggleStarredFile(fileName, newStarredStatus);
+      
+      // Update local state
+      setIsStarred(newStarredStatus);
+      
+      // Show success message
+      toast.success(newStarredStatus ? 'File starred!' : 'File unstarred!');
+    } catch (error) {
+      console.error('Error toggling star:', error);
+      toast.error('Failed to update starred status');
+    } finally {
+      setIsStarring(false);
+    }
   };
 
   if (isLoading) {
@@ -202,6 +235,27 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
           </h2>
         </div>
         <div className="d-flex gap-2 editor-tabs">
+          {/* Star button for markdown files */}
+          {isMarkdown && (
+            <>
+              <button
+                className={`btn btn-sm ${isStarred ? 'btn-warning' : 'btn-outline-warning'} star-btn`}
+                onClick={handleToggleStar}
+                disabled={!fileName || isStarring}
+                title={isStarred ? 'Remove from starred' : 'Add to starred'}
+              >
+                {isStarring ? (
+                  <div className="spinner-border spinner-border-sm me-1" role="status"></div>
+                ) : (
+                  <i className={`bi ${isStarred ? 'bi-star-fill' : 'bi-star'} me-1`}></i>
+                )}
+                {isStarred ? 'Starred' : 'Star'}
+              </button>
+              
+              <div className="vr mx-2"></div>
+            </>
+          )}
+          
           <button
             className="btn btn-outline-secondary btn-sm editor-tab preview-window-btn"
             onClick={handleOpenPreviewWindow}

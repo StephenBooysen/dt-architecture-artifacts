@@ -552,7 +552,38 @@ router.post('/files/*', requireAuth, async (req, res) => {
     }
 
     await fs.mkdir(path.dirname(fullPath), {recursive: true});
-    await fs.writeFile(fullPath, content, 'utf8');
+    
+    // For markdown files, add metadata tracking
+    let finalContent = content;
+    if (filePath.endsWith('.md') && req.user && req.user.username) {
+      try {
+        // Extract existing metadata and comments
+        const existingMetadata = extractMetadata(content);
+        const existingComments = extractComments(content);
+        const cleanContent = getCleanMarkdownContent(content);
+        
+        // Add recent edit entry
+        const updatedMetadata = addRecentEdit(existingMetadata, req.user.username);
+        
+        // Combine content with comments and metadata
+        finalContent = cleanContent;
+        
+        // Add comments if they exist
+        if (existingComments.length > 0) {
+          finalContent = injectComments(finalContent, existingComments);
+        }
+        
+        // Add updated metadata
+        finalContent = injectMetadata(finalContent, updatedMetadata);
+        
+      } catch (metadataError) {
+        // If metadata processing fails, just use original content
+        console.warn('Error processing metadata for file save:', metadataError);
+        finalContent = content;
+      }
+    }
+    
+    await fs.writeFile(fullPath, finalContent, 'utf8');
     res.json({message: 'File saved successfully', path: filePath});
   } catch (error) {
     console.error('Error saving file:', error);
@@ -1122,6 +1153,20 @@ const {
   isValidComment
 } = require('../utils/commentParser');
 
+const {
+  extractMetadata,
+  getCleanMarkdownContentWithoutMetadata,
+  injectMetadata,
+  createDefaultMetadata,
+  addRecentEdit,
+  toggleStarred,
+  getRecentEditsWithinDays,
+  hasRecentEdits,
+  getMostRecentEdit,
+  isValidMetadata,
+  cleanupOldEdits
+} = require('../utils/metadataParser');
+
 // Get comments for a specific file
 router.get('/comments/*', async (req, res) => {
   try {
@@ -1340,6 +1385,226 @@ router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
     }
     console.error('Error deleting comment:', error);
     res.status(500).json({error: 'Failed to delete comment'});
+  }
+});
+
+// Recent files and starred files endpoints
+
+/**
+ * Get recent files (edited in the last 7 days)
+ * GET /api/recent
+ */
+router.get('/recent', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const recentFiles = [];
+    
+    async function processDir(dirPath, relativePath = '') {
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+        const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+        
+        if (entry.isDirectory()) {
+          await processDir(fullPath, entryRelativePath);
+        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+          try {
+            const content = await fs.readFile(fullPath, 'utf8');
+            const metadata = extractMetadata(content);
+            
+            if (hasRecentEdits(metadata, days)) {
+              const mostRecentEdit = getMostRecentEdit(metadata);
+              recentFiles.push({
+                path: entryRelativePath,
+                name: entry.name,
+                lastEditBy: mostRecentEdit ? mostRecentEdit.username : 'Unknown',
+                lastEditDate: mostRecentEdit ? mostRecentEdit.timestamp : null,
+                recentEdits: getRecentEditsWithinDays(metadata, days)
+              });
+            }
+          } catch (err) {
+            console.warn(`Error processing file ${entryRelativePath}:`, err.message);
+          }
+        }
+      }
+    }
+    
+    await processDir(contentDir);
+    
+    // Sort by most recent edit first
+    recentFiles.sort((a, b) => {
+      const dateA = new Date(a.lastEditDate || 0);
+      const dateB = new Date(b.lastEditDate || 0);
+      return dateB - dateA;
+    });
+    
+    res.json({
+      files: recentFiles,
+      days: days,
+      count: recentFiles.length
+    });
+  } catch (error) {
+    console.error('Error fetching recent files:', error);
+    res.status(500).json({ error: 'Failed to fetch recent files' });
+  }
+});
+
+/**
+ * Get starred files
+ * GET /api/starred
+ */
+router.get('/starred', async (req, res) => {
+  try {
+    const starredFiles = [];
+    
+    async function processDir(dirPath, relativePath = '') {
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+        const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+        
+        if (entry.isDirectory()) {
+          await processDir(fullPath, entryRelativePath);
+        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+          try {
+            const content = await fs.readFile(fullPath, 'utf8');
+            const metadata = extractMetadata(content);
+            
+            if (metadata.starred) {
+              starredFiles.push({
+                path: entryRelativePath,
+                name: entry.name,
+                starredAt: metadata.starredAt || metadata.lastUpdated,
+                lastEditBy: getMostRecentEdit(metadata)?.username || 'Unknown',
+                lastEditDate: getMostRecentEdit(metadata)?.timestamp || null
+              });
+            }
+          } catch (err) {
+            console.warn(`Error processing file ${entryRelativePath}:`, err.message);
+          }
+        }
+      }
+    }
+    
+    await processDir(contentDir);
+    
+    // Sort by most recently starred first
+    starredFiles.sort((a, b) => {
+      const dateA = new Date(a.starredAt || 0);
+      const dateB = new Date(b.starredAt || 0);
+      return dateB - dateA;
+    });
+    
+    res.json({
+      files: starredFiles,
+      count: starredFiles.length
+    });
+  } catch (error) {
+    console.error('Error fetching starred files:', error);
+    res.status(500).json({ error: 'Failed to fetch starred files' });
+  }
+});
+
+/**
+ * Toggle starred status for a file
+ * POST /api/starred/*
+ */
+router.post('/starred/*', requireAuth, async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const { starred } = req.body;
+    
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+    
+    // Validate and sanitize the file path
+    if (filePath.includes('..') || filePath.includes('\\')) {
+      return res.status(400).json({ error: 'Invalid file path' });
+    }
+    
+    const fullPath = path.join(contentDir, filePath);
+    
+    // Check if file exists
+    try {
+      await fs.access(fullPath);
+    } catch (error) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    // Read current content
+    const content = await fs.readFile(fullPath, 'utf8');
+    const metadata = extractMetadata(content);
+    const comments = extractComments(content);
+    const cleanContent = getCleanMarkdownContent(content);
+    
+    // Toggle starred status
+    const updatedMetadata = toggleStarred(metadata, starred);
+    
+    // Combine clean content with comments and metadata
+    let updatedContent = cleanContent;
+    
+    // Add comments if they exist
+    if (comments.length > 0) {
+      updatedContent = injectComments(updatedContent, comments);
+    }
+    
+    // Add metadata
+    updatedContent = injectMetadata(updatedContent, updatedMetadata);
+    
+    // Write updated content
+    await fs.writeFile(fullPath, updatedContent, 'utf8');
+    
+    res.json({
+      message: `File ${updatedMetadata.starred ? 'starred' : 'unstarred'} successfully`,
+      starred: updatedMetadata.starred,
+      starredAt: updatedMetadata.starredAt
+    });
+  } catch (error) {
+    console.error('Error toggling starred status:', error);
+    res.status(500).json({ error: 'Failed to update starred status' });
+  }
+});
+
+/**
+ * Get metadata for a specific file
+ * GET /api/metadata/*
+ */
+router.get('/metadata/*', async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+    
+    // Validate and sanitize the file path
+    if (filePath.includes('..') || filePath.includes('\\')) {
+      return res.status(400).json({ error: 'Invalid file path' });
+    }
+    
+    const fullPath = path.join(contentDir, filePath);
+    
+    // Check if file exists
+    try {
+      await fs.access(fullPath);
+    } catch (error) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    // Read and extract metadata
+    const content = await fs.readFile(fullPath, 'utf8');
+    const metadata = extractMetadata(content);
+    
+    res.json({
+      metadata: metadata,
+      path: filePath
+    });
+  } catch (error) {
+    console.error('Error fetching metadata:', error);
+    res.status(500).json({ error: 'Failed to fetch metadata' });
   }
 });
 
