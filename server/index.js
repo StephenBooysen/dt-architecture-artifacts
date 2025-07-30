@@ -4637,6 +4637,1181 @@ app.get('/services/working', requireServerAuth, (req, res) => {
   res.send(html);
 });
 
+// Workflow Service Page
+app.get('/services/workflow', requireServerAuth, (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow Service - Architecture Artifacts</title>
+  ${getSharedStyles()}
+  <style>
+    .workflow-section {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      margin-bottom: 2rem;
+    }
+    .workflow-form {
+      padding: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .workflow-form h2 {
+      color: #172b4d;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #172b4d;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #172b4d;
+      font-size: 14px;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #0052cc;
+      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+    }
+    .content-header h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
+      animation: pulse 2s infinite;
+    }
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    .btn-primary {
+      background: #0052cc;
+      color: #ffffff;
+      margin-right: 1rem;
+    }
+    .btn-primary:hover {
+      background: #0065ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
+    }
+    .btn-success {
+      background: #36b37e;
+      color: #ffffff;
+    }
+    .btn-success:hover {
+      background: #57d9a3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(54, 179, 126, 0.3);
+    }
+    .result-display {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f4f5f7;
+      border-radius: 4px;
+      border-left: 4px solid #0052cc;
+      display: none;
+    }
+    .result-display.error {
+      border-left-color: #de350b;
+      background: #ffebe6;
+    }
+    .result-display.success {
+      border-left-color: #36b37e;
+      background: #e3fcef;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .toast.success {
+      border-left: 4px solid #36b37e;
+    }
+    .toast.error {
+      border-left: 4px solid #de350b;
+    }
+    .textarea-control {
+      min-height: 120px;
+      resize: vertical;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    .workflow-examples {
+      background: #f4f5f7;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: #5e6c84;
+    }
+    .workflow-examples ul {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+    .workflow-examples pre {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      overflow-x: auto;
+    }
+    .section-divider {
+      border-top: 1px solid #dfe1e6;
+      margin: 2rem 0;
+      padding-top: 2rem;
+    }
+    .workflow-tabs {
+      display: flex;
+      border-bottom: 1px solid #dfe1e6;
+      margin-bottom: 2rem;
+    }
+    .workflow-tab {
+      padding: 1rem 1.5rem;
+      background: #f4f5f7;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: #5e6c84;
+      border-radius: 4px 4px 0 0;
+      margin-right: 0.25rem;
+    }
+    .workflow-tab.active {
+      background: #ffffff;
+      color: #172b4d;
+      border-bottom: 2px solid #0052cc;
+    }
+    .workflow-tab:hover {
+      background: #e4e6ea;
+    }
+    .workflow-tab.active:hover {
+      background: #ffffff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  ${getHeader()}
+  ${getNavigation('services')}
+  
+  <div class="content-header">
+    <h1>
+      <i class="bi bi-bounding-box"></i>
+      Workflow Service
+      <div class="status-indicator" id="workflow-status"></div>
+    </h1>
+    <p>Define and execute sequential workflows with Node.js scripts</p>
+  </div>
+
+  <div class="workflow-tabs">
+    <button class="workflow-tab active" onclick="switchTab('define')">Define Workflow</button>
+    <button class="workflow-tab" onclick="switchTab('execute')">Execute Workflow</button>
+  </div>
+
+  <!-- Define Workflow Tab -->
+  <div id="define-tab" class="tab-content active">
+    <div class="workflow-section">
+      <div class="workflow-form">
+        <h2><i class="bi bi-diagram-3 me-2"></i>Define Workflow Plan</h2>
+        <form id="define-workflow-form">
+          <div class="form-group">
+            <label for="workflow-name">Workflow Name</label>
+            <input 
+              type="text" 
+              id="workflow-name" 
+              name="workflow-name" 
+              class="form-control" 
+              placeholder="e.g., data-processing, user-onboarding"
+              required
+            >
+            <div class="workflow-examples">
+              <strong>Example:</strong> <code>data-processing-pipeline</code>, <code>user-registration-flow</code>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="workflow-steps">Workflow Steps (JSON Array)</label>
+            <textarea 
+              id="workflow-steps" 
+              name="workflow-steps" 
+              class="form-control textarea-control" 
+              placeholder='["./step1.js", "./step2.js", "./step3.js"]'
+              required
+            ></textarea>
+            <div class="workflow-examples">
+              <strong>Steps Definition:</strong> JSON array of file paths to Node.js scripts
+              <pre>["./workflows/validate-data.js", "./workflows/process-data.js", "./workflows/save-results.js"]</pre>
+              <strong>Note:</strong> Each script should export a function that receives data and returns processed data.
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i>Define Workflow
+          </button>
+        </form>
+
+        <div id="define-result-display" class="result-display">
+          <h4>Definition Result:</h4>
+          <pre id="define-result-content"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Execute Workflow Tab -->
+  <div id="execute-tab" class="tab-content">
+    <div class="workflow-section">
+      <div class="workflow-form">
+        <h2><i class="bi bi-play-circle me-2"></i>Execute Workflow</h2>
+        <form id="execute-workflow-form">
+          <div class="form-group">
+            <label for="execution-workflow-name">Workflow Name</label>
+            <input 
+              type="text" 
+              id="execution-workflow-name" 
+              name="execution-workflow-name" 
+              class="form-control" 
+              placeholder="Enter the name of a defined workflow"
+              required
+            >
+            <div class="workflow-examples">
+              <strong>Note:</strong> This must match a previously defined workflow name
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="workflow-data">Initial Data (JSON)</label>
+            <textarea 
+              id="workflow-data" 
+              name="workflow-data" 
+              class="form-control textarea-control" 
+              placeholder='{"userId": 123, "action": "process", "data": [1, 2, 3]}'
+            ></textarea>
+            <div class="workflow-examples">
+              <strong>Initial Data:</strong> JSON object that will be passed to the first workflow step
+              <pre>{"input": "sample data", "config": {"retries": 3}, "metadata": {"timestamp": "2024-01-01"}}</pre>
+              <strong>Note:</strong> Leave empty if no initial data is needed.
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-play-fill me-1"></i>Start Workflow
+          </button>
+        </form>
+
+        <div id="execute-result-display" class="result-display">
+          <h4>Execution Result:</h4>
+          <pre id="execute-result-content"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  ${getFooter()}
+
+  <script>
+    let statusCheckInterval;
+
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Remove active class from all tabs
+      document.querySelectorAll('.workflow-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      document.getElementById(tabName + '-tab').classList.add('active');
+      
+      // Add active class to selected tab
+      event.target.classList.add('active');
+    }
+
+    // Check service status
+    async function checkWorkflowStatus() {
+      try {
+        const response = await fetch('/api/workflow/status');
+        const statusIndicator = document.getElementById('workflow-status');
+        
+        if (response.ok) {
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Workflow service is online';
+        } else {
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Workflow service is offline';
+        }
+      } catch (error) {
+        const statusIndicator = document.getElementById('workflow-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Workflow service is offline';
+      }
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = \`toast \${type}\`;
+      toast.innerHTML = \`
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i class="bi bi-\${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+          <span>\${message}</span>
+        </div>
+      \`;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+
+    // Define workflow
+    document.getElementById('define-workflow-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const workflowName = document.getElementById('workflow-name').value.trim();
+      const stepsText = document.getElementById('workflow-steps').value.trim();
+      const resultDisplay = document.getElementById('define-result-display');
+      const resultContent = document.getElementById('define-result-content');
+      
+      if (!workflowName || !stepsText) {
+        showToast('Workflow name and steps are required', 'error');
+        return;
+      }
+
+      let steps;
+      try {
+        steps = JSON.parse(stepsText);
+        if (!Array.isArray(steps)) {
+          throw new Error('Steps must be an array');
+        }
+      } catch (error) {
+        showToast('Invalid JSON format in steps field', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/workflow/defineworkflow', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: workflowName,
+            steps: steps
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+          resultDisplay.className = 'result-display success';
+          resultContent.textContent = JSON.stringify({
+            message: 'Workflow defined successfully',
+            name: workflowName,
+            steps: steps,
+            workflowId: result.workflowId
+          }, null, 2);
+          showToast('Workflow defined successfully', 'success');
+        } else {
+          resultDisplay.className = 'result-display error';
+          resultContent.textContent = result.message || 'Failed to define workflow';
+          showToast('Failed to define workflow', 'error');
+        }
+        
+        resultDisplay.style.display = 'block';
+      } catch (error) {
+        resultDisplay.className = 'result-display error';
+        resultContent.textContent = 'Error: ' + error.message;
+        resultDisplay.style.display = 'block';
+        showToast('Error defining workflow', 'error');
+      }
+    });
+
+    // Execute workflow
+    document.getElementById('execute-workflow-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const workflowName = document.getElementById('execution-workflow-name').value.trim();
+      const dataText = document.getElementById('workflow-data').value.trim();
+      const resultDisplay = document.getElementById('execute-result-display');
+      const resultContent = document.getElementById('execute-result-content');
+      
+      if (!workflowName) {
+        showToast('Workflow name is required', 'error');
+        return;
+      }
+
+      let workflowData = null;
+      if (dataText) {
+        try {
+          workflowData = JSON.parse(dataText);
+        } catch (error) {
+          showToast('Invalid JSON format in data field', 'error');
+          return;
+        }
+      }
+
+      try {
+        const response = await fetch('/api/workflow/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: workflowName,
+            data: workflowData
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+          resultDisplay.className = 'result-display success';
+          resultContent.textContent = JSON.stringify({
+            message: 'Workflow started successfully',
+            workflowName: workflowName,
+            workflowId: result.workflowId,
+            initialData: workflowData
+          }, null, 2);
+          showToast('Workflow started successfully', 'success');
+        } else {
+          resultDisplay.className = 'result-display error';
+          resultContent.textContent = result.message || 'Failed to start workflow';
+          showToast('Failed to start workflow', 'error');
+        }
+        
+        resultDisplay.style.display = 'block';
+      } catch (error) {
+        resultDisplay.className = 'result-display error';
+        resultContent.textContent = 'Error: ' + error.message;
+        resultDisplay.style.display = 'block';
+        showToast('Error starting workflow', 'error');
+      }
+    });
+
+    // Initialize status checking
+    document.addEventListener('DOMContentLoaded', () => {
+      checkWorkflowStatus();
+      statusCheckInterval = setInterval(checkWorkflowStatus, 5000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+    });
+  </script>
+  
+  ${getSidebarToggleScript()}
+  ${getThemeToggleScript()}
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
+// Search Service Page
+app.get('/services/searching', requireServerAuth, (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Service - Architecture Artifacts</title>
+  ${getSharedStyles()}
+  <style>
+    .search-section {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      margin-bottom: 2rem;
+    }
+    .search-form {
+      padding: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .search-form h2 {
+      color: #172b4d;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #172b4d;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #172b4d;
+      font-size: 14px;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #0052cc;
+      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+    }
+    .content-header h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #172b4d;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #36b37e;
+      box-shadow: 0 0 0 3px rgba(54, 179, 126, 0.3);
+      animation: pulse 2s infinite;
+    }
+    .status-indicator.offline {
+      background: #de350b;
+      box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    .btn-primary {
+      background: #0052cc;
+      color: #ffffff;
+      margin-right: 1rem;
+    }
+    .btn-primary:hover {
+      background: #0065ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
+    }
+    .btn-success {
+      background: #36b37e;
+      color: #ffffff;
+      margin-right: 1rem;
+    }
+    .btn-success:hover {
+      background: #57d9a3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(54, 179, 126, 0.3);
+    }
+    .btn-danger {
+      background: #de350b;
+      color: #ffffff;
+    }
+    .btn-danger:hover {
+      background: #ff5630;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(222, 53, 11, 0.3);
+    }
+    .result-display {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f4f5f7;
+      border-radius: 4px;
+      border-left: 4px solid #0052cc;
+      display: none;
+    }
+    .result-display.error {
+      border-left-color: #de350b;
+      background: #ffebe6;
+    }
+    .result-display.success {
+      border-left-color: #36b37e;
+      background: #e3fcef;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .toast.success {
+      border-left: 4px solid #36b37e;
+    }
+    .toast.error {
+      border-left: 4px solid #de350b;
+    }
+    .textarea-control {
+      min-height: 120px;
+      resize: vertical;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    .search-examples {
+      background: #f4f5f7;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: #5e6c84;
+    }
+    .search-examples ul {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+    .search-examples pre {
+      background: #ffffff;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      overflow-x: auto;
+    }
+    .section-divider {
+      border-top: 1px solid #dfe1e6;
+      margin: 2rem 0;
+      padding-top: 2rem;
+    }
+    .search-tabs {
+      display: flex;
+      border-bottom: 1px solid #dfe1e6;
+      margin-bottom: 2rem;
+    }
+    .search-tab {
+      padding: 1rem 1.5rem;
+      background: #f4f5f7;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: #5e6c84;
+      border-radius: 4px 4px 0 0;
+      margin-right: 0.25rem;
+    }
+    .search-tab.active {
+      background: #ffffff;
+      color: #172b4d;
+      border-bottom: 2px solid #0052cc;
+    }
+    .search-tab:hover {
+      background: #e4e6ea;
+    }
+    .search-tab.active:hover {
+      background: #ffffff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .search-results {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #dfe1e6;
+      border-radius: 4px;
+      background: #ffffff;
+    }
+    .search-result-item {
+      padding: 1rem;
+      border-bottom: 1px solid #f4f5f7;
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .search-result-key {
+      font-weight: 600;
+      color: #0052cc;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    .search-result-data {
+      background: #f8f9fa;
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: #5e6c84;
+      font-style: italic;
+    }
+    .delete-key-input {
+      display: flex;
+      gap: 0.5rem;
+      align-items: end;
+    }
+    .delete-key-input .form-control {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  ${getHeader()}
+  ${getNavigation('services')}
+  
+  <div class="content-header">
+    <h1>
+      <i class="bi bi-search"></i>
+      Search Service
+      <div class="status-indicator" id="search-status"></div>
+    </h1>
+    <p>Add JSON data to collections and perform text-based searches</p>
+  </div>
+
+  <div class="search-tabs">
+    <button class="search-tab active" onclick="switchTab('add')">Add Data</button>
+    <button class="search-tab" onclick="switchTab('search')">Search Data</button>
+    <button class="search-tab" onclick="switchTab('delete')">Delete Data</button>
+  </div>
+
+  <!-- Add Data Tab -->
+  <div id="add-tab" class="tab-content active">
+    <div class="search-section">
+      <div class="search-form">
+        <h2><i class="bi bi-plus-circle me-2"></i>Add JSON Data</h2>
+        <form id="add-data-form">
+          <div class="form-group">
+            <label for="json-data">JSON Data</label>
+            <textarea 
+              id="json-data" 
+              name="json-data" 
+              class="form-control textarea-control" 
+              placeholder='{"name": "John Doe", "email": "john@example.com", "role": "developer"}'
+              required
+            ></textarea>
+            <div class="search-examples">
+              <strong>Example JSON Data:</strong>
+              <pre>{"user": {"name": "Alice Smith", "department": "Engineering", "skills": ["JavaScript", "Python", "React"]}, "project": "Web Application", "status": "active"}</pre>
+              <strong>Note:</strong> A unique key will be automatically generated for this data.
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i>Add Data
+          </button>
+        </form>
+
+        <div id="add-result-display" class="result-display">
+          <h4>Add Result:</h4>
+          <pre id="add-result-content"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Data Tab -->
+  <div id="search-tab" class="tab-content">
+    <div class="search-section">
+      <div class="search-form">
+        <h2><i class="bi bi-search me-2"></i>Search JSON Data</h2>
+        <form id="search-data-form">
+          <div class="form-group">
+            <label for="search-term">Search Term</label>
+            <input 
+              type="text" 
+              id="search-term" 
+              name="search-term" 
+              class="form-control" 
+              placeholder="Enter search term (e.g., 'developer', 'active', 'JavaScript')"
+              required
+            >
+            <div class="search-examples">
+              <strong>Search Examples:</strong>
+              <ul>
+                <li><code>developer</code> - Find all data containing "developer"</li>
+                <li><code>JavaScript</code> - Find all data mentioning "JavaScript"</li>
+                <li><code>alice</code> - Case-insensitive search for "alice"</li>
+              </ul>
+              <strong>Note:</strong> Search is case-insensitive and searches all string values in nested objects.
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i>Search
+          </button>
+        </form>
+
+        <div id="search-result-display" class="result-display">
+          <h4>Search Results:</h4>
+          <div id="search-results-container">
+            <div class="no-results">No search performed yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Data Tab -->
+  <div id="delete-tab" class="tab-content">
+    <div class="search-section">
+      <div class="search-form">
+        <h2><i class="bi bi-trash me-2"></i>Delete JSON Data</h2>
+        <form id="delete-data-form">
+          <div class="form-group">
+            <label for="delete-key">Data Key</label>
+            <div class="delete-key-input">
+              <input 
+                type="text" 
+                id="delete-key" 
+                name="delete-key" 
+                class="form-control" 
+                placeholder="Enter the UUID key of the data to delete"
+                required
+              >
+              <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </div>
+            <div class="search-examples">
+              <strong>Key Format:</strong> UUID (e.g., <code>a1b2c3d4-e5f6-7890-ab12-cd34ef567890</code>)
+              <br><strong>Note:</strong> You can get keys from search results or when adding data.
+            </div>
+          </div>
+        </form>
+
+        <div id="delete-result-display" class="result-display">
+          <h4>Delete Result:</h4>
+          <pre id="delete-result-content"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  ${getFooter()}
+
+  <script>
+    let statusCheckInterval;
+
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Remove active class from all tabs
+      document.querySelectorAll('.search-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      document.getElementById(tabName + '-tab').classList.add('active');
+      
+      // Add active class to selected tab
+      event.target.classList.add('active');
+    }
+
+    // Check service status
+    async function checkSearchStatus() {
+      try {
+        const response = await fetch('/api/searching/status');
+        const statusIndicator = document.getElementById('search-status');
+        
+        if (response.ok) {
+          statusIndicator.classList.remove('offline');
+          statusIndicator.title = 'Search service is online';
+        } else {
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Search service is offline';
+        }
+      } catch (error) {
+        const statusIndicator = document.getElementById('search-status');
+        statusIndicator.classList.add('offline');
+        statusIndicator.title = 'Search service is offline';
+      }
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = \`toast \${type}\`;
+      toast.innerHTML = \`
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i class="bi bi-\${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+          <span>\${message}</span>
+        </div>
+      \`;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+
+    // Add JSON data
+    document.getElementById('add-data-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const jsonDataText = document.getElementById('json-data').value.trim();
+      const resultDisplay = document.getElementById('add-result-display');
+      const resultContent = document.getElementById('add-result-content');
+      
+      if (!jsonDataText) {
+        showToast('JSON data is required', 'error');
+        return;
+      }
+
+      let jsonData;
+      try {
+        jsonData = JSON.parse(jsonDataText);
+      } catch (error) {
+        showToast('Invalid JSON format', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/searching/add/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(jsonData),
+        });
+
+        const result = await response.text();
+        
+        if (response.ok) {
+          resultDisplay.className = 'result-display success';
+          resultContent.textContent = 'Data added successfully! A unique key has been generated.';
+          showToast('JSON data added successfully', 'success');
+          document.getElementById('json-data').value = '';
+        } else {
+          resultDisplay.className = 'result-display error';
+          resultContent.textContent = result || 'Failed to add data';
+          showToast('Failed to add data', 'error');
+        }
+        
+        resultDisplay.style.display = 'block';
+      } catch (error) {
+        resultDisplay.className = 'result-display error';
+        resultContent.textContent = 'Error: ' + error.message;
+        resultDisplay.style.display = 'block';
+        showToast('Error adding data', 'error');
+      }
+    });
+
+    // Search JSON data
+    document.getElementById('search-data-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const searchTerm = document.getElementById('search-term').value.trim();
+      const resultDisplay = document.getElementById('search-result-display');
+      const resultsContainer = document.getElementById('search-results-container');
+      
+      if (!searchTerm) {
+        showToast('Search term is required', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(\`/api/searching/search/\${encodeURIComponent(searchTerm)}\`);
+        
+        if (response.ok) {
+          const results = await response.json();
+          
+          resultDisplay.className = 'result-display success';
+          
+          if (results.length === 0) {
+            resultsContainer.innerHTML = '<div class="no-results">No results found for your search term.</div>';
+          } else {
+            // Results come as alternating key-object pairs
+            let resultsHtml = '<div class="search-results">';
+            for (let i = 0; i < results.length; i += 2) {
+              const key = results[i];
+              const data = results[i + 1];
+              resultsHtml += \`
+                <div class="search-result-item">
+                  <div class="search-result-key">Key: \${key}</div>
+                  <div class="search-result-data">\${JSON.stringify(data, null, 2)}</div>
+                </div>
+              \`;
+            }
+            resultsHtml += '</div>';
+            resultsContainer.innerHTML = resultsHtml;
+          }
+          
+          showToast(\`Found \${Math.floor(results.length / 2)} result(s)\`, 'success');
+        } else {
+          const error = await response.text();
+          resultDisplay.className = 'result-display error';
+          resultsContainer.innerHTML = '<div class="no-results">Error performing search</div>';
+          showToast('Search failed', 'error');
+        }
+        
+        resultDisplay.style.display = 'block';
+      } catch (error) {
+        resultDisplay.className = 'result-display error';
+        resultsContainer.innerHTML = '<div class="no-results">Error performing search</div>';
+        resultDisplay.style.display = 'block';
+        showToast('Error performing search', 'error');
+      }
+    });
+
+    // Delete JSON data
+    document.getElementById('delete-data-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const deleteKey = document.getElementById('delete-key').value.trim();
+      const resultDisplay = document.getElementById('delete-result-display');
+      const resultContent = document.getElementById('delete-result-content');
+      
+      if (!deleteKey) {
+        showToast('Data key is required', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(\`/api/searching/delete/\${encodeURIComponent(deleteKey)}\`, {
+          method: 'DELETE',
+        });
+
+        const result = await response.text();
+        
+        if (response.ok) {
+          resultDisplay.className = 'result-display success';
+          resultContent.textContent = 'Data deleted successfully!';
+          showToast('Data deleted successfully', 'success');
+          document.getElementById('delete-key').value = '';
+        } else if (response.status === 404) {
+          resultDisplay.className = 'result-display error';
+          resultContent.textContent = 'Key not found. Please check the key and try again.';
+          showToast('Key not found', 'error');
+        } else {
+          resultDisplay.className = 'result-display error';
+          resultContent.textContent = result || 'Failed to delete data';
+          showToast('Failed to delete data', 'error');
+        }
+        
+        resultDisplay.style.display = 'block';
+      } catch (error) {
+        resultDisplay.className = 'result-display error';
+        resultContent.textContent = 'Error: ' + error.message;
+        resultDisplay.style.display = 'block';
+        showToast('Error deleting data', 'error');
+      }
+    });
+
+    // Initialize status checking
+    document.addEventListener('DOMContentLoaded', () => {
+      checkSearchStatus();
+      statusCheckInterval = setInterval(checkSearchStatus, 5000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+    });
+  </script>
+  
+  ${getSidebarToggleScript()}
+  ${getThemeToggleScript()}
+</body>
+</html>`;
+  
+  res.send(html);
+});
+
 // Authentication middleware for server pages
 function requireServerAuth(req, res, next) {
   if (req.isAuthenticated()) {
@@ -4887,60 +6062,76 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
           <div class="overview-section">
             <h2>Services</h2>
             <div class="status-grid">
-              <div class="status-card clickable-card" onclick="navigateToLoggingService()">
+              <div class="status-card clickable-card" onclick="navigateToLoggingService()" title="Logging Service">
+                <div class="service-icon">
+                  <i class="bi bi-list-columns-reverse"></i>
+                </div>
                 <div class="status-dot status-offline" id="loggingServiceDot"></div>
-                <div class="status-content">
-                  <h3>Logging Service</h3>
-                  <p id="loggingServiceStatus">Checking status...</p>
-                </div>
+                <div class="service-name">Logging</div>
               </div>
               
-              <div class="status-card clickable-card" onclick="navigateToCachingService()">
+              <div class="status-card clickable-card" onclick="navigateToCachingService()" title="Caching Service">
+                <div class="service-icon">
+                  <i class="bi bi-database-check"></i>
+                </div>
                 <div class="status-dot status-offline" id="cachingServiceDot"></div>
-                <div class="status-content">
-                  <h3>Caching Service</h3>
-                  <p id="cachingServiceStatus">Checking status...</p>
-                </div>
+                <div class="service-name">Caching</div>
               </div>
               
-              <div class="status-card clickable-card" onclick="navigateToQueueingService()">
+              <div class="status-card clickable-card" onclick="navigateToQueueingService()" title="Queueing Service">
+                <div class="service-icon">
+                  <i class="bi bi-stack"></i>
+                </div>
                 <div class="status-dot status-offline" id="queueingServiceDot"></div>
-                <div class="status-content">
-                  <h3>Queueing Service</h3>
-                  <p id="queueingServiceStatus">Checking status...</p>
-                </div>
+                <div class="service-name">Queueing</div>
               </div>
               
-              <div class="status-card clickable-card" onclick="navigateToMeasuringService()">
+              <div class="status-card clickable-card" onclick="navigateToMeasuringService()" title="Measuring Service">
+                <div class="service-icon">
+                  <i class="bi bi-speedometer2"></i>
+                </div>
                 <div class="status-dot status-offline" id="measuringServiceDot"></div>
-                <div class="status-content">
-                  <h3>Measuring Service</h3>
-                  <p id="measuringServiceStatus">Checking status...</p>
-                </div>
+                <div class="service-name">Measuring</div>
               </div>
               
-              <div class="status-card clickable-card" onclick="navigateToNotifyingService()">
+              <div class="status-card clickable-card" onclick="navigateToNotifyingService()" title="Notifying Service">
+                <div class="service-icon">
+                  <i class="bi bi-envelope-check"></i>
+                </div>
                 <div class="status-dot status-offline" id="notifyingServiceDot"></div>
-                <div class="status-content">
-                  <h3>Notifying Service</h3>
-                  <p id="notifyingServiceStatus">Checking status...</p>
-                </div>
+                <div class="service-name">Notifying</div>
               </div>
               
-              <div class="status-card clickable-card" onclick="navigateToSchedulingService()">
+              <div class="status-card clickable-card" onclick="navigateToSchedulingService()" title="Scheduling Service">
+                <div class="service-icon">
+                  <i class="bi bi-clock-history"></i>
+                </div>
                 <div class="status-dot status-offline" id="schedulingServiceDot"></div>
-                <div class="status-content">
-                  <h3>Scheduling Service</h3>
-                  <p id="schedulingServiceStatus">Checking status...</p>
-                </div>
+                <div class="service-name">Scheduling</div>
               </div>
               
-              <div class="status-card clickable-card" onclick="navigateToWorkingService()">
-                <div class="status-dot status-offline" id="workingServiceDot"></div>
-                <div class="status-content">
-                  <h3>Working Service</h3>
-                  <p id="workingServiceStatus">Checking status...</p>
+              <div class="status-card clickable-card" onclick="navigateToWorkingService()" title="Working Service">
+                <div class="service-icon">
+                  <i class="bi bi-gear-wide"></i>
                 </div>
+                <div class="status-dot status-offline" id="workingServiceDot"></div>
+                <div class="service-name">Working</div>
+              </div>
+              
+              <div class="status-card clickable-card" onclick="navigateToSearchService()" title="Search Service">
+                <div class="service-icon">
+                  <i class="bi bi-search"></i>
+                </div>
+                <div class="status-dot status-offline" id="searchServiceDot"></div>
+                <div class="service-name">Search</div>
+              </div>
+              
+              <div class="status-card clickable-card" onclick="navigateToWorkflowService()" title="Workflow Service">
+                <div class="service-icon">
+                  <i class="bi bi-bounding-box"></i>
+                </div>
+                <div class="status-dot status-offline" id="workflowServiceDot"></div>
+                <div class="service-name">Workflow</div>
               </div>
             </div>
           </div>
@@ -5014,18 +6205,39 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
     
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
     }
     
     .status-card {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      padding: 1rem;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
       background: #f4f5f7;
       border: 1px solid #dfe1e6;
       border-radius: 6px;
+      min-height: 100px;
+      position: relative;
+    }
+    
+    .service-icon {
+      font-size: 2rem;
+      color: #0052cc;
+    }
+    
+    .service-icon i {
+      display: block;
+    }
+    
+    .service-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #5e6c84;
+      margin-top: 0.25rem;
+      text-align: center;
     }
     
     .status-indicator {
@@ -5049,6 +6261,15 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       border-radius: 50%;
       animation: pulse 2s infinite;
       flex-shrink: 0;
+      margin-top: 0.5rem;
+    }
+    
+    .status-dot.status-online {
+      background: #22c55e;
+    }
+    
+    .status-dot.status-offline {
+      background: #ef4444;
     }
     
     .status-online {
@@ -5152,24 +6373,30 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       window.location.href = '/services/working';
     }
     
+    // Navigate to search service page
+    function navigateToSearchService() {
+      window.location.href = '/services/searching';
+    }
+    
+    // Navigate to workflow service page
+    function navigateToWorkflowService() {
+      window.location.href = '/services/workflow';
+    }
+    
     // Check logging service status
     async function checkLoggingServiceStatus() {
       try {
         const response = await fetch('/api/logging/status');
         const statusDot = document.getElementById('loggingServiceDot');
-        const statusText = document.getElementById('loggingServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('loggingServiceDot');
-        const statusText = document.getElementById('loggingServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
       }
     }
     
@@ -5178,19 +6405,15 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       try {
         const response = await fetch('/api/caching/status');
         const statusDot = document.getElementById('cachingServiceDot');
-        const statusText = document.getElementById('cachingServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('cachingServiceDot');
-        const statusText = document.getElementById('cachingServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
       }
     }
     
@@ -5199,19 +6422,15 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       try {
         const response = await fetch('/api/queueing/status');
         const statusDot = document.getElementById('queueingServiceDot');
-        const statusText = document.getElementById('queueingServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('queueingServiceDot');
-        const statusText = document.getElementById('queueingServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
       }
     }
     
@@ -5220,19 +6439,15 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       try {
         const response = await fetch('/api/measuring/status');
         const statusDot = document.getElementById('measuringServiceDot');
-        const statusText = document.getElementById('measuringServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('measuringServiceDot');
-        const statusText = document.getElementById('measuringServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
       }
     }
     
@@ -5241,19 +6456,15 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       try {
         const response = await fetch('/api/notifying/status');
         const statusDot = document.getElementById('notifyingServiceDot');
-        const statusText = document.getElementById('notifyingServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('notifyingServiceDot');
-        const statusText = document.getElementById('notifyingServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
       }
     }
     
@@ -5262,19 +6473,15 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       try {
         const response = await fetch('/api/scheduling/status');
         const statusDot = document.getElementById('schedulingServiceDot');
-        const statusText = document.getElementById('schedulingServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('schedulingServiceDot');
-        const statusText = document.getElementById('schedulingServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
       }
     }
     
@@ -5283,19 +6490,49 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       try {
         const response = await fetch('/api/working/status');
         const statusDot = document.getElementById('workingServiceDot');
-        const statusText = document.getElementById('workingServiceStatus');
         
         if (response.ok) {
           statusDot.className = 'status-dot status-online';
-          statusText.textContent = 'Service Online';
         } else {
           throw new Error('Service unavailable');
         }
       } catch (error) {
         const statusDot = document.getElementById('workingServiceDot');
-        const statusText = document.getElementById('workingServiceStatus');
         statusDot.className = 'status-dot status-offline';
-        statusText.textContent = 'Service Offline';
+      }
+    }
+    
+    // Check search service status
+    async function checkSearchServiceStatus() {
+      try {
+        const response = await fetch('/api/searching/status');
+        const statusDot = document.getElementById('searchServiceDot');
+        
+        if (response.ok) {
+          statusDot.className = 'status-dot status-online';
+        } else {
+          throw new Error('Service unavailable');
+        }
+      } catch (error) {
+        const statusDot = document.getElementById('searchServiceDot');
+        statusDot.className = 'status-dot status-offline';
+      }
+    }
+    
+    // Check workflow service status
+    async function checkWorkflowServiceStatus() {
+      try {
+        const response = await fetch('/api/workflow/status');
+        const statusDot = document.getElementById('workflowServiceDot');
+        
+        if (response.ok) {
+          statusDot.className = 'status-dot status-online';
+        } else {
+          throw new Error('Service unavailable');
+        }
+      } catch (error) {
+        const statusDot = document.getElementById('workflowServiceDot');
+        statusDot.className = 'status-dot status-offline';
       }
     }
     
@@ -5308,6 +6545,8 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
       checkNotifyingServiceStatus();
       checkSchedulingServiceStatus();
       checkWorkingServiceStatus();
+      checkSearchServiceStatus();
+      checkWorkflowServiceStatus();
       
       // Check status periodically
       setInterval(() => {
@@ -5318,6 +6557,8 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
         checkNotifyingServiceStatus();
         checkSchedulingServiceStatus();
         checkWorkingServiceStatus();
+        checkSearchServiceStatus();
+        checkWorkflowServiceStatus();
       }, 30000); // Check every 30 seconds
     });
   </script>

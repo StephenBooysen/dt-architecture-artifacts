@@ -57,6 +57,16 @@ npm run build
   - API monitoring dashboard with call logging
   - Security middleware (helmet, CORS, rate limiting)
   - Support for multiple file types (markdown, images, PDFs, text)
+  - Service management with dedicated UI pages for each microservice
+  - Dashboard with 4-column grid layout showing service status indicators
+
+- **server/src/services/**: Microservices architecture
+  - **searching/**: JSON data storage and text search service
+    - **provider/searching.js**: Core search logic with Map-based storage
+    - **routes/index.js**: REST API endpoints for add/delete/search operations
+    - **index.js**: Service factory and initialization
+  - **caching/**, **logging/**, **queueing/**, **measuring/**, **notifying/**, **scheduling/**, **workflow/**: Other microservices
+  - Each service includes provider logic, API routes, and status monitoring
 
 ### Frontend Structure (client/src/)
 - **App.js**: Main React component managing application state
@@ -85,6 +95,9 @@ npm run build
 - **Glassmorphism UI**: Modern glass-like interface with blur effects
 - **API monitoring**: Built-in dashboard for tracking API calls
 - **Security**: Path traversal protection, rate limiting, file validation
+- **Microservices Management**: Dedicated UI for 9 microservices with real-time status monitoring
+- **Search Service**: JSON data storage with recursive text search across nested objects
+- **Service Dashboard**: 4-column grid layout with service icons, status indicators, and names
 
 ## Content Management
 - Content is stored in the `content/` directory
@@ -122,9 +135,29 @@ npm run build
 - File upload size limit (10MB)
 - Path traversal protection on all file operations
 
+### Microservices Architecture
+- **Service Discovery**: Each service registers with the main server
+- **Health Monitoring**: Real-time status checking for all services
+- **Tabbed UI**: Each service has a dedicated management interface
+- **Event-Driven**: Services use EventEmitter for communication
+- **Modular Design**: Services can be independently developed and deployed
+
+### Search Service Implementation
+- **Data Storage**: Uses Map for in-memory JSON object storage with UUID keys
+- **Search Algorithm**: Recursive case-insensitive text search across nested JSON structures
+- **API Endpoints**: 
+  - `POST /api/searching/add/` - Add JSON data with auto-generated key
+  - `DELETE /api/searching/delete/:key` - Remove data by key
+  - `GET /api/searching/search/:term` - Search for text across all stored data
+  - `GET /api/searching/status` - Service health check
+- **UI Features**: Tabbed interface for Add Data, Search Data, Delete Data operations
+
 ## Development Tips
 - Use `npm run dev` for full development experience
 - Backend runs on port 5000, frontend on port 3000
 - Client has proxy configuration to backend
 - File changes trigger automatic refreshes in file tree
 - Editor mode preference is saved to localStorage
+- Access service UIs at `/services/{service-name}` (e.g., `/services/searching`)
+- Monitor API calls at `/monitoring/api`
+- All services auto-register and appear on dashboard with status indicators

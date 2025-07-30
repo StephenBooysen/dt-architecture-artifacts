@@ -1,15 +1,40 @@
 # Architecture Artifacts Editor
 
-A modern markdown editor with glassmorphism theme for managing architecture documentation. Built for architects, product owners, business analysts, and functional analysts to capture and manage markdown content with Git integration.
+A modern markdown editor with glassmorphism theme and microservices management platform. Built for architects, product owners, and business analysts to capture and manage architecture documentation with Git integration and comprehensive service monitoring.
 
 ## Features
 
+### Document Management
 - **Glassmorphism UI**: Modern glass-like interface with blur effects and transparency
 - **File Tree Navigation**: Browse and manage files and folders in the left sidebar
 - **Markdown Editor**: Rich text editing with syntax highlighting
 - **Live Preview**: Real-time markdown preview with GitHub Flavored Markdown support
 - **Split View**: Edit and preview simultaneously
-- **Git Integration**: Commit and push changes directly from the editor
+- **Multi-format Support**: Handle markdown, images, PDFs, and text files
+- **File Upload/Download**: Drag-and-drop and manual file management
+
+### Git Integration
+- **Version Control**: Commit and push changes directly from the editor
+- **Repository Management**: Clone, pull, and manage Git repositories
+- **Change Tracking**: View repository status and file changes
+
+### Microservices Management
+- **Service Dashboard**: 4-column grid layout with real-time status monitoring
+- **9 Integrated Services**: Logging, Caching, Queueing, Measuring, Notifying, Scheduling, Searching, Working, and Workflow
+- **Service UIs**: Dedicated management interfaces for each microservice
+- **Health Monitoring**: Real-time status indicators for all services
+- **API Monitoring**: Built-in dashboard for tracking API calls and performance
+
+### Search Service
+- **JSON Data Storage**: Store and manage JSON objects with auto-generated keys
+- **Text Search**: Recursive case-insensitive search across nested JSON structures
+- **REST API**: Full CRUD operations for data management
+- **Tabbed Interface**: Intuitive UI for adding, searching, and deleting data
+
+### Security & Performance
+- **Security Headers**: Helmet.js protection with CORS and rate limiting
+- **Path Protection**: Prevention of directory traversal attacks
+- **File Validation**: Secure file upload with size limits (10MB)
 - **Responsive Design**: Works on desktop and mobile devices
 
 ## Tech Stack
