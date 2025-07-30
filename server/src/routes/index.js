@@ -396,7 +396,24 @@ router.get('/files/*', async (req, res) => {
     if (fileType === 'markdown' || fileType === 'text') {
       // Read as text
       const content = await fs.readFile(fullPath, 'utf8');
-      res.json({content, path: filePath, fileType});
+      
+      // For markdown files, return both full content and clean content
+      if (fileType === 'markdown') {
+        const { getCleanMarkdownContent, extractComments } = require('../utils/commentParser');
+        const cleanContent = getCleanMarkdownContent(content);
+        const comments = extractComments(content);
+        
+        res.json({
+          content, // Full content with comments for saving
+          cleanContent, // Clean content for editing
+          comments, // Extracted comments
+          path: filePath, 
+          fileType,
+          hasComments: comments.length > 0
+        });
+      } else {
+        res.json({content, path: filePath, fileType});
+      }
     } else if (fileType === 'image' || fileType === 'pdf') {
       // Read as binary and convert to base64
       const buffer = await fs.readFile(fullPath);
@@ -1089,6 +1106,240 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
   } catch (error) {
     console.error('Error creating file from template:', error);
     res.status(500).json({error: 'Failed to create file from template'});
+  }
+});
+
+// Comment management endpoints
+
+const {
+  extractComments,
+  getCleanMarkdownContent,
+  injectComments,
+  addComment,
+  removeComment,
+  updateComment,
+  sortCommentsByNewest,
+  isValidComment
+} = require('../utils/commentParser');
+
+// Get comments for a specific file
+router.get('/comments/*', async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const fullPath = path.join(contentDir, filePath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    // Check if file exists and is a markdown file
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    const content = await fs.readFile(fullPath, 'utf8');
+    const comments = extractComments(content);
+    const sortedComments = sortCommentsByNewest(comments);
+    
+    res.json({
+      filePath,
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error getting comments:', error);
+    res.status(500).json({error: 'Failed to get comments'});
+  }
+});
+
+// Add a new comment to a file
+router.post('/comments/*', requireAuth, async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const { content: commentContent } = req.body;
+    const fullPath = path.join(contentDir, filePath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    if (!commentContent || typeof commentContent !== 'string' || !commentContent.trim()) {
+      return res.status(400).json({error: 'Comment content is required'});
+    }
+
+    // Read the current file content
+    const markdownContent = await fs.readFile(fullPath, 'utf8');
+    
+    // Extract existing comments and clean content
+    const existingComments = extractComments(markdownContent);
+    const cleanContent = getCleanMarkdownContent(markdownContent);
+    
+    // Add the new comment
+    const newComment = {
+      author: req.user.username,
+      content: commentContent.trim()
+    };
+    
+    const updatedComments = addComment(existingComments, newComment);
+    
+    // Inject comments back into the content
+    const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
+    
+    // Save the updated content
+    await fs.writeFile(fullPath, updatedMarkdownContent, 'utf8');
+    
+    // Return the new comment and updated list
+    const sortedComments = sortCommentsByNewest(updatedComments);
+    const newCommentData = sortedComments.find(c => c.author === req.user.username && c.content === commentContent.trim());
+    
+    res.json({
+      message: 'Comment added successfully',
+      comment: newCommentData,
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error adding comment:', error);
+    res.status(500).json({error: 'Failed to add comment'});
+  }
+});
+
+// Update an existing comment
+router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const commentId = req.params.commentId;
+    const { content: commentContent } = req.body;
+    const fullPath = path.join(contentDir, filePath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    if (!commentContent || typeof commentContent !== 'string' || !commentContent.trim()) {
+      return res.status(400).json({error: 'Comment content is required'});
+    }
+
+    // Read the current file content
+    const markdownContent = await fs.readFile(fullPath, 'utf8');
+    
+    // Extract existing comments and clean content
+    const existingComments = extractComments(markdownContent);
+    const cleanContent = getCleanMarkdownContent(markdownContent);
+    
+    // Find the comment to update
+    const commentToUpdate = existingComments.find(c => c.id === commentId);
+    if (!commentToUpdate) {
+      return res.status(404).json({error: 'Comment not found'});
+    }
+
+    // Check if user can update this comment (only author can update)
+    if (commentToUpdate.author !== req.user.username) {
+      return res.status(403).json({error: 'You can only update your own comments'});
+    }
+    
+    // Update the comment
+    const updatedComments = updateComment(existingComments, commentId, {
+      content: commentContent.trim()
+    });
+    
+    // Inject comments back into the content
+    const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
+    
+    // Save the updated content
+    await fs.writeFile(fullPath, updatedMarkdownContent, 'utf8');
+    
+    // Return the updated comment and list
+    const sortedComments = sortCommentsByNewest(updatedComments);
+    const updatedComment = sortedComments.find(c => c.id === commentId);
+    
+    res.json({
+      message: 'Comment updated successfully',
+      comment: updatedComment,
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error updating comment:', error);
+    res.status(500).json({error: 'Failed to update comment'});
+  }
+});
+
+// Delete a comment
+router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
+  try {
+    const filePath = req.params[0];
+    const commentId = req.params.commentId;
+    const fullPath = path.join(contentDir, filePath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    // Read the current file content
+    const markdownContent = await fs.readFile(fullPath, 'utf8');
+    
+    // Extract existing comments and clean content
+    const existingComments = extractComments(markdownContent);
+    const cleanContent = getCleanMarkdownContent(markdownContent);
+    
+    // Find the comment to delete
+    const commentToDelete = existingComments.find(c => c.id === commentId);
+    if (!commentToDelete) {
+      return res.status(404).json({error: 'Comment not found'});
+    }
+
+    // Check if user can delete this comment (only author can delete)
+    if (commentToDelete.author !== req.user.username) {
+      return res.status(403).json({error: 'You can only delete your own comments'});
+    }
+    
+    // Remove the comment
+    const updatedComments = removeComment(existingComments, commentId);
+    
+    // Inject comments back into the content (or just clean content if no comments left)
+    const updatedMarkdownContent = updatedComments.length > 0 
+      ? injectComments(cleanContent, updatedComments)
+      : cleanContent;
+    
+    // Save the updated content
+    await fs.writeFile(fullPath, updatedMarkdownContent, 'utf8');
+    
+    // Return the updated list
+    const sortedComments = sortCommentsByNewest(updatedComments);
+    
+    res.json({
+      message: 'Comment deleted successfully',
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error deleting comment:', error);
+    res.status(500).json({error: 'Failed to delete comment'});
   }
 });
 

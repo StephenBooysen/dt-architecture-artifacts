@@ -459,4 +459,72 @@ export const getAllUsers = async () => {
   }
 };
 
+/**
+ * Comment management functions
+ */
+
+/**
+ * Gets all comments for a specific file.
+ * @param {string} filePath - The path to the file.
+ * @return {Promise<Object>} The comments data.
+ */
+export const getComments = async (filePath) => {
+  try {
+    const response = await api.get(`/comments/${filePath}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    throw error;
+  }
+};
+
+/**
+ * Adds a new comment to a file.
+ * @param {string} filePath - The path to the file.
+ * @param {string} content - The comment content.
+ * @return {Promise<Object>} The response with new comment and updated list.
+ */
+export const addComment = async (filePath, content) => {
+  try {
+    const response = await api.post(`/comments/${filePath}`, { content });
+    return response.data;
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an existing comment.
+ * @param {string} filePath - The path to the file.
+ * @param {string} commentId - The ID of the comment to update.
+ * @param {string} content - The updated comment content.
+ * @return {Promise<Object>} The response with updated comment and list.
+ */
+export const updateComment = async (filePath, commentId, content) => {
+  try {
+    const response = await api.put(`/comments/${commentId}/${filePath}`, { content });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating comment:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a comment.
+ * @param {string} filePath - The path to the file.
+ * @param {string} commentId - The ID of the comment to delete.
+ * @return {Promise<Object>} The response with updated comment list.
+ */
+export const deleteComment = async (filePath, commentId) => {
+  try {
+    const response = await api.delete(`/comments/${commentId}/${filePath}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
+  }
+};
+
 export default api;

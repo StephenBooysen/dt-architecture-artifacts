@@ -31,7 +31,9 @@ import PDFViewer from './PDFViewer';
 import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import FileDownloader from './FileDownloader';
+import CommentsSection from './CommentsSection';
 import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
+import { getCleanMarkdownContent, injectComments, extractComments } from '../utils/commentParser';
 import { useTheme } from '../contexts/ThemeContext';
 
 /**
@@ -52,9 +54,37 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
   const { isDark } = useTheme();
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [cleanContent, setCleanContent] = useState('');
+  const [commentsForFile, setCommentsForFile] = useState([]);
 
   const fileType = fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN;
   const isMarkdown = fileType === FILE_TYPES.MARKDOWN;
+
+  // Separate clean content from comments when content changes
+  useEffect(() => {
+    if (content && isMarkdown) {
+      const cleanMarkdown = getCleanMarkdownContent(content);
+      const comments = extractComments(content);
+      setCleanContent(cleanMarkdown);
+      setCommentsForFile(comments);
+    } else {
+      setCleanContent(content || '');
+      setCommentsForFile([]);
+    }
+  }, [content, isMarkdown]);
+
+  // Handle content changes in the editor
+  const handleContentChange = (newCleanContent) => {
+    setCleanContent(newCleanContent || '');
+    
+    // Combine clean content with existing comments for the full content
+    if (isMarkdown && commentsForFile.length > 0) {
+      const fullContent = injectComments(newCleanContent || '', commentsForFile);
+      onChange(fullContent);
+    } else {
+      onChange(newCleanContent || '');
+    }
+  };
 
   const handleFileNameClick = () => {
     if (fileName && onRename) {
@@ -192,17 +222,36 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
         </div>
       </div>
 
-      <div className="editor-content flex-grow-1 d-flex flex-column">
-        <div className="editor-pane flex-grow-1">
+      <div className="editor-content flex-grow-1 d-flex flex-column" style={{ height: 'calc(100vh - 120px)' }}>
+        <div className="editor-pane" style={{ height: '60%', minHeight: '300px' }}>
           <MDEditor
-            value={content}
-            onChange={(val) => onChange(val || '')}
+            value={cleanContent}
+            onChange={handleContentChange}
             preview="edit"
             hideToolbar={false}
             data-color-mode={isDark ? 'dark' : 'light'}
             height="100%"
           />
         </div>
+        
+        {/* Comments section for markdown files */}
+        {isMarkdown && (
+          <div 
+            className="comments-container mt-3 px-3 border-top" 
+            style={{ 
+              height: '40%', 
+              minHeight: '200px',
+              overflowY: 'auto',
+              borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+              paddingTop: '1rem'
+            }}
+          >
+            <CommentsSection 
+              fileName={fileName} 
+              isVisible={true}
+            />
+          </div>
+        )}
       </div>
 
       {showRenameDialog && (
