@@ -337,12 +337,9 @@ const TemplatesList = ({
 
       {/* Create Template Modal */}
       {showCreateModal && (
-        <div 
-          className="modal fade show" 
-          style={{
-            display: 'block',
-            backgroundColor: 'rgba(9, 30, 66, 0.54)'
-          }}
+                <div 
+          className={`modal fade ${showCreateModal ? 'show' : ''}`} 
+          style={{ display: showCreateModal ? 'block' : 'none' }}
           tabIndex="-1"
           onClick={closeModals}
         >
@@ -423,12 +420,9 @@ const TemplatesList = ({
 
       {/* Edit Template Modal */}
       {showEditModal && (
-        <div 
-          className="modal fade show" 
-          style={{
-            display: 'block',
-            backgroundColor: 'rgba(9, 30, 66, 0.54)'
-          }}
+                <div 
+          className={`modal fade ${showCreateModal ? 'show' : ''}`} 
+          style={{ display: showCreateModal ? 'block' : 'none' }}
           tabIndex="-1"
           onClick={closeModals}
         >
@@ -508,12 +502,9 @@ const TemplatesList = ({
 
       {/* Use Template Modal */}
       {showUseTemplateModal && selectedTemplate && (
-        <div 
-          className="modal fade show" 
-          style={{
-            display: 'block',
-            backgroundColor: 'rgba(9, 30, 66, 0.54)'
-          }}
+                <div 
+          className={`modal fade ${showCreateModal ? 'show' : ''}`} 
+          style={{ display: showCreateModal ? 'block' : 'none' }}
           tabIndex="-1"
           onClick={closeModals}
         >

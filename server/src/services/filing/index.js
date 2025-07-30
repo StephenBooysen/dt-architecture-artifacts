@@ -5,6 +5,7 @@
 const LocalFilingProvider = require('./providers/filingLocal');
 const FtpFilingProvider = require('./providers/filingFtp');
 const S3FilingProvider = require('./providers/filingS3');
+const FilingGitProvider = require('./providers/filingGit');
 
 class FilingService {
   constructor(provider, eventEmitter) {
@@ -82,6 +83,9 @@ function createFilingService(type = 'local', options, eventEmitter) {
     case 's3':
       provider = new S3FilingProvider(options, eventEmitter);
       break;
+    case 'git':
+        provider = new FilingGitProvider(options, eventEmitter);
+        break;
     default:
       provider = new LocalFilingProvider(options, eventEmitter);
   }
