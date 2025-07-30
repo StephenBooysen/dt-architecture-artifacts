@@ -19,14 +19,14 @@
 
 #### Server
 - Services: Screens should work
-- Log out button should redirect to landing page - Done
-- Put log out in header - Done
+- Log out button should redirect to landing page - done
+- Put log out in header - done
 - File manager for folders 
 - File manager for git 
-- 
+- - done
 #### Plugins
-- Ms word to markdonw
-- MS Powerpoint to markdown
+- Ms word to markdown 
+- MS powerpoint to markdown
 - Slide viewer
 
 ### Phase 2

@@ -13,7 +13,9 @@ class WordToMarkdownConverter {
 
   async convertFile(inputPath, outputPath = null) {
     try {
-      if (!await fs.pathExists(inputPath)) {
+                        try {
+        await fs.promises.access(inputPath);
+      } catch (e) {
         throw new Error(`Input file does not exist: ${inputPath}`);
       }
 
@@ -36,7 +38,7 @@ class WordToMarkdownConverter {
 
       return result;
     } catch (error) {
-      throw new Error(`Conversion failed: ${error.message}`);
+            throw error;
     }
   }
 

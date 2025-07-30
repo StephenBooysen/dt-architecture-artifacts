@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "node-pptx": "^1.0.0"
+  }
+}
