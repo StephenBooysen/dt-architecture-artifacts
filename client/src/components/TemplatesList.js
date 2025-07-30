@@ -11,6 +11,7 @@
 
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { createFileFromTemplate } from '../services/api';
 
 /**
  * TemplatesList component for displaying and managing templates in the main content area.
@@ -38,6 +39,10 @@ const TemplatesList = ({
   const [templateContent, setTemplateContent] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
   const [templateVariables, setTemplateVariables] = useState('{}');
+  const [showUseTemplateModal, setShowUseTemplateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [newFileName, setNewFileName] = useState('');
+  const [newFilePath, setNewFilePath] = useState('');
 
   const handleCreateTemplate = async (e) => {
     e.preventDefault();
@@ -138,8 +143,59 @@ const TemplatesList = ({
   const closeModals = () => {
     setShowCreateModal(false);
     setShowEditModal(false);
+    setShowUseTemplateModal(false);
     setEditingTemplate(null);
+    setSelectedTemplate(null);
+    setNewFileName('');
+    setNewFilePath('');
     resetForm();
+  };
+
+  const handleUseTemplate = (template) => {
+    setSelectedTemplate(template);
+    setNewFileName('');
+    setNewFilePath('');
+    setShowUseTemplateModal(true);
+  };
+
+  const handleCreateFromTemplate = async (e) => {
+    e.preventDefault();
+    
+    if (!newFileName.trim()) {
+      toast.error('File name is required');
+      return;
+    }
+
+    const fileName = newFileName.trim();
+    const folderPath = newFilePath.trim();
+    
+    // Ensure .md extension
+    const finalFileName = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
+    const fullPath = folderPath ? `${folderPath}/${finalFileName}` : finalFileName;
+
+    try {
+      const result = await createFileFromTemplate(
+        selectedTemplate.name.replace('.md', ''),
+        fullPath
+      );
+      
+      toast.success(`File created successfully: ${result.path}`);
+      setShowUseTemplateModal(false);
+      setSelectedTemplate(null);
+      setNewFileName('');
+      setNewFilePath('');
+      
+      // Trigger file tree refresh if available
+      if (window.location.reload) {
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    } catch (error) {
+      if (error.response?.status === 409) {
+        toast.error('File already exists. Please choose a different name.');
+      } else {
+        toast.error(`Failed to create file: ${error.response?.data?.error || error.message}`);
+      }
+    }
   };
 
   const handleTemplateClick = (template) => {
@@ -254,13 +310,22 @@ const TemplatesList = ({
                     )}
                     
                     <div className="mt-auto">
-                      <button
-                        className="btn btn-primary w-100"
-                        onClick={() => handleTemplateClick(template)}
-                      >
-                        <i className="bi bi-pencil me-2"></i>
-                        Edit Template
-                      </button>
+                      <div className="d-grid gap-2">
+                        <button
+                          className="btn btn-success"
+                          onClick={() => handleUseTemplate(template)}
+                        >
+                          <i className="bi bi-plus-circle me-2"></i>
+                          Use Template
+                        </button>
+                        <button
+                          className="btn btn-outline-primary"
+                          onClick={() => handleTemplateClick(template)}
+                        >
+                          <i className="bi bi-pencil me-2"></i>
+                          Edit Template
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -273,27 +338,19 @@ const TemplatesList = ({
       {/* Create Template Modal */}
       {showCreateModal && (
         <div 
-          className="modal-overlay" 
+          className="modal fade show" 
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(9, 30, 66, 0.54)',
-            zIndex: 1050,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem'
+            display: 'block',
+            backgroundColor: 'rgba(9, 30, 66, 0.54)'
           }}
+          tabIndex="-1"
           onClick={closeModals}
         >
-          <div className="modal-dialog" style={{ margin: 0, maxWidth: '800px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Create New Template</h5>
-                <button type="button" className="btn-close" onClick={closeModals}></button>
+                <button type="button" className="btn-close" onClick={closeModals} aria-label="Close"></button>
               </div>
               <form onSubmit={handleCreateTemplate}>
                 <div className="modal-body">
@@ -367,27 +424,19 @@ const TemplatesList = ({
       {/* Edit Template Modal */}
       {showEditModal && (
         <div 
-          className="modal-overlay" 
+          className="modal fade show" 
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(9, 30, 66, 0.54)',
-            zIndex: 1050,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem'
+            display: 'block',
+            backgroundColor: 'rgba(9, 30, 66, 0.54)'
           }}
+          tabIndex="-1"
           onClick={closeModals}
         >
-          <div className="modal-dialog" style={{ margin: 0, maxWidth: '800px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Edit Template Settings</h5>
-                <button type="button" className="btn-close" onClick={closeModals}></button>
+                <button type="button" className="btn-close" onClick={closeModals} aria-label="Close"></button>
               </div>
               <form onSubmit={handleEditTemplate}>
                 <div className="modal-body">
@@ -449,6 +498,88 @@ const TemplatesList = ({
                   </button>
                   <button type="submit" className="btn btn-primary">
                     Update Template
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Use Template Modal */}
+      {showUseTemplateModal && selectedTemplate && (
+        <div 
+          className="modal fade show" 
+          style={{
+            display: 'block',
+            backgroundColor: 'rgba(9, 30, 66, 0.54)'
+          }}
+          tabIndex="-1"
+          onClick={closeModals}
+        >
+          <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Create File from Template</h5>
+                <button type="button" className="btn-close" onClick={closeModals} aria-label="Close"></button>
+              </div>
+              <form onSubmit={handleCreateFromTemplate}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label fw-bold">Template: {selectedTemplate.name}</label>
+                    {selectedTemplate.description && (
+                      <p className="text-muted small mb-3">{selectedTemplate.description}</p>
+                    )}
+                  </div>
+                  
+                  <div className="mb-3">
+                    <label htmlFor="new-file-name" className="form-label">File Name:</label>
+                    <input
+                      id="new-file-name"
+                      type="text"
+                      className="form-control"
+                      value={newFileName}
+                      onChange={(e) => setNewFileName(e.target.value)}
+                      placeholder="e.g., my-meeting-notes"
+                      required
+                    />
+                    <div className="form-text">The .md extension will be added automatically if not provided.</div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <label htmlFor="new-file-path" className="form-label">Folder Path (optional):</label>
+                    <input
+                      id="new-file-path"
+                      type="text"
+                      className="form-control"
+                      value={newFilePath}
+                      onChange={(e) => setNewFilePath(e.target.value)}
+                      placeholder="e.g., meetings/2025"
+                    />
+                    <div className="form-text">Leave empty to create in the root directory.</div>
+                  </div>
+
+                  <div className="alert alert-info">
+                    <h6 className="alert-heading">Template Placeholders</h6>
+                    <p className="mb-1 small">The following placeholders will be automatically replaced:</p>
+                    <ul className="mb-0 small">
+                      <li><code>&#123;datetime&#125;</code> → Current date and time</li>
+                      <li><code>&#123;date&#125;</code> → Current date</li>
+                      <li><code>&#123;user&#125;</code> → Your username</li>
+                      <li><code>&#123;dayofweek&#125;</code> → Day of the week (e.g., Monday)</li>
+                      <li><code>&#123;folder&#125;</code> → Target folder path</li>
+                      <li><code>&#123;filename&#125;</code> → Target filename</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={closeModals}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-success">
+                    <i className="bi bi-plus-circle me-2"></i>
+                    Create File
                   </button>
                 </div>
               </form>

@@ -137,6 +137,62 @@ function detectFileType(fileName) {
 }
 
 /**
+ * Replaces dynamic placeholders in template content with actual values.
+ * 
+ * This function processes template content and replaces special placeholder
+ * indicators with real-time generated values like dates, user info, and file paths.
+ * 
+ * @param {string} content - The template content containing placeholders
+ * @param {Object} context - Context information for placeholder replacement
+ * @param {string} context.folder - Target folder path (empty string for root)
+ * @param {string} context.filename - Target filename
+ * @param {string} context.user - Current authenticated user
+ * @return {string} Content with placeholders replaced
+ */
+function replacePlaceholders(content, context = {}) {
+  if (!content) return content;
+  
+  const now = new Date();
+  
+  // Format date and time values
+  const datetime = now.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  
+  const date = now.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  // Prepare replacement values
+  const replacements = {
+    '{datetime}': datetime,
+    '{date}': date,
+    '{user}': context.user || 'Unknown User',
+    '{dayofweek}': dayOfWeek,
+    '{folder}': context.folder || '',
+    '{filename}': context.filename || ''
+  };
+  
+  // Replace all placeholders
+  let processedContent = content;
+  for (const [placeholder, value] of Object.entries(replacements)) {
+    processedContent = processedContent.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
+  }
+  
+  return processedContent;
+}
+
+/**
  * Recursively builds a directory tree structure for all files.
  * @param {string} dirPath - The directory path to scan.
  * @param {string} relativePath - The relative path from the content root.
@@ -942,6 +998,97 @@ router.delete('/templates/:templateName', async (req, res) => {
   } catch (error) {
     console.error('Error deleting template:', error);
     res.status(500).json({error: 'Failed to delete template'});
+  }
+});
+
+// Create file from template with placeholder replacement
+router.post('/templates/:templateName/create-file', async (req, res) => {
+  try {
+    const templateName = req.params.templateName;
+    const { filePath, customVariables = {} } = req.body;
+    
+    if (!filePath) {
+      return res.status(400).json({error: 'File path is required'});
+    }
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Only markdown files (.md) are allowed'});
+    }
+
+    // Load the template
+    const templatesDir = path.resolve('./content-templates');
+    const templateFile = `${templateName.replace('.md', '')}.json`;
+    const templateFilePath = path.join(templatesDir, templateFile);
+    
+    let templateData;
+    try {
+      templateData = JSON.parse(await fs.readFile(templateFilePath, 'utf8'));
+    } catch (error) {
+      return res.status(404).json({error: 'Template not found'});
+    }
+
+    // Prepare context for placeholder replacement
+    const fileName = path.basename(filePath, '.md');
+    const folderPath = path.dirname(filePath);
+    const folder = folderPath === '.' ? '' : folderPath;
+    const user = req.user ? req.user.username : 'Test User';
+    
+    const context = {
+      folder,
+      filename: fileName,
+      user
+    };
+
+    // Replace dynamic placeholders
+    let processedContent = replacePlaceholders(templateData.content || '', context);
+
+    // Replace custom template variables if they exist
+    if (templateData.variables || Object.keys(customVariables).length > 0) {
+      const allVariables = { ...templateData.variables, ...customVariables };
+      
+      for (const [key, value] of Object.entries(allVariables)) {
+        const placeholder = `{{${key}}}`;
+        processedContent = processedContent.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
+      }
+    }
+
+    // Ensure content directory exists
+    await ensureContentDir();
+    
+    const fullPath = path.join(contentDir, filePath);
+    
+    if (!fullPath.startsWith(contentDir)) {
+      return res.status(403).json({error: 'Access denied'});
+    }
+
+    // Check if file already exists
+    try {
+      await fs.access(fullPath);
+      return res.status(409).json({error: 'File already exists'});
+    } catch {
+      // File doesn't exist, continue with creation
+    }
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(fullPath), {recursive: true});
+    await fs.writeFile(fullPath, processedContent, 'utf8');
+    
+    res.json({
+      message: 'File created from template successfully', 
+      path: filePath,
+      templateUsed: templateName,
+      placeholdersReplaced: {
+        datetime: true,
+        date: true,
+        user: true,
+        dayofweek: true,
+        folder: folder !== '',
+        filename: true
+      }
+    });
+  } catch (error) {
+    console.error('Error creating file from template:', error);
+    res.status(500).json({error: 'Failed to create file from template'});
   }
 });
 

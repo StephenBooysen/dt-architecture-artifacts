@@ -2,21 +2,16 @@
 GET http://localhost:5000/api/queueing/status
 
 ### Queueing API Enqueue
-POST http://localhost:5000/api/queueing/enqueue
+POST http://localhost:5000/api/queueing/enqueue/myqueue
 Content-Type: application/json
 
 {
-  "task": {
-    "name": "testTask",
-    "data": {
-      "param1": "value1"
-    }
-  }
+  "value" : "Some data"
 }
 
 ### Queueing API Dequeue
-GET http://localhost:5000/api/queueing/dequeue
+GET http://localhost:5000/api/queueing/dequeue/myqueue
 
 
 ### Queueing API Size
-GET http://localhost:5000/api/queueing/size
+GET http://localhost:5000/api/queueing/size/myqueue

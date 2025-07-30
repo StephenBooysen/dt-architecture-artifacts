@@ -330,6 +330,26 @@ export const deleteTemplate = async (templateName) => {
 };
 
 /**
+ * Creates a new file from a template with placeholder replacement.
+ * @param {string} templateName - The name of the template to use.
+ * @param {string} filePath - The path where the new file should be created.
+ * @param {Object} customVariables - Optional custom variables to replace in template.
+ * @return {Promise<Object>} The creation response.
+ */
+export const createFileFromTemplate = async (templateName, filePath, customVariables = {}) => {
+  try {
+    const response = await api.post(`/templates/${templateName}/create-file`, {
+      filePath,
+      customVariables
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating file from template:', error);
+    throw error;
+  }
+};
+
+/**
  * Searches for files by name.
  * @param {string} query - The search query.
  * @return {Promise<Array>} Array of file suggestions.

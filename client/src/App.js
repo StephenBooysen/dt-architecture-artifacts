@@ -120,6 +120,115 @@ function AppContent() {
     }
   }, [loading, isAuthenticated]);
 
+  // Set up periodic sync to catch external changes
+  useEffect(() => {
+    if (isAuthenticated && files.length > 0) {
+      const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
+      
+      return () => clearInterval(syncInterval);
+    }
+  }, [isAuthenticated, files.length]);
+
+  // Tree manipulation utilities for local updates
+  const findNodeInTree = (tree, path) => {
+    for (const node of tree) {
+      if (node.path === path) {
+        return node;
+      }
+      if (node.type === 'directory' && node.children) {
+        const found = findNodeInTree(node.children, path);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const findParentInTree = (tree, childPath) => {
+    const pathParts = childPath.split('/');
+    if (pathParts.length === 1) return null; // Root level
+    
+    const parentPath = pathParts.slice(0, -1).join('/');
+    return findNodeInTree(tree, parentPath);
+  };
+
+  const addNodeToTree = (tree, newNode, parentPath = null) => {
+    const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
+    
+    if (!parentPath) {
+      // Add to root level
+      newTree.push(newNode);
+      return sortTree(newTree);
+    }
+    
+    const parent = findNodeInTree(newTree, parentPath);
+    if (parent && parent.type === 'directory') {
+      if (!parent.children) {
+        parent.children = [];
+      }
+      parent.children.push(newNode);
+      parent.children = sortTree(parent.children);
+    } else {
+      // If parent not found, try to create parent structure or add to root
+      console.warn(`Parent path ${parentPath} not found, adding to root`);
+      newTree.push(newNode);
+      return sortTree(newTree);
+    }
+    
+    return newTree;
+  };
+
+  const removeNodeFromTree = (tree, targetPath) => {
+    const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
+    
+    const removeFromLevel = (nodes) => {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].path === targetPath) {
+          nodes.splice(i, 1);
+          return true;
+        }
+        if (nodes[i].type === 'directory' && nodes[i].children) {
+          if (removeFromLevel(nodes[i].children)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    removeFromLevel(newTree);
+    return newTree;
+  };
+
+  const updateNodeInTree = (tree, targetPath, updates) => {
+    const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
+    
+    const updateInLevel = (nodes) => {
+      for (const node of nodes) {
+        if (node.path === targetPath) {
+          Object.assign(node, updates);
+          return true;
+        }
+        if (node.type === 'directory' && node.children) {
+          if (updateInLevel(node.children)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    updateInLevel(newTree);
+    return newTree;
+  };
+
+  const sortTree = (nodes) => {
+    return [...nodes].sort((a, b) => {
+      if (a.type === 'directory' && b.type === 'file') return -1;
+      if (a.type === 'file' && b.type === 'directory') return 1;
+      return a.name.localeCompare(b.name);
+    });
+  };
+
   const loadFiles = async (force = false) => {
     try {
       setIsLoading(true);
@@ -134,6 +243,22 @@ function AppContent() {
       toast.error('Failed to load files');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Periodic sync with server to catch external changes
+  const syncFiles = async () => {
+    try {
+      const fileTree = await fetchFiles();
+      const updatedTree = diffAndUpdateTree(files, fileTree);
+      
+      // Only update if tree actually changed (silent sync)
+      if (JSON.stringify(updatedTree) !== JSON.stringify(files)) {
+        setFiles(updatedTree);
+      }
+    } catch (error) {
+      // Silent failure for background sync
+      console.warn('Background sync failed:', error);
     }
   };
 
@@ -258,95 +383,138 @@ function AppContent() {
   };
 
   const handleCreateFolder = async (folderPath) => {
+    // Optimistic update - add folder to tree immediately
+    const pathParts = folderPath.split('/');
+    const folderName = pathParts[pathParts.length - 1];
+    const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
+    
+    const newFolder = {
+      name: folderName,
+      type: 'directory',
+      path: folderPath,
+      children: []
+    };
+    
+    // Update tree locally first
+    const updatedTree = addNodeToTree(files, newFolder, parentPath);
+    setFiles(updatedTree);
+    
+    // Expand all parent folders of the newly created folder  
+    const newExpanded = new Set(expandedFolders);
+    for (let i = 0; i < pathParts.length; i++) {
+      const parentPath = pathParts.slice(0, i + 1).join('/');
+      newExpanded.add(parentPath);
+    }
+    setExpandedFolders(newExpanded);
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       await createFolder(folderPath);
-      
-      // Expand all parent folders of the newly created folder
-      const pathParts = folderPath.split('/');
-      const newExpanded = new Set(expandedFolders);
-      
-      // Add all parent paths to expanded set
-      for (let i = 0; i < pathParts.length; i++) {
-        const parentPath = pathParts.slice(0, i + 1).join('/');
-        newExpanded.add(parentPath);
-      }
-      
-      setExpandedFolders(newExpanded);
-      await loadFiles(true); // Force refresh after creating folder
       toast.success('Folder created successfully');
     } catch (error) {
+      // Rollback on error - remove the folder from tree
+      setFiles(files);
       toast.error('Failed to create folder');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleCreateFile = async (filePath, templateContent = '') => {
+    // Optimistic update - add file to tree immediately
+    const pathParts = filePath.split('/');
+    const fileName = pathParts[pathParts.length - 1];
+    const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
+    
+    const newFile = {
+      name: fileName,
+      type: 'file',
+      path: filePath,
+      fileType: 'markdown' // Assume markdown for now
+    };
+    
+    // Update tree locally first
+    const updatedTree = addNodeToTree(files, newFile, parentPath);
+    setFiles(updatedTree);
+    
+    // Expand all parent folders of the newly created file
+    const newExpanded = new Set(expandedFolders);
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      const parentPath = pathParts.slice(0, i + 1).join('/');
+      newExpanded.add(parentPath);
+    }
+    setExpandedFolders(newExpanded);
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       await createFile(filePath, templateContent);
-      
-      // Expand all parent folders of the newly created file
-      const pathParts = filePath.split('/');
-      const newExpanded = new Set(expandedFolders);
-      
-      // Add all parent directory paths to expanded set (exclude the file itself)
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        const parentPath = pathParts.slice(0, i + 1).join('/');
-        newExpanded.add(parentPath);
-      }
-      
-      setExpandedFolders(newExpanded);
-      await loadFiles(true); // Force refresh after creating file
       toast.success('File created successfully');
       // Automatically open the newly created file
       await handleFileSelect(filePath);
     } catch (error) {
+      // Rollback on error - remove the file from tree
+      setFiles(files);
       toast.error('Failed to create file');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleDeleteItem = async (itemPath) => {
+    // Store original tree for rollback
+    const originalTree = files;
+    
+    // Optimistic update - remove item from tree immediately
+    const updatedTree = removeNodeFromTree(files, itemPath);
+    setFiles(updatedTree);
+    
+    // If the deleted item was the currently selected file, clear the selection
+    if (selectedFile === itemPath) {
+      setSelectedFile(null);
+      setFileContent('');
+      setFileData(null);
+      setHasChanges(false);
+    }
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       await deleteItem(itemPath);
-      await loadFiles(true); // Force refresh after deleting item
-      
-      // If the deleted item was the currently selected file, clear the selection
-      if (selectedFile === itemPath) {
-        setSelectedFile(null);
-        setFileContent('');
-        setFileData(null);
-        setHasChanges(false);
-      }
-      
       toast.success('Item deleted successfully');
     } catch (error) {
+      // Rollback on error - restore original tree
+      setFiles(originalTree);
       toast.error('Failed to delete item');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleRenameItem = async (itemPath, newName) => {
+    // Store original tree for rollback
+    const originalTree = files;
+    
+    // Calculate new path
+    const pathParts = itemPath.split('/');
+    pathParts[pathParts.length - 1] = newName;
+    const newPath = pathParts.join('/');
+    
+    // Optimistic update - rename item in tree immediately
+    const updatedTree = updateNodeInTree(files, itemPath, {
+      name: newName,
+      path: newPath
+    });
+    setFiles(updatedTree);
+    
+    // If the renamed item was the currently selected file, update the selection
+    if (selectedFile === itemPath) {
+      setSelectedFile(newPath);
+    }
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       const result = await renameItem(itemPath, newName);
-      await loadFiles(true); // Force refresh after renaming item
-      
-      // If the renamed item was the currently selected file, update the selection
-      if (selectedFile === itemPath) {
-        setSelectedFile(result.newPath);
-      }
-      
       toast.success('Item renamed successfully');
     } catch (error) {
+      // Rollback on error - restore original tree and selection
+      setFiles(originalTree);
+      if (selectedFile === newPath) {
+        setSelectedFile(itemPath);
+      }
       toast.error('Failed to rename item');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -394,10 +562,37 @@ function AppContent() {
 
 
   const handleFileUpload = useCallback(async (filePath) => {
-    // Refresh file tree after upload
-    await loadFiles(true);
+    // Optimistic update - add uploaded file to tree immediately
+    const pathParts = filePath.split('/');
+    const fileName = pathParts[pathParts.length - 1];
+    const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
+    
+    // Detect file type from extension
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    let fileType = 'unknown';
+    if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].includes(`.${extension}`)) {
+      fileType = 'image';
+    } else if (extension === 'pdf') {
+      fileType = 'pdf';
+    } else if (['.txt', '.json', '.xml', '.csv', '.log', '.js', '.ts', '.css', '.html'].includes(`.${extension}`)) {
+      fileType = 'text';
+    } else if (['.md', '.markdown'].includes(`.${extension}`)) {
+      fileType = 'markdown';
+    }
+    
+    const newFile = {
+      name: fileName,
+      type: 'file',
+      path: filePath,
+      fileType: fileType
+    };
+    
+    // Update tree locally
+    const updatedTree = addNodeToTree(files, newFile, parentPath);
+    setFiles(updatedTree);
+    
     toast.success('File uploaded successfully');
-  }, []);
+  }, [files]);
 
   const handleFolderToggle = useCallback((folderPath, isExpanded) => {
     const newExpanded = new Set(expandedFolders);

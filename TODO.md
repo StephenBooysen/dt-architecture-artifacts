@@ -9,12 +9,12 @@
 ### Phase 1
 #### Client
 - Templates: Add templates list view and remove from left nav - done
-- Templates: replace fields like {datetime}, {date}, {user}, {dayofweek}, {folder}, {filename}
-- Markdown: Left nav to not refresh completely
+- Templates: replace fields like {datetime}, {date}, {user}, {dayofweek}, {folder}, {filename} - done
+- Markdown: Left nav to not refresh completely - done
 - Security: Make login look like server login - Done
 - Markdowm: Left nav: Recent Files
 - Markdowm: Left nav: (show as starred in search)
-- Markdowm:Comments
+- Markdowm: Comments
 
 
 #### Server

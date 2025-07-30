@@ -354,7 +354,7 @@ const FileTree = ({
             onContextMenu={(e) => handleContextMenu(e, item.path, 'directory')}>
             <div className="folder-content">
               <span className="icon">
-                <i className={`bi ${isCollapsed ? 'bi-folder' : 'bi-folder-open'}`}></i>
+                <i className={`bi ${isCollapsed ? 'bi-folder2' : 'bi-folder2-open'}`}></i>
               </span>
               <span>{item.name}</span>
             </div>

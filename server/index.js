@@ -2072,7 +2072,7 @@ app.get('/services/caching', requireServerAuth, (req, res) => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(value)
+          body: value
         });
         
         if (response.ok) {
@@ -2352,8 +2352,8 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
             </div>
             
             <div class="form-group">
-              <label for="taskData">Task Data:</label>
-              <textarea id="taskData" class="form-control" placeholder="Enter task data (JSON or text)..." required></textarea>
+              <label for="queueData">Queue Data:</label>
+              <textarea id="queueData" class="form-control" placeholder="Enter queue data (JSON or text)..." required></textarea>
             </div>
             
             <button type="button" class="btn btn-success" id="enqueueButton">
@@ -2402,7 +2402,7 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
     </div>
   </div>
 
-    ${getFooter()}
+  ${getFooter()}
   </div>
 
   <script>
@@ -2429,7 +2429,8 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
     // Update queue size display
     async function updateQueueSize() {
       try {
-        const response = await fetch('/api/queueing/size');
+        const queueName = document.getElementById('queueName').value.trim() || 'default';
+        const response = await fetch('/api/queueing/size/' + encodeURIComponent(queueName));
         if (response.ok) {
           const size = await response.json();
           document.getElementById('queueSize').textContent = size;
@@ -2464,14 +2465,14 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
     // Enqueue operation
     document.getElementById('enqueueButton').addEventListener('click', async function() {
       const queueName = document.getElementById('queueName').value.trim();
-      const taskData = document.getElementById('taskData').value.trim();
+      const queueData = document.getElementById('queueData').value.trim();
       
       if (!queueName) {
         showToast('Please enter a queue name', true);
         return;
       }
       
-      if (!taskData) {
+      if (!queueData) {
         showToast('Please enter task data', true);
         return;
       }
@@ -2480,29 +2481,21 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
         this.disabled = true;
         this.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Enqueuing...';
         
-        // Try to parse as JSON, fallback to string if not valid JSON
-        let task;
-        try {
-          task = JSON.parse(taskData);
-        } catch (e) {
-          task = taskData;
-        }
-        
-        const response = await fetch('/api/queueing/enqueue', {
+        const response = await fetch('/api/queueing/enqueue/' + encodeURIComponent(queueName), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ task: task })
+          body: queueData
         });
         
         if (response.ok) {
           const result = await response.text();
           showToast('Task enqueued successfully');
-          showResult(\`Task enqueued to queue "\${queueName}" successfully\`);
+          showResult('Task enqueued to queue \"' + queueName + '\" successfully');
           
           // Clear the task data field
-          document.getElementById('taskData').value = '';
+          document.getElementById('queueData').value = '';
           
           // Update queue size
           updateQueueSize();
@@ -2512,7 +2505,7 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
         }
       } catch (error) {
         showToast('Failed to enqueue task: ' + error.message, true);
-        showResult(\`Error: \${error.message}\`);
+        showResult('Error: ' + error.message);
       } finally {
         this.disabled = false;
         this.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Enqueue Task';
@@ -2532,7 +2525,7 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
         this.disabled = true;
         this.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Dequeuing...';
         
-        const response = await fetch('/api/queueing/dequeue');
+        const response = await fetch('/api/queueing/dequeue/' + encodeURIComponent(queueName));
         
         if (response.ok) {
           const task = await response.json();
@@ -2552,7 +2545,7 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
         }
       } catch (error) {
         showToast('Failed to dequeue task: ' + error.message, true);
-        showResult(\`Error: \${error.message}\`);
+        showResult('Error: ' + error.message);
       } finally {
         this.disabled = false;
         this.innerHTML = '<i class="bi bi-arrow-down-circle me-2"></i>Dequeue Task';
@@ -2565,6 +2558,7 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
         this.disabled = true;
         this.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Refreshing...';
         
+        const queueName = document.getElementById('dequeueQueueName').value.trim() || 'default';
         await updateQueueSize();
         showToast('Queue size refreshed');
       } catch (error) {

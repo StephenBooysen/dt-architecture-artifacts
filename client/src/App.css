@@ -1058,22 +1058,58 @@ mark {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  z-index: 1050 !important;
+  z-index: 1060 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  background-color: rgba(9, 30, 66, 0.54) !important;
 }
 
 .templates-list-container .modal-dialog {
   margin: 0 !important;
   max-width: 90% !important;
   width: 800px !important;
+  position: relative !important;
 }
 
 .templates-list-container .modal-content {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
   border: none !important;
   border-radius: 8px !important;
+  background: var(--confluence-bg-card) !important;
+}
+
+.templates-list-container .modal-header {
+  border-bottom: 1px solid var(--confluence-border) !important;
+  background: var(--confluence-bg-card) !important;
+}
+
+.templates-list-container .modal-footer {
+  border-top: 1px solid var(--confluence-border) !important;
+  background: var(--confluence-bg-card) !important;
+}
+
+.templates-list-container .modal-title {
+  color: var(--confluence-text) !important;
+}
+
+.templates-list-container .form-label {
+  color: var(--confluence-text) !important;
+}
+
+.templates-list-container .form-control {
+  background: var(--confluence-bg-card) !important;
+  color: var(--confluence-text) !important;
+  border: 1px solid var(--confluence-border) !important;
+}
+
+.templates-list-container .form-control:focus {
+  border-color: var(--confluence-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 82, 204, 0.25) !important;
+}
+
+.templates-list-container .form-text {
+  color: var(--confluence-text-subtle) !important;
 }
 
 /* Responsive modal improvements */
