@@ -2,7 +2,7 @@
  * @fileoverview AWS S3 filing provider.
  */
 
-const AWS = require('aws-sdk');
+const AWS = require('@aws-sdk/client-s3');
 
 class S3FilingProvider {
   /**

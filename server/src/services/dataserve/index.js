@@ -21,9 +21,6 @@ function createDataserveService(type, options, eventEmitter) {
     case 'file':
       provider = new DataServeFileProvider(options, eventEmitter);
       break;
-    case 'simpledb':
-      provider = new DataServeSimpleDBProvider(options, eventEmitter);
-      break;
     default:
       provider = new DataServeProvider(options, eventEmitter);
       break;
