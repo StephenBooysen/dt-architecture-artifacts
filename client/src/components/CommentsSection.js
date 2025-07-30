@@ -202,7 +202,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
             <textarea
               id="new-comment"
               className="form-control"
-              rows="3"
+              rows="2"
               value={newCommentContent}
               onChange={(e) => setNewCommentContent(e.target.value)}
               placeholder="Write your comment here..."

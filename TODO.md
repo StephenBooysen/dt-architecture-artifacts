@@ -18,17 +18,12 @@
 
 
 #### Server
-- Services: Add the kool api calls viewer that the main page has
 - Services: Screens should work
-- Monitoring: Monitor files being cached
-- Fix dark view
 - Log out button should redirect to landing page - Done
 - Put log out in header - Done
 - File manager for folders 
 - File manager for git 
-- Cache the files being created and use this data for search
-- Cache the templates and return this in the api
-
+- 
 #### Plugins
 - Ms word to markdonw
 - MS Powerpoint to markdown
