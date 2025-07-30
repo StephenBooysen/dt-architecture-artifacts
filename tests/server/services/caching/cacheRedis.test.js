@@ -2,7 +2,7 @@
  * @fileoverview Unit tests for the Redis-backed cache.
  */
 
-const createCache = require('../../src/caching');
+const createCache = require('../../../../server/src/services/caching');
 const EventEmitter = require('events');
 jest.mock('ioredis', () => {
   const RedisMock = jest.requireActual('ioredis-mock');

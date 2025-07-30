@@ -6,11 +6,11 @@ const workerInstanceMock = {
   stop: jest.fn(),
 };
 
-jest.doMock('../../src/working', () => {
+jest.doMock('../../../../server/src/services/working', () => {
   return jest.fn(() => workerInstanceMock);
 });
 
-const getSchedulerInstance = require('../../src/scheduling');
+const getSchedulerInstance = require('../../../../server/src/services/scheduling');
 
 describe('SchedulerProvider', () => {
   let schedulerInstance;

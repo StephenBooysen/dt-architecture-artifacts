@@ -1,0 +1,179 @@
+### Search API Tests
+### This file contains HTTP tests for all search-related endpoints
+### Use REST Client extension in VS Code to run these tests
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### Setup: Create test files with searchable content first
+
+### 1. Create files with searchable content
+POST {{baseUrl}}/api/files/search-test-1.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Architecture Overview\n\nThis document describes the system architecture for our application.\n\n## Components\n- Frontend: React application\n- Backend: Node.js with Express\n- Database: File-based storage\n- Authentication: Passport.js\n\n## Key Features\n- Real-time collaboration\n- Git integration\n- Template management\n- Search functionality",
+    "message": "Create architecture overview for search testing"
+}
+
+### 2. Create another searchable file
+POST {{baseUrl}}/api/files/search-test-2.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# API Documentation\n\nOur REST API provides comprehensive functionality for managing documents.\n\n## Authentication Endpoints\n- POST /api/auth/login\n- POST /api/auth/logout\n- GET /api/auth/me\n\n## File Management\n- GET /api/files\n- POST /api/files/*\n- DELETE /api/files/*\n\n## Search Capabilities\n- File name search\n- Content search across all documents\n- Real-time search results",
+    "message": "Create API documentation for search testing"
+}
+
+### 3. Create a file in a subfolder
+POST {{baseUrl}}/api/files/docs/user-guide.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# User Guide\n\n## Getting Started\nWelcome to Architecture Artifacts! This guide will help you get started.\n\n## Features\n### Document Management\n- Create and edit markdown files\n- Organize files in folders\n- Real-time preview\n\n### Collaboration\n- Git-based version control\n- Commit and push changes\n- Branch management\n\n### Templates\n- Pre-built templates\n- Custom template creation\n- Variable substitution\n\n### Search\n- Search by filename\n- Full-text content search\n- Advanced filtering",
+    "message": "Create user guide for search testing"
+}
+
+### 4. Create a file with different content
+POST {{baseUrl}}/api/files/project-status.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Project Status Report\n\n## Current Phase\nDevelopment Phase 2 - Implementation\n\n## Completed Tasks\n- [x] Authentication system\n- [x] File management API\n- [x] Basic search functionality\n- [x] Template system\n\n## In Progress\n- [ ] Advanced search features\n- [ ] User interface improvements\n- [ ] Performance optimization\n- [ ] Testing coverage\n\n## Upcoming\n- [ ] Deployment pipeline\n- [ ] Documentation updates\n- [ ] User training materials",
+    "message": "Create project status for search testing"
+}
+
+### File Search Tests
+
+### 5. Search files by name - single word
+GET {{baseUrl}}/api/search/files?q=search
+
+### 6. Search files by name - partial match
+GET {{baseUrl}}/api/search/files?q=test
+
+### 7. Search files by name - extension
+GET {{baseUrl}}/api/search/files?q=.md
+
+### 8. Search files by name - folder structure
+GET {{baseUrl}}/api/search/files?q=docs
+
+### 9. Search files by name - case insensitive
+GET {{baseUrl}}/api/search/files?q=USER
+
+### 10. Search files by name - multiple results
+GET {{baseUrl}}/api/search/files?q=search-test
+
+### Content Search Tests
+
+### 11. Search content - single word
+GET {{baseUrl}}/api/search/content?q=authentication
+
+### 12. Search content - multiple words
+GET {{baseUrl}}/api/search/content?q=real-time
+
+### 13. Search content - technical terms
+GET {{baseUrl}}/api/search/content?q=Node.js
+
+### 14. Search content - common words
+GET {{baseUrl}}/api/search/content?q=system
+
+### 15. Search content - specific features
+GET {{baseUrl}}/api/search/content?q=template
+
+### 16. Search content - code/API related
+GET {{baseUrl}}/api/search/content?q=POST
+
+### 17. Search content - case insensitive
+GET {{baseUrl}}/api/search/content?q=REACT
+
+### 18. Search content - phrases
+GET {{baseUrl}}/api/search/content?q=version control
+
+### 19. Search content - markdown headers
+GET {{baseUrl}}/api/search/content?q=Getting Started
+
+### 20. Search content - list items
+GET {{baseUrl}}/api/search/content?q=Git integration
+
+### Advanced Search Tests
+
+### 21. Search files with limit parameter
+GET {{baseUrl}}/api/search/files?q=test&limit=2
+
+### 22. Search content with limit parameter
+GET {{baseUrl}}/api/search/content?q=API&limit=3
+
+### 23. Search files - empty query (should return all or handle gracefully)
+GET {{baseUrl}}/api/search/files?q=
+
+### 24. Search content - empty query (should return all or handle gracefully)
+GET {{baseUrl}}/api/search/content?q=
+
+### 25. Search files - special characters
+GET {{baseUrl}}/api/search/files?q=search-test-1
+
+### 26. Search content - special characters and symbols
+GET {{baseUrl}}/api/search/content?q=/api/auth
+
+### Edge Cases and Error Tests
+
+### 27. Search for non-existent content
+GET {{baseUrl}}/api/search/content?q=nonexistentcontent12345
+
+### 28. Search for non-existent filename
+GET {{baseUrl}}/api/search/files?q=nonexistentfile12345
+
+### 29. Search with very long query
+GET {{baseUrl}}/api/search/content?q=verylongquerythatshouldbetestedtoseehowithandlesextremelylongqueriesthatmightcauseissues
+
+### 30. Search without query parameter
+GET {{baseUrl}}/api/search/files
+
+### 31. Search without query parameter (content)
+GET {{baseUrl}}/api/search/content
+
+### 32. Search with invalid limit parameter
+GET {{baseUrl}}/api/search/files?q=test&limit=invalid
+
+### 33. Search with negative limit
+GET {{baseUrl}}/api/search/files?q=test&limit=-1
+
+### 34. Search with zero limit
+GET {{baseUrl}}/api/search/files?q=test&limit=0
+
+### Performance Tests
+
+### 35. Search for common word (should return many results)
+GET {{baseUrl}}/api/search/content?q=the
+
+### 36. Search for specific technical term
+GET {{baseUrl}}/api/search/content?q=Architecture
+
+### 37. Search for numbers/versions
+GET {{baseUrl}}/api/search/content?q=2
+
+### 38. Search for markdown syntax
+GET {{baseUrl}}/api/search/content?q=##
+
+### Verify Search Results Context
+
+### 39. Search for content that appears in multiple files
+GET {{baseUrl}}/api/search/content?q=management
+
+### 40. Search for content with context (check if snippets are returned)
+GET {{baseUrl}}/api/search/content?q=functionality
+
+### Final Verification
+
+### 41. Get all files to verify test files exist
+GET {{baseUrl}}/api/files
+
+### 42. Perform comprehensive search test
+GET {{baseUrl}}/api/search/content?q=search
+
+### Cleanup Test Files (optional)
+# DELETE {{baseUrl}}/api/files/search-test-1.md
+# DELETE {{baseUrl}}/api/files/search-test-2.md
+# DELETE {{baseUrl}}/api/files/docs/user-guide.md
+# DELETE {{baseUrl}}/api/files/project-status.md
+# DELETE {{baseUrl}}/api/folders/docs

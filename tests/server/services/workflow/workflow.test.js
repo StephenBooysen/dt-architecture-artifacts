@@ -1,5 +1,5 @@
 const path = require('path');
-const createWorkflowService = require('../../src/workflow');
+const createWorkflowService = require('../../../../server/src/services/workflow');
 const EventEmitter = require('events');
 
 // Mock worker_threads to prevent actual worker processes

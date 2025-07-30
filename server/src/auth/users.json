@@ -10,5 +10,11 @@
     "username": " Stephen Booysen",
     "password": "$2b$10$d75bBGMgRdpfMWHRXza90uMcmSVGaAmhFKl68fplgyxMFG0ONwODi",
     "createdAt": "2025-07-29T01:32:56.557Z"
+  },
+  {
+    "id": "1753870118270",
+    "username": "testuser",
+    "password": "$2b$10$XK3Wsvl7rFy3gwX1DD9a8O/4f3eUD3PsYMxPZMbaLk6RwKROozH/e",
+    "createdAt": "2025-07-30T10:08:38.270Z"
   }
 ]

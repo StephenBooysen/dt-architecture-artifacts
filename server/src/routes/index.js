@@ -227,6 +227,16 @@ router.get('/auth/me', (req, res) => {
   }
 });
 
+// Server status endpoint
+router.get('/server/status', (req, res) => {
+  res.json({ 
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: '1.0.0'
+  });
+});
+
 router.get('/auth/users', requireAuth, (req, res) => {
   try {
     const users = userStorage.getAllUsers();

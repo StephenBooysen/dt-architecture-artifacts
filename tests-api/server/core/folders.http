@@ -1,0 +1,151 @@
+### Folders API Tests
+### This file contains HTTP tests for all folder-related endpoints
+### Use REST Client extension in VS Code to run these tests
+### Note: Some operations require authentication - login first using auth.http
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### Prerequisites: Login first (run auth.http login test)
+
+### 1. Create a new folder
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": "test-folder"
+}
+
+### 2. Create a nested folder structure
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": "projects/architecture-docs"
+}
+
+### 3. Create another nested folder
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": "projects/api-docs"
+}
+
+### 4. Verify folder creation by getting file tree
+GET {{baseUrl}}/api/files
+
+### 5. Create a file inside the test folder
+POST {{baseUrl}}/api/files/test-folder/readme.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Test Folder\n\nThis folder was created via API for testing purposes.\n\n## Contents\n- This readme file\n- Future test files",
+    "message": "Add readme to test folder"
+}
+
+### 6. Create files in nested folders
+POST {{baseUrl}}/api/files/projects/architecture-docs/overview.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Architecture Overview\n\n## System Architecture\nThis document outlines the system architecture.\n\n## Components\n- Frontend (React)\n- Backend (Node.js)\n- Database (File-based)",
+    "message": "Add architecture overview"
+}
+
+### 7. Add file to API docs folder
+POST {{baseUrl}}/api/files/projects/api-docs/endpoints.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# API Endpoints\n\n## Authentication\n- POST /api/auth/login\n- POST /api/auth/logout\n\n## Files\n- GET /api/files\n- POST /api/files/*\n- DELETE /api/files/*",
+    "message": "Document API endpoints"
+}
+
+### 8. Rename a folder (from test-folder to renamed-test-folder)
+PUT {{baseUrl}}/api/rename/test-folder HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "newName": "renamed-test-folder"
+}
+
+### 9. Verify rename by checking file tree
+GET {{baseUrl}}/api/files
+
+### 10. Rename a nested folder
+PUT {{baseUrl}}/api/rename/projects/api-docs HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "newName": "rest-api-docs"
+}
+
+### 11. Delete a specific folder (this should delete the folder and its contents)
+DELETE {{baseUrl}}/api/folders/renamed-test-folder
+
+### 12. Delete nested folder
+DELETE {{baseUrl}}/api/folders/projects/rest-api-docs
+
+### 13. Verify deletions by checking file tree
+GET {{baseUrl}}/api/files
+
+### Error Test Cases
+
+### 14. Try to create folder without authentication (logout first)
+POST {{baseUrl}}/api/auth/logout HTTP/1.1
+
+###
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": "unauthorized-folder"
+}
+
+### 15. Login again for remaining tests
+POST {{baseUrl}}/api/auth/login HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "password": "testpass123"
+}
+
+### 16. Try to create folder with invalid path (path traversal)
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": "../../../malicious-folder"
+}
+
+### 17. Try to create folder with empty path
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": ""
+}
+
+### 18. Try to rename non-existent folder
+PUT {{baseUrl}}/api/rename/non-existent-folder HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "newName": "new-name"
+}
+
+### 19. Try to delete non-existent folder
+DELETE {{baseUrl}}/api/folders/non-existent-folder
+
+### 20. Try to create duplicate folder
+POST {{baseUrl}}/api/folders HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "folderPath": "projects/architecture-docs"
+}
+
+### Cleanup - Delete remaining test folders
+DELETE {{baseUrl}}/api/folders/projects

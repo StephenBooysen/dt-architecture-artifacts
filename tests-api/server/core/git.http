@@ -1,0 +1,174 @@
+### Git Operations API Tests
+### This file contains HTTP tests for all Git-related endpoints
+### Use REST Client extension in VS Code to run these tests
+### Note: These operations require authentication and a Git repository
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### Prerequisites: Login first (run auth.http login test)
+
+### 1. Get Git repository status
+GET {{baseUrl}}/api/status
+
+### 2. Create some files to commit
+POST {{baseUrl}}/api/files/git-test-file.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Git Test File\n\nThis file is created to test Git operations via API.\n\n## Purpose\n- Test commit functionality\n- Test push functionality\n- Verify Git integration\n\n## Status\nReady for commit",
+    "message": "Create git test file"
+}
+
+### 3. Create another file for comprehensive testing
+POST {{baseUrl}}/api/files/git-operations/workflow.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Git Workflow\n\n## Steps\n1. Create or modify files\n2. Check status\n3. Commit changes\n4. Push to remote\n\n## API Endpoints\n- GET /api/status - Check repository status\n- POST /api/commit - Commit changes\n- POST /api/push - Push to remote\n- POST /api/pull - Pull from remote\n- POST /api/clone - Clone repository",
+    "message": "Create git workflow documentation"
+}
+
+### 4. Check Git status after file creation
+GET {{baseUrl}}/api/status
+
+### 5. Commit the changes
+POST {{baseUrl}}/api/commit HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "message": "Add git test files via API\n\n- Created git-test-file.md for testing Git operations\n- Added git-operations/workflow.md with Git workflow documentation\n- Testing commit functionality through REST API"
+}
+
+### 6. Check status after commit (should be clean)
+GET {{baseUrl}}/api/status
+
+### 7. Modify an existing file to test another commit
+POST {{baseUrl}}/api/files/git-test-file.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Git Test File (Updated)\n\nThis file has been modified to test Git operations via API.\n\n## Purpose\n- Test commit functionality ✓\n- Test push functionality (pending)\n- Verify Git integration ✓\n- Test file modification commits\n\n## Updates\n- Added completion status\n- Modified content for second commit\n- Testing update workflow\n\n## Status\nModified and ready for second commit",
+    "message": "Update git test file for second commit"
+}
+
+### 8. Check status after modification
+GET {{baseUrl}}/api/status
+
+### 9. Commit the modification
+POST {{baseUrl}}/api/commit HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "message": "Update git test file with modifications\n\n- Updated git-test-file.md with completion status\n- Added update workflow testing\n- Verified file modification commit process"
+}
+
+### 10. Push changes to remote (if remote repository is configured)
+POST {{baseUrl}}/api/push HTTP/1.1
+
+### 11. Pull latest changes from remote (if remote repository is configured)
+POST {{baseUrl}}/api/pull HTTP/1.1
+
+### Test Repository Cloning (Use with caution - this will replace content)
+
+### 12. Clone a repository (WARNING: This will replace all content)
+# Uncomment and modify URL for your test repository
+# POST {{baseUrl}}/api/clone HTTP/1.1
+# Content-Type: {{contentType}}
+# 
+# {
+#     "repoUrl": "https://github.com/your-username/your-test-repo.git",
+#     "branch": "main"
+# }
+
+### Error Test Cases
+
+### 13. Try to commit without any changes
+POST {{baseUrl}}/api/commit HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "message": "Empty commit test"
+}
+
+### 14. Try to commit without authentication (logout first)
+POST {{baseUrl}}/api/auth/logout HTTP/1.1
+
+###
+POST {{baseUrl}}/api/commit HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "message": "Unauthorized commit attempt"
+}
+
+### 15. Login again for remaining tests
+POST {{baseUrl}}/api/auth/login HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "password": "testpass123"
+}
+
+### 16. Try to commit with empty message
+POST {{baseUrl}}/api/files/another-test-file.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Another Test\nFor testing empty commit message",
+    "message": "Create file for empty commit message test"
+}
+
+###
+POST {{baseUrl}}/api/commit HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "message": ""
+}
+
+### 17. Try to clone with invalid repository URL
+POST {{baseUrl}}/api/clone HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "repoUrl": "https://invalid-url-that-does-not-exist.com/repo.git",
+    "branch": "main"
+}
+
+### 18. Try to clone without repository URL
+POST {{baseUrl}}/api/clone HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "branch": "main"
+}
+
+### Verification Tests
+
+### 19. Final status check
+GET {{baseUrl}}/api/status
+
+### 20. Create and commit one more file for testing
+POST {{baseUrl}}/api/files/final-test.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Final Git Test\n\nThis is the final test file for Git operations.\n\n## Summary\n- Tested file creation and commits\n- Tested file modifications\n- Tested status checking\n- Verified commit messages\n- Tested push/pull operations\n\n## Conclusion\nGit API operations working correctly!",
+    "message": "Create final test file"
+}
+
+###
+POST {{baseUrl}}/api/commit HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "message": "Final commit for Git API testing\n\n- Added final-test.md with comprehensive summary\n- Completed all Git operation tests\n- Verified API functionality for Git integration"
+}
+
+### Cleanup Test Files (optional)
+# DELETE {{baseUrl}}/api/files/git-test-file.md
+# DELETE {{baseUrl}}/api/folders/git-operations
+# DELETE {{baseUrl}}/api/files/another-test-file.md
+# DELETE {{baseUrl}}/api/files/final-test.md

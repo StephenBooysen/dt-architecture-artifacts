@@ -1,3 +1,26 @@
+/* Auth Modal Styles - Server-inspired styling with Bootstrap integration */
+:root {
+  --confluence-primary: #0052cc;
+  --confluence-primary-hover: #0747a6;
+  --confluence-text: #172b4d;
+  --confluence-text-subtle: #6b778c;
+  --confluence-bg: #f7f8fa;
+  --confluence-bg-card: #ffffff;
+  --confluence-border: #e5e8ec;
+  --confluence-danger: #de350b;
+}
+
+[data-theme="dark"] {
+  --confluence-primary: #4c9aff;
+  --confluence-primary-hover: #2684ff;
+  --confluence-text: #f4f5f7;
+  --confluence-text-subtle: #b3bac5;
+  --confluence-bg: #0d1117;
+  --confluence-bg-card: #161b22;
+  --confluence-border: #30363d;
+  --confluence-danger: #f85149;
+}
+
 .auth-modal-overlay {
   position: fixed;
   top: 0;
@@ -14,154 +37,153 @@
 }
 
 .auth-modal {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  background: var(--confluence-bg-card);
+  border: 1px solid var(--confluence-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   margin: 1rem;
+  position: relative;
   animation: slideIn 0.3s ease-out;
 }
 
-.auth-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 1.5rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.auth-modal-header h2 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.close-button {
+.auth-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
   background: none;
   border: none;
-  font-size: 1.5rem;
-  color: #7f8c8d;
+  font-size: 1.25rem;
+  color: var(--confluence-text-subtle);
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  padding: 0.5rem;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 4px;
   transition: all 0.2s ease;
+  z-index: 1;
 }
 
-.close-button:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #2c3e50;
+.auth-close-button:hover {
+  background: var(--confluence-border);
+  color: var(--confluence-text);
+}
+
+.auth-modal-content {
+  padding: 2rem;
+}
+
+.auth-title {
+  color: var(--confluence-text);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  color: var(--confluence-text-subtle);
+  font-size: 0.9rem;
+  margin-bottom: 0;
 }
 
 .auth-form {
-  padding: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
+/* Bootstrap overrides for consistency */
+.auth-modal .form-label {
+  color: var(--confluence-text);
   font-weight: 500;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+.auth-modal .form-control {
+  background-color: var(--confluence-bg-card);
+  border: 1px solid var(--confluence-border);
+  color: var(--confluence-text);
   font-size: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
   transition: all 0.2s ease;
-  box-sizing: border-box;
 }
 
-.form-group input:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+.auth-modal .form-control:focus {
+  border-color: var(--confluence-primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 82, 204, 0.25);
+  background-color: var(--confluence-bg-card);
 }
 
-.form-group input:disabled {
+.auth-modal .form-control:disabled {
+  background-color: var(--confluence-border);
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.error-message {
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
+.auth-modal .btn-primary {
+  background-color: var(--confluence-primary);
+  border-color: var(--confluence-primary);
+  font-weight: 600;
   padding: 0.75rem;
   border-radius: 6px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  border: 1px solid rgba(231, 76, 60, 0.2);
-}
-
-.auth-submit-button {
-  width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 0.5rem;
 }
 
-.auth-submit-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2980b9, #21618c);
+.auth-modal .btn-primary:hover:not(:disabled) {
+  background-color: var(--confluence-primary-hover);
+  border-color: var(--confluence-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
 }
 
-.auth-submit-button:disabled {
+.auth-modal .btn-primary:disabled {
+  background-color: var(--confluence-primary);
+  border-color: var(--confluence-primary);
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.auth-switch {
-  padding: 1rem 1.5rem 1.5rem;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.auth-switch p {
-  margin: 0;
-  color: #7f8c8d;
+.auth-modal .alert-danger {
+  background-color: rgba(222, 53, 11, 0.1);
+  border-color: rgba(222, 53, 11, 0.2);
+  color: var(--confluence-danger);
+  border-radius: 6px;
   font-size: 0.9rem;
 }
 
-.switch-button {
-  background: none;
-  border: none;
-  color: #3498db;
-  cursor: pointer;
-  font-weight: 600;
-  text-decoration: underline;
+.auth-modal .btn-link {
+  color: var(--confluence-primary);
+  text-decoration: none;
+  font-weight: 500;
   font-size: 0.9rem;
   transition: color 0.2s ease;
 }
 
-.switch-button:hover {
-  color: #2980b9;
+.auth-modal .btn-link:hover {
+  color: var(--confluence-primary-hover);
+  text-decoration: underline;
+}
+
+.auth-modal .text-muted {
+  color: var(--confluence-text-subtle) !important;
+  font-size: 0.9rem;
+}
+
+.auth-modal .form-text {
+  color: var(--confluence-text-subtle);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.auth-switch {
+  border-top: 1px solid var(--confluence-border);
+  padding-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 @keyframes fadeIn {
@@ -187,17 +209,19 @@
 @media (max-width: 480px) {
   .auth-modal {
     margin: 0.5rem;
+    max-width: 100%;
   }
   
-  .auth-modal-header {
-    padding: 1rem 1rem 0.5rem;
+  .auth-modal-content {
+    padding: 1.5rem;
   }
   
-  .auth-form {
-    padding: 1rem;
+  .auth-close-button {
+    top: 0.75rem;
+    right: 0.75rem;
   }
   
-  .auth-switch {
-    padding: 0.5rem 1rem 1rem;
+  .auth-title {
+    font-size: 1.25rem;
   }
 }

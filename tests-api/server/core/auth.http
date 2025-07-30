@@ -1,0 +1,87 @@
+### Authentication API Tests
+### This file contains HTTP tests for all authentication-related endpoints
+### Use REST Client extension in VS Code to run these tests
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### 1. Check authentication status (should fail if not authenticated)
+GET {{baseUrl}}/api/auth/me
+
+### 2. Register a new user
+POST {{baseUrl}}/api/auth/register HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "password": "testpass123"
+}
+
+### 3. Login with registered user
+POST {{baseUrl}}/api/auth/login HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "password": "testpass123"
+}
+
+### 4. Check authentication status after login (should succeed)
+GET {{baseUrl}}/api/auth/me
+
+### 5. Get all users (requires authentication)
+GET {{baseUrl}}/api/auth/users
+
+### 6. Check server status
+GET {{baseUrl}}/api/server/status
+
+### 7. Logout user
+POST {{baseUrl}}/api/auth/logout HTTP/1.1
+
+### 8. Check authentication status after logout (should fail)
+GET {{baseUrl}}/api/auth/me
+
+### Test Cases with Invalid Data
+
+### 9. Register with missing password
+POST {{baseUrl}}/api/auth/register HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser2"
+}
+
+### 10. Register with missing username
+POST {{baseUrl}}/api/auth/register HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "password": "testpass123"
+}
+
+### 11. Login with wrong password
+POST {{baseUrl}}/api/auth/login HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "password": "wrongpassword"
+}
+
+### 12. Login with non-existent user
+POST {{baseUrl}}/api/auth/login HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "nonexistentuser",
+    "password": "testpass123"
+}
+
+### 13. Try to register duplicate user
+POST {{baseUrl}}/api/auth/register HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "password": "anotherpass"
+}

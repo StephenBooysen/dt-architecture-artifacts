@@ -31,6 +31,7 @@ import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
 import TemplateManager from './components/TemplateManager';
+import TemplatesList from './components/TemplatesList';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
 import {
@@ -80,6 +81,8 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
+  const [currentView, setCurrentView] = useState('files'); // 'files' or 'templates'
+  const [isEditingTemplate, setIsEditingTemplate] = useState(false);
 
   useEffect(() => {
     // Only load data if user is authenticated
@@ -185,6 +188,10 @@ function AppContent() {
       setFileData(data);
       setFileContent(data.content || '');
       setHasChanges(false);
+      
+      // Check if this is a template file and set editing state
+      setIsEditingTemplate(filePath.startsWith('templates/'));
+      setCurrentView('files'); // Switch to files view to show the editor
       
       // Handle downloadable files
       if (data.downloadable) {
@@ -418,6 +425,9 @@ function AppContent() {
     try {
       await createTemplate(templateData);
       await loadTemplates();
+      // Return to templates list view after creating
+      setCurrentView('templates');
+      setIsEditingTemplate(false);
     } catch (error) {
       throw error;
     }
@@ -427,6 +437,9 @@ function AppContent() {
     try {
       await updateTemplate(templateName, templateData);
       await loadTemplates();
+      // Return to templates list view after editing
+      setCurrentView('templates');
+      setIsEditingTemplate(false);
     } catch (error) {
       throw error;
     }
@@ -444,6 +457,8 @@ function AppContent() {
   const handleTemplateSelect = async (template, action = 'use') => {
     if (action === 'edit') {
       // Edit template in main editor
+      setCurrentView('files'); // Switch to files view to show the editor
+      setIsEditingTemplate(true);
       setSelectedFile(`templates/${template.name}`);
       setFileContent(template.content || '');
       setFileData({
@@ -452,6 +467,14 @@ function AppContent() {
         fileType: 'markdown',
         isTemplate: true
       });
+      setHasChanges(false);
+    } else if (action === 'view') {
+      // Show templates list view
+      setCurrentView('templates');
+      setIsEditingTemplate(false);
+      setSelectedFile(null);
+      setFileContent('');
+      setFileData(null);
       setHasChanges(false);
     } else {
       // Use template (existing functionality)
@@ -683,6 +706,7 @@ function AppContent() {
                 Architecture Artifacts Editor
               </a>
               
+              
               <div className="flex-grow-1 me-3">
                 <div className="position-relative">
                   <input
@@ -760,12 +784,6 @@ function AppContent() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      className="btn btn-outline-secondary btn-sm me-2"
-                      onClick={logout}
-                    >
-                      Logout
-                    </button>
                   </>
                 ) : (
                   <>
@@ -785,12 +803,23 @@ function AppContent() {
                 )}
                 
                 <button
-                  className="btn btn-outline-secondary btn-sm"
+                  className="btn btn-outline-secondary btn-sm me-2"
                   onClick={toggleTheme}
                   title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
                 >
                   <i className={`bi ${isDark ? 'bi-sun' : 'bi-moon'}`}></i>
                 </button>
+                
+                {isAuthenticated && (
+                  <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={logout}
+                    title="Logout"
+                  >
+                    <i className="bi bi-box-arrow-right me-1"></i>
+                    Logout
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -801,46 +830,53 @@ function AppContent() {
         {!sidebarCollapsed && (
           <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
             <div className="sidebar-content">
-            <FileTree
-              files={files}
-              onFileSelect={handleFileSelect}
-              selectedFile={selectedFile}
-              isLoading={isLoading}
-              onCreateFolder={handleCreateFolder}
-              onCreateFile={handleCreateFile}
-              onDeleteItem={handleDeleteItem}
-              onRenameItem={handleRenameItem}
-              onFileUpload={handleFileUpload}
-              expandedFolders={expandedFolders}
-              onFolderToggle={handleFolderToggle}
-              onPublish={() => setShowPublishModal(true)}
-              hasChanges={hasChanges}
-            />
-            <TemplateManager
-              templates={templates}
-              onTemplateSelect={handleTemplateSelect}
-              onTemplateCreate={handleTemplateCreate}
-              onTemplateEdit={handleTemplateEdit}
-              onTemplateDelete={handleTemplateDelete}
-              isLoading={isTemplatesLoading}
-              selectedFile={selectedFile}
-            />
+              <FileTree
+                files={files}
+                onFileSelect={handleFileSelect}
+                selectedFile={selectedFile}
+                isLoading={isLoading}
+                onCreateFolder={handleCreateFolder}
+                onCreateFile={handleCreateFile}
+                onDeleteItem={handleDeleteItem}
+                onRenameItem={handleRenameItem}
+                onFileUpload={handleFileUpload}
+                expandedFolders={expandedFolders}
+                onFolderToggle={handleFolderToggle}
+                onPublish={() => setShowPublishModal(true)}
+                hasChanges={hasChanges}
+              />
+              <TemplateManager
+                templates={templates}
+                onTemplateSelect={handleTemplateSelect}
+                isLoading={isTemplatesLoading}
+              />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
           </aside>
         )}
 
         <section className="editor-section">
-          <MarkdownEditor
-            content={fileContent}
-            onChange={handleContentChange}
-            fileName={selectedFile}
-            isLoading={isFileLoading}
-            onRename={handleRenameItem}
-            fileData={fileData}
-            onSave={handleSave}
-            hasChanges={hasChanges}
-          />
+          {currentView === 'templates' ? (
+            <TemplatesList
+              templates={templates}
+              onTemplateEdit={handleTemplateEdit}
+              onTemplateCreate={handleTemplateCreate}
+              onTemplateDelete={handleTemplateDelete}
+              onTemplateSelect={handleTemplateSelect}
+              isLoading={isTemplatesLoading}
+            />
+          ) : (
+            <MarkdownEditor
+              content={fileContent}
+              onChange={handleContentChange}
+              fileName={selectedFile}
+              isLoading={isFileLoading}
+              onRename={handleRenameItem}
+              fileData={fileData}
+              onSave={handleSave}
+              hasChanges={hasChanges}
+            />
+          )}
         </section>
       </main>
 

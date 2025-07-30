@@ -1,0 +1,188 @@
+### Templates API Tests
+### This file contains HTTP tests for all template-related endpoints
+### Use REST Client extension in VS Code to run these tests
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### 1. Get all available templates
+GET {{baseUrl}}/api/templates
+
+### 2. Create a new template - Meeting Notes
+POST {{baseUrl}}/api/templates HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "meeting-notes-test",
+    "description": "Template for meeting notes created via API",
+    "content": "# Meeting Notes - {{date}}\n\n## Attendees\n- {{attendee-1}}\n- {{attendee-2}}\n\n## Agenda\n1. {{agenda-item-1}}\n2. {{agenda-item-2}}\n3. {{agenda-item-3}}\n\n## Discussion\n{{discussion-notes}}\n\n## Action Items\n- [ ] {{action-1}} - Due: {{due-date-1}}\n- [ ] {{action-2}} - Due: {{due-date-2}}\n\n## Next Meeting\n- Date: {{next-meeting-date}}\n- Location: {{next-meeting-location}}",
+    "variables": {
+        "date": "2024-01-15",
+        "attendee-1": "John Doe",
+        "attendee-2": "Jane Smith",
+        "agenda-item-1": "Project Status Review",
+        "agenda-item-2": "Budget Discussion",
+        "agenda-item-3": "Next Sprint Planning",
+        "discussion-notes": "Discussed current project progress and identified key blockers.",
+        "action-1": "Update project timeline",
+        "due-date-1": "2024-01-20",
+        "action-2": "Review budget allocation",
+        "due-date-2": "2024-01-18",
+        "next-meeting-date": "2024-01-22",
+        "next-meeting-location": "Conference Room A"
+    }
+}
+
+### 3. Create another template - Architecture Decision Record
+POST {{baseUrl}}/api/templates HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "adr-template-test",
+    "description": "Architecture Decision Record template for API testing",
+    "content": "# ADR-{{adr-number}}: {{decision-title}}\n\n## Status\n{{status}}\n\n## Context\n{{context-description}}\n\n## Decision\n{{decision-description}}\n\n## Consequences\n### Positive\n- {{positive-consequence-1}}\n- {{positive-consequence-2}}\n\n### Negative\n- {{negative-consequence-1}}\n- {{negative-consequence-2}}\n\n## Alternatives Considered\n1. {{alternative-1}}\n2. {{alternative-2}}\n\n## References\n- {{reference-1}}\n- {{reference-2}}",
+    "variables": {
+        "adr-number": "001",
+        "decision-title": "Choose Frontend Framework",
+        "status": "Accepted",
+        "context-description": "We need to select a frontend framework for our new application.",
+        "decision-description": "We will use React.js as our primary frontend framework.",
+        "positive-consequence-1": "Large community and ecosystem",
+        "positive-consequence-2": "Strong TypeScript support",
+        "negative-consequence-1": "Steep learning curve for new developers",
+        "negative-consequence-2": "Frequent updates requiring maintenance",
+        "alternative-1": "Vue.js - Considered for simplicity",
+        "alternative-2": "Angular - Considered for enterprise features",
+        "reference-1": "React.js Official Documentation",
+        "reference-2": "Frontend Framework Comparison Study 2024"
+    }
+}
+
+### 4. Get all templates (should now include our new templates)
+GET {{baseUrl}}/api/templates
+
+### 5. Get specific template by name
+GET {{baseUrl}}/api/templates/meeting-notes-test
+
+### 6. Get the ADR template
+GET {{baseUrl}}/api/templates/adr-template-test
+
+### 7. Update an existing template
+PUT {{baseUrl}}/api/templates/meeting-notes-test HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "meeting-notes-test",
+    "description": "Updated meeting notes template with additional sections",
+    "content": "# Meeting Notes - {{date}}\n\n## Meeting Info\n- **Date:** {{date}}\n- **Time:** {{time}}\n- **Duration:** {{duration}}\n- **Location:** {{location}}\n\n## Attendees\n- {{attendee-1}} ({{role-1}})\n- {{attendee-2}} ({{role-2}})\n- {{attendee-3}} ({{role-3}})\n\n## Agenda\n1. {{agenda-item-1}}\n2. {{agenda-item-2}}\n3. {{agenda-item-3}}\n4. {{agenda-item-4}}\n\n## Discussion Points\n### {{topic-1}}\n{{discussion-1}}\n\n### {{topic-2}}\n{{discussion-2}}\n\n## Decisions Made\n- {{decision-1}}\n- {{decision-2}}\n\n## Action Items\n- [ ] {{action-1}} - Assigned: {{assignee-1}} - Due: {{due-date-1}}\n- [ ] {{action-2}} - Assigned: {{assignee-2}} - Due: {{due-date-2}}\n- [ ] {{action-3}} - Assigned: {{assignee-3}} - Due: {{due-date-3}}\n\n## Next Steps\n{{next-steps}}\n\n## Next Meeting\n- **Date:** {{next-meeting-date}}\n- **Time:** {{next-meeting-time}}\n- **Agenda Preview:** {{next-agenda}}",
+    "variables": {
+        "date": "2024-01-15",
+        "time": "10:00 AM",
+        "duration": "1 hour",
+        "location": "Conference Room A",
+        "attendee-1": "John Doe",
+        "role-1": "Project Manager",
+        "attendee-2": "Jane Smith",
+        "role-2": "Lead Developer",
+        "attendee-3": "Bob Johnson",
+        "role-3": "QA Engineer",
+        "agenda-item-1": "Sprint Review",
+        "agenda-item-2": "Budget Status",
+        "agenda-item-3": "Technical Challenges",
+        "agenda-item-4": "Next Sprint Planning",
+        "topic-1": "Current Sprint Progress",
+        "discussion-1": "Reviewed completed stories and identified blockers",
+        "topic-2": "Resource Allocation",
+        "discussion-2": "Discussed team capacity for upcoming features",
+        "decision-1": "Extend current sprint by 2 days",
+        "decision-2": "Hire additional frontend developer",
+        "action-1": "Update project timeline",
+        "assignee-1": "John Doe",
+        "due-date-1": "2024-01-20",
+        "action-2": "Post job listing for frontend role",
+        "assignee-2": "Jane Smith",
+        "due-date-2": "2024-01-18",
+        "action-3": "Prepare demo for stakeholders",
+        "assignee-3": "Bob Johnson",
+        "due-date-3": "2024-01-25",
+        "next-steps": "Focus on critical path items and resource planning",
+        "next-meeting-date": "2024-01-22",
+        "next-meeting-time": "10:00 AM",
+        "next-agenda": "Demo review and sprint retrospective"
+    }
+}
+
+### 8. Create a simple template for testing
+POST {{baseUrl}}/api/templates HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "simple-test-template",
+    "description": "Simple template for testing purposes",
+    "content": "# {{title}}\n\n{{content}}\n\n## Notes\n{{notes}}",
+    "variables": {
+        "title": "Test Document",
+        "content": "This is test content.",
+        "notes": "These are test notes."
+    }
+}
+
+### 9. Verify template creation
+GET {{baseUrl}}/api/templates/simple-test-template
+
+### 10. Delete a template
+DELETE {{baseUrl}}/api/templates/simple-test-template
+
+### 11. Verify template deletion (should return 404)
+GET {{baseUrl}}/api/templates/simple-test-template
+
+### Error Test Cases
+
+### 12. Try to get non-existent template
+GET {{baseUrl}}/api/templates/non-existent-template
+
+### 13. Try to create template without name
+POST {{baseUrl}}/api/templates HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "description": "Template without name",
+    "content": "# No Name Template"
+}
+
+### 14. Try to create template without content
+POST {{baseUrl}}/api/templates HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "no-content-template",
+    "description": "Template without content"
+}
+
+### 15. Try to update non-existent template
+PUT {{baseUrl}}/api/templates/non-existent-template HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "non-existent-template",
+    "description": "This should fail",
+    "content": "# This should not work"
+}
+
+### 16. Try to delete non-existent template
+DELETE {{baseUrl}}/api/templates/non-existent-template-delete
+
+### 17. Try to create template with duplicate name
+POST {{baseUrl}}/api/templates HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "name": "meeting-notes-test",
+    "description": "Duplicate template",
+    "content": "# Duplicate"
+}
+
+### Cleanup - Delete test templates
+DELETE {{baseUrl}}/api/templates/meeting-notes-test
+###
+DELETE {{baseUrl}}/api/templates/adr-template-test

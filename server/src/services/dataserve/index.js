@@ -16,6 +16,7 @@ const Routes = require('./routes');
  * @return {!DataRingService} A DataRingService instance.
  */
 function createDataserveService(type, options, eventEmitter) {
+  eventEmitter.emit('Data Service Intantiated', {});
   let provider;
   switch (type) {
     case 'file':

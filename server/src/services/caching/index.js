@@ -15,6 +15,7 @@ const Views = require('./views');
  * @return {!Cache|!CacheRedis} A cache instance.
  */
 function createCache(type, options, eventEmitter) {
+  eventEmitter.emit('Cache Service Intantiated', {});
   let cache;
   if (type === 'redis') {
     cache = new CacheRedis(options, eventEmitter);

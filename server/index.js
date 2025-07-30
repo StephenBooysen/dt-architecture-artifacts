@@ -347,6 +347,43 @@ function getSharedStyles() {
       color: var(--confluence-text) !important;
     }
 
+    /* Server status indicator styles */
+    .server-status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #36b37e, #00875a);
+      box-shadow: 0 0 8px rgba(54, 179, 126, 0.6);
+      animation: pulse 2s infinite;
+    }
+    
+    .server-status-indicator.offline {
+      background: linear-gradient(135deg, #de350b, #bf2600);
+      box-shadow: 0 0 8px rgba(222, 53, 11, 0.6);
+    }
+    
+    .server-status-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #36b37e;
+    }
+    
+    .server-status-text.offline {
+      color: #de350b;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 8px rgba(54, 179, 126, 0.6);
+      }
+      50% {
+        box-shadow: 0 0 16px rgba(54, 179, 126, 0.8);
+      }
+      100% {
+        box-shadow: 0 0 8px rgba(54, 179, 126, 0.6);
+      }
+    }
+
     /* Main layout */
     .app-main {
       flex: 1;
@@ -823,8 +860,11 @@ function getHeader() {
               Architecture Artifacts Server
             </a>
             
-            <div class="ms-auto d-flex align-items-center gap-2">
-              <span class="badge bg-success">Server Running</span>
+            <div class="ms-auto d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center">
+                <div class="server-status-indicator" id="server-status-indicator" title="Server Status"></div>
+                <span class="server-status-text ms-2" id="server-status-text">Checking...</span>
+              </div>
               <button
                 class="btn btn-outline-secondary btn-sm"
                 onclick="toggleTheme()"
@@ -832,6 +872,10 @@ function getHeader() {
                 title="Switch theme"
               >
                 <i class="bi bi-moon" id="theme-toggle-icon"></i>
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="logout()" title="Logout">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Logout
               </button>
             </div>
           </div>
@@ -957,6 +1001,62 @@ function getSidebarToggleScript() {
     // Ensure the function is available globally
     window.toggleSidebar = toggleSidebar;
     
+    // Global logout function
+    async function logout() {
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {          
+          window.location.href = '/server-landing';
+        } else {
+          alert('Logout failed');
+        }
+      } catch (error) {
+        alert('Network error during logout');
+      }
+    }
+    
+    // Global server status checking function
+    async function checkServerStatus() {
+      try {
+        const response = await fetch('/api/server/status');
+        const statusIndicator = document.getElementById('server-status-indicator');
+        const statusText = document.getElementById('server-status-text');
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (statusIndicator) {
+            statusIndicator.classList.remove('offline');
+            statusIndicator.title = \`Server Online - Uptime: \${Math.floor(data.uptime / 60)}m\`;
+          }
+          if (statusText) {
+            statusText.classList.remove('offline');
+            statusText.textContent = 'Server Online';
+          }
+        } else {
+          throw new Error('Server status check failed');
+        }
+      } catch (error) {
+        const statusIndicator = document.getElementById('server-status-indicator');
+        const statusText = document.getElementById('server-status-text');
+        if (statusIndicator) {
+          statusIndicator.classList.add('offline');
+          statusIndicator.title = 'Server Status Check Failed';
+        }
+        if (statusText) {
+          statusText.classList.add('offline');
+          statusText.textContent = 'Server Offline';
+        }
+      }
+    }
+    
+    // Make functions globally available
+    window.logout = logout;
+    window.checkServerStatus = checkServerStatus;
+    
     // Also add event listener approach as backup
     document.addEventListener('DOMContentLoaded', function() {
       const toggleBtn = document.querySelector('.sidebar-toggle');
@@ -966,6 +1066,11 @@ function getSidebarToggleScript() {
           toggleSidebar();
         });
       }
+      
+      // Initialize server status checking
+      checkServerStatus();
+      // Check status every 30 seconds
+      setInterval(checkServerStatus, 30000);
     });
   </script>
   `;
@@ -5885,56 +5990,200 @@ app.get('/server-login', (req, res) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Server Login - Architecture Artifacts</title>
   ${getSharedStyles()}
+  <style>
+    /* Server Auth Modal Styles - Match client login appearance */
+    .server-auth-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .server-auth-modal {
+      background: var(--confluence-bg-card);
+      border: 1px solid var(--confluence-border);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 420px;
+      margin: 1rem;
+      position: relative;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .server-auth-content {
+      padding: 2rem;
+    }
+
+    .server-auth-title {
+      color: var(--confluence-text);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .server-auth-subtitle {
+      color: var(--confluence-text-subtle);
+      font-size: 0.9rem;
+      margin-bottom: 0;
+    }
+
+    .server-auth-form {
+      margin-top: 1.5rem;
+    }
+
+    /* Bootstrap overrides for consistency */
+    .server-auth-modal .form-label {
+      color: var(--confluence-text);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .server-auth-modal .form-control {
+      background-color: var(--confluence-bg-card);
+      border: 1px solid var(--confluence-border);
+      color: var(--confluence-text);
+      font-size: 1rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .server-auth-modal .form-control:focus {
+      border-color: var(--confluence-primary);
+      box-shadow: 0 0 0 0.2rem rgba(0, 82, 204, 0.25);
+      background-color: var(--confluence-bg-card);
+    }
+
+    .server-auth-modal .form-control:disabled {
+      background-color: var(--confluence-border);
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .server-auth-modal .btn-primary {
+      background-color: var(--confluence-primary);
+      border-color: var(--confluence-primary);
+      font-weight: 600;
+      padding: 0.75rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .server-auth-modal .btn-primary:hover:not(:disabled) {
+      background-color: var(--confluence-primary-hover);
+      border-color: var(--confluence-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
+    }
+
+    .server-auth-modal .btn-primary:disabled {
+      background-color: var(--confluence-primary);
+      border-color: var(--confluence-primary);
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .server-auth-modal .alert-danger {
+      background-color: rgba(222, 53, 11, 0.1);
+      border-color: rgba(222, 53, 11, 0.2);
+      color: var(--confluence-danger);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .server-auth-modal {
+        margin: 0.5rem;
+        max-width: 100%;
+        border-radius: 8px;
+      }
+      
+      .server-auth-content {
+        padding: 1.5rem;
+      }
+      
+      .server-auth-title {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="app">
-    <div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: var(--confluence-bg);">
-      <div class="text-center" style="max-width: 400px; padding: 2rem;">
-        <div class="mb-4">
+  <div class="server-auth-overlay">
+    <div class="server-auth-modal">
+      <div class="server-auth-content">
+        <div class="text-center mb-4">
           <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
             <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
             <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
             <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
           </svg>
+          <h2 class="server-auth-title">Server Administration</h2>
+          <p class="server-auth-subtitle">Please sign in to access the server interface.</p>
         </div>
-        <h2 class="text-confluence-text mb-3">Server Administration</h2>
-        <p class="text-muted mb-4">Please sign in to access the server interface.</p>
         
-        <div class="card" style="text-align: left;">
-          <div class="card-body">
-            <form id="loginForm">
-              <div id="error-message" class="alert alert-danger d-none"></div>
-              
-              <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="username"
-                  name="username"
-                  required
-                  autofocus
-                />
-              </div>
-              
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="password"
-                  name="password"
-                  required
-                />
-              </div>
-              
-              <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-                <span class="login-text">Sign In</span>
-                <span class="login-spinner spinner-border spinner-border-sm d-none" role="status"></span>
-              </button>
-            </form>
+        <form id="loginForm" class="server-auth-form">
+          <div id="error-message" class="alert alert-danger d-none"></div>
+          
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input
+              type="text"
+              class="form-control"
+              id="username"
+              name="username"
+              required
+              autofocus
+            />
           </div>
-        </div>
+          
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              required
+            />
+          </div>
+          
+          <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+            <span class="login-text">Sign In</span>
+            <span class="login-spinner spinner-border spinner-border-sm d-none" role="status"></span>
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -6014,9 +6263,7 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
             <p>Welcome back, <strong>${req.user.username}</strong>! Overview of your Architecture Artifacts system</p>
           </div>
           <div class="header-actions">
-            <button class="btn btn-outline-secondary btn-sm" onclick="logout()">
-              <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </button>
+            <!-- Logout moved to header -->
           </div>
         </div>
         
@@ -6321,22 +6568,7 @@ app.get('/server-dashboard', requireServerAuth, (req, res) => {
   </style>
   
   <script>
-    async function logout() {
-      try {
-        const response = await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        
-        if (response.ok) {          
-          window.location.href = '/server-landing';
-        } else {
-          alert('Logout failed');
-        }
-      } catch (error) {
-        alert('Network error during logout');
-      }
-    }
+    // Note: logout() and checkServerStatus() functions are now globally available
     
     // Navigate to logging service page
     function navigateToLoggingService() {

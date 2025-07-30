@@ -9,7 +9,7 @@ jest.mock('fs', () => ({
 }));
 
 const fs = require('fs');
-const createLogger = require('../../src/logging');
+const createLogger = require('../../../../server/src/services/logging');
 
 describe('FileLogger', () => {
   let logger;

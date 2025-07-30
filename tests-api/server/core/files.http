@@ -1,0 +1,109 @@
+### Files API Tests
+### This file contains HTTP tests for all file-related endpoints
+### Use REST Client extension in VS Code to run these tests
+### Note: Some operations require authentication - login first using auth.http
+
+@baseUrl = http://localhost:5000
+@contentType = application/json
+
+### Prerequisites: Login first (run auth.http login test)
+
+### 1. Get file tree structure
+GET {{baseUrl}}/api/files
+
+### 2. Create a new markdown file
+POST {{baseUrl}}/api/files/test-document.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Test Document\n\nThis is a test markdown file created via API.\n\n## Features\n- API testing\n- Markdown content\n- File management\n\n## Next Steps\nTest file operations.",
+    "message": "Create test document via API"
+}
+
+### 3. Get specific file content
+GET {{baseUrl}}/api/files/test-document.md
+
+### 4. Update existing file content
+POST {{baseUrl}}/api/files/test-document.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# Updated Test Document\n\nThis file has been updated via API.\n\n## Updates\n- Modified title\n- Added update section\n- API functionality confirmed\n\n## Status\nSuccessfully updated!",
+    "message": "Update test document via API"
+}
+
+### 5. Create a file in a subfolder
+POST {{baseUrl}}/api/files/docs/api-guide.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "# API Guide\n\n## Overview\nThis guide explains how to use the Architecture Artifacts API.\n\n## Endpoints\n- `/api/files` - File operations\n- `/api/auth` - Authentication\n- `/api/templates` - Template management",
+    "message": "Create API guide in docs folder"
+}
+
+### 6. Download a file
+GET {{baseUrl}}/api/download/test-document.md
+
+### 7. Get file from subfolder
+GET {{baseUrl}}/api/files/docs/api-guide.md
+
+### 8. Delete a specific file
+DELETE {{baseUrl}}/api/files/test-document.md
+
+### 9. Delete file from subfolder
+DELETE {{baseUrl}}/api/files/docs/api-guide.md
+
+### Test Cases with Various File Types
+
+### 10. Create a JSON file
+POST {{baseUrl}}/api/files/config.json HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "{\n  \"name\": \"Architecture Artifacts\",\n  \"version\": \"1.0.0\",\n  \"features\": [\n    \"markdown editing\",\n    \"git integration\",\n    \"template management\"\n  ]\n}",
+    "message": "Create JSON configuration file"
+}
+
+### 11. Create a text file
+POST {{baseUrl}}/api/files/notes.txt HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "Project Notes\n=============\n\n- Implement file management API\n- Add authentication layer\n- Create template system\n- Test all endpoints\n\nStatus: In Progress",
+    "message": "Create project notes file"
+}
+
+### Error Test Cases
+
+### 12. Try to get non-existent file
+GET {{baseUrl}}/api/files/non-existent-file.md
+
+### 13. Try to delete non-existent file
+DELETE {{baseUrl}}/api/files/non-existent-file.md
+
+### 14. Try to create file without authentication (should fail)
+# First logout, then try this
+POST {{baseUrl}}/api/auth/logout HTTP/1.1
+
+###
+POST {{baseUrl}}/api/files/unauthorized-file.md HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "This should fail",
+    "message": "Unauthorized attempt"
+}
+
+### 15. Try to create file with invalid path
+POST {{baseUrl}}/api/files/../../../etc/passwd HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+    "content": "Malicious content",
+    "message": "Path traversal attempt"
+}
+
+### Cleanup - Delete test files
+DELETE {{baseUrl}}/api/files/config.json
+###
+DELETE {{baseUrl}}/api/files/notes.txt

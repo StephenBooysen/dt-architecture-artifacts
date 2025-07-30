@@ -70,6 +70,7 @@ class FilingService {
  * @return {!FilingService} A FilingService instance.
  */
 function createFilingService(type = 'local', options, eventEmitter) {
+   eventEmitter.emit('Filing Service Intantiated', {});
   let provider;
   switch (type) {
     case 'local':
