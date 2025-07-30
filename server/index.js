@@ -2209,13 +2209,15 @@ app.get('/api-monitor-data', (req, res) => {
   res.json(apiCalls);
 });
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build/index.html'));
-  });
-}
+// Note: Static file serving is disabled to allow server-side routing
+// If you need to serve the React client in production, uncomment below:
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(express.static(path.join(__dirname, '../client/build')));
+//   
+//   app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../client/build/index.html'));
+//   });
+// }
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
