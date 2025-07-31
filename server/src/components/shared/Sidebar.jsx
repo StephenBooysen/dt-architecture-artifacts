@@ -32,6 +32,13 @@ const Sidebar = ({ activeSection }) => {
               <i className="bi bi-git me-2"></i>
               Git Repository
             </a>
+            <a 
+              href="/users" 
+              className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
+            >
+              <i className="bi bi-people-fill me-2"></i>
+              Users
+            </a>
           </div>
 
           <div className="nav-section">

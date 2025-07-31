@@ -1406,7 +1406,12 @@ app.get('/services/searching', requireServerAuth, (req, res) => {
 // Authentication middleware for server pages
 function requireServerAuth(req, res, next) {
   if (req.isAuthenticated()) {
-    return next();
+    // Check if user has admin role
+    if (req.user && req.user.roles && req.user.roles.includes('admin')) {
+      return next();
+    } else {
+      return res.status(403).send('Access denied: Admin role required');
+    }
   }
   // Check if it's the landing or login page - allow those
   if (req.path === '/server-landing' || req.path === '/server-login') {
@@ -1770,6 +1775,74 @@ app.get('/test-react', (req, res) => {
 // API endpoint to get monitoring data
 app.get('/api-monitor-data', (req, res) => {
   res.json(apiCalls);
+});
+
+// Users management page
+app.get('/users', requireServerAuth, (req, res) => {
+  const html = renderComponent('users', {
+    activeSection: 'users',
+    title: 'Users Management - Architecture Artifacts'
+  });
+  res.send(html);
+});
+
+// User management API endpoints
+app.get('/api/users', requireServerAuth, (req, res) => {
+  try {
+    const users = require('./src/auth/users.json');
+    // Return users without password field
+    const safeUsers = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt,
+      roles: user.roles || []
+    }));
+    res.json(safeUsers);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load users' });
+  }
+});
+
+app.put('/api/users/:id', requireServerAuth, (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const { username, roles } = req.body;
+    const userId = req.params.id;
+    
+    // Use the correct path to users.json
+    const usersFilePath = path.join(__dirname, 'src', 'auth', 'users.json');
+    
+    // Read the current users data
+    const usersData = fs.readFileSync(usersFilePath, 'utf8');
+    const users = JSON.parse(usersData);
+    
+    const userIndex = users.findIndex(user => user.id === userId);
+    
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Update user data
+    users[userIndex].username = username;
+    users[userIndex].roles = roles;
+    
+    // Write back to file
+    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+    
+    // Return updated user without password
+    const updatedUser = {
+      id: users[userIndex].id,
+      username: users[userIndex].username,
+      createdAt: users[userIndex].createdAt,
+      roles: users[userIndex].roles
+    };
+    
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
 });
 
 // Note: Static file serving is disabled to allow server-side routing

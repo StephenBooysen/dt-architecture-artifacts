@@ -37,9 +37,9 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
-- File manager for folders  - TODO
-- File manager for git - TODO
-- Chat - Todo
+- File manager for folders 
+- File manager for git
+- Chat
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing
 - Subscribe to changes and notify in notification popup
@@ -47,7 +47,7 @@
 - Bug Files greater than 10mb failing
 
 #### Server
-- Security: Roles and permissions (read, write, backoffice)
+- Security: Roles and permissions (read, write, backoffice) - In progress
 - Settings: Git and files
 - Infrastucture: Multi threaded
 

@@ -263,7 +263,18 @@ router.post('/auth/register', async (req, res) => {
 });
 
 router.post('/auth/login', passport.authenticate('local'), (req, res) => {
-  res.json({ message: 'Login successful', user: req.user });
+  // Check if user has write role for client access
+  if (req.user && req.user.roles && req.user.roles.includes('write')) {
+    res.json({ message: 'Login successful', user: req.user });
+  } else {
+    // Logout the user since they don't have proper permissions
+    req.logout((err) => {
+      if (err) {
+        console.error('Error logging out user:', err);
+      }
+    });
+    res.status(403).json({ error: 'Access denied: Write role required for client access' });
+  }
 });
 
 router.post('/auth/logout', (req, res) => {

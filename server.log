@@ -118,3 +118,25 @@ Caught event: "Search Service Intantiated" with arguments: [ {} ]
 Workflow service loaded OpenAPI spec with title: Workflow Service API
 Server running on port 5000
 [32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/index.js`[39m
+Caught event: "Cache Service Intantiated" with arguments: [ {} ]
+Caching service loaded OpenAPI spec with title: Caching Service API
+/home/stephen/Code/dt-architecture-artifacts/server/src/services/caching/views/public
+Caught event: "Filing Service Intantiated" with arguments: [ {} ]
+Notification service created with type: 
+Caught event: "Search Service Intantiated" with arguments: [ {} ]
+Workflow service loaded OpenAPI spec with title: Workflow Service API
+Server running on port 5000
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/index.js`[39m
+Caught event: "Cache Service Intantiated" with arguments: [ {} ]
+Caching service loaded OpenAPI spec with title: Caching Service API
+/home/stephen/Code/dt-architecture-artifacts/server/src/services/caching/views/public
+Caught event: "Filing Service Intantiated" with arguments: [ {} ]
+Notification service created with type: 
+Caught event: "Search Service Intantiated" with arguments: [ {} ]
+Workflow service loaded OpenAPI spec with title: Workflow Service API
+Server running on port 5000
+[32m[nodemon] clean exit - waiting for changes before restart[39m

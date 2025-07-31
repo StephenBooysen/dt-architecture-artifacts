@@ -51,7 +51,7 @@ class UserStorage {
     this.users.push(user);
     await this.saveUsers();
     
-    return { id: user.id, username: user.username, createdAt: user.createdAt };
+    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [] };
   }
 
   findUserByUsername(username) {
@@ -82,7 +82,7 @@ class UserStorage {
       return null;
     }
 
-    return { id: user.id, username: user.username, createdAt: user.createdAt };
+    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [] };
   }
 
   getAllUsers() {
