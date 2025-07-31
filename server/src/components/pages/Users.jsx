@@ -82,30 +82,32 @@ const Users = () => {
           errorMessage.style.display = 'none';
           
           const tableHtml = \`
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Date Created</th>
-                  <th>Roles</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                \${users.map(user => \`
+            <div class="table-container">
+              <table class="users-table">
+                <thead>
                   <tr>
-                    <td>\${user.username}</td>
-                    <td>\${new Date(user.createdAt).toLocaleDateString()}</td>
-                    <td>\${user.roles ? user.roles.join(', ') : 'None'}</td>
-                    <td>
-                      <button class="btn btn-sm btn-primary" data-user-id="\${user.id}">
-                        Edit
-                      </button>
-                    </td>
+                    <th>Username</th>
+                    <th>Date Created</th>
+                    <th>Roles</th>
+                    <th>Actions</th>
                   </tr>
-                \`).join('')}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  \${users.map(user => \`
+                    <tr>
+                      <td>\${user.username}</td>
+                      <td>\${new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td>\${user.roles ? user.roles.join(', ') : 'None'}</td>
+                      <td>
+                        <button class="btn btn-sm btn-primary" data-user-id="\${user.id}">
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  \`).join('')}
+                </tbody>
+              </table>
+            </div>
           \`;
           
           container.innerHTML = tableHtml;
@@ -183,8 +185,11 @@ const Users = () => {
               if (userIndex !== -1) {
                 users[userIndex] = updatedUser;
               }
-              renderUsersTable();
+              // Close modal first
               closeEditModal();
+              // Then refresh the table
+              renderUsersTable();
+              // Show success message
               alert('User updated successfully');
             } else {
               const error = await response.json();
@@ -232,10 +237,18 @@ const Users = () => {
           color: #de350b;
         }
 
+        .table-container {
+          overflow-x: auto;
+          max-height: 60vh;
+          border-radius: 6px;
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+        }
+
         .users-table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 1rem;
+          font-size: 0.9rem;
         }
 
         .users-table th,

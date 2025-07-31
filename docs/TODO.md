@@ -37,17 +37,17 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
+- Subscribe to changes and notify in notification popup
+- Markdown - Tree drag files into folders
+- Bug Files greater than 10mb failing
 - File manager for folders 
 - File manager for git
 - Chat
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing
-- Subscribe to changes and notify in notification popup
-- Markdown - Tree drag files into folders
-- Bug Files greater than 10mb failing
 
 #### Server
-- Security: Roles and permissions (read, write, backoffice) - In progress
+- Security: Roles and permissions (read, write, backoffice) - done
 - Settings: Git and files
 - Infrastucture: Multi threaded
 

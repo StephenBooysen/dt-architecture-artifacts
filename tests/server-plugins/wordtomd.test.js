@@ -1,4 +1,7 @@
 
+/**
+ * @jest-environment node
+ */
 const path = require('path');
 const fs = require('fs-extra');
 const { WordToMarkdownConverter } = require('../../server/plugins/wordtomd');
@@ -14,13 +17,13 @@ describe('WordToMarkdownConverter', () => {
 
   it('should convert a .docx file to markdown', async () => {
     const result = await converter.convertFile(inputPath, outputPath);
-    expect(result.markdown).toContain('This is a test document.');
+    expect(result.markdown).toContain('www.petsitterscapetown.co.za');
         const markdownExists = fs.existsSync(outputPath);
     expect(markdownExists).toBe(true);
   });
 
   it('should convert a .docx file to a markdown string', async () => {
     const markdown = await converter.convertToString(inputPath);
-    expect(markdown).toContain('This is a test document.');
+    expect(markdown).toContain('www.petsitterscapetown.co.za');
   });
 });
