@@ -29,11 +29,22 @@ const Queueing = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="queueData">Queue Data:</label>
-            <textarea id="queueData" className="form-control" placeholder="Enter queue data (JSON or text)..." required></textarea>
+            <label htmlFor="queueData">Queue Data (JSON format required):</label>
+            <textarea 
+              id="queueData" 
+              className="form-control" 
+              placeholder="Enter your JSON queue data...&#10;{&#10;  &quot;taskId&quot;: &quot;task-123&quot;,&#10;  &quot;action&quot;: &quot;process-data&quot;,&#10;  &quot;payload&quot;: {},&#10;  &quot;priority&quot;: 1&#10;}" 
+              required
+            ></textarea>
+            <div className="json-validation-feedback" id="jsonValidation"></div>
           </div>
           
-          <button type="button" className="btn btn-success" id="enqueueButton">
+          <div className="form-group" id="jsonPreviewGroup" style={{display: 'none'}}>
+            <label>Formatted JSON Preview:</label>
+            <pre className="json-preview" id="jsonPreview"></pre>
+          </div>
+          
+          <button type="button" className="btn btn-success" id="enqueueButton" disabled>
             <i className="bi bi-plus-circle me-2"></i>Enqueue Task
           </button>
         </div>
@@ -253,9 +264,98 @@ const Queueing = () => {
             grid-template-columns: 1fr;
           }
         }
+        .json-validation-feedback {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          min-height: 1.25rem;
+        }
+        .json-validation-feedback.valid {
+          color: #36b37e;
+        }
+        .json-validation-feedback.invalid {
+          color: #de350b;
+        }
+        .json-preview {
+          background: #f8f9fa;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.875rem;
+          color: #172b4d;
+          max-height: 300px;
+          overflow-y: auto;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .form-control.valid {
+          border-color: #36b37e;
+          box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.2);
+        }
+        .form-control.invalid {
+          border-color: #de350b;
+          box-shadow: 0 0 0 2px rgba(222, 53, 11, 0.2);
+        }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
+        let isValidJson = false;
+
+        // JSON validation and formatting function
+        function validateAndFormatJson(jsonString) {
+          const dataField = document.getElementById('queueData');
+          const validationFeedback = document.getElementById('jsonValidation');
+          const previewGroup = document.getElementById('jsonPreviewGroup');
+          const previewElement = document.getElementById('jsonPreview');
+          const enqueueButton = document.getElementById('enqueueButton');
+          
+          try {
+            if (!jsonString.trim()) {
+              // Empty input
+              dataField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = '';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidJson = false;
+              enqueueButton.disabled = true;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            dataField.classList.remove('invalid');
+            dataField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidJson = true;
+            enqueueButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            dataField.classList.remove('valid');
+            dataField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidJson = false;
+            enqueueButton.disabled = true;
+          }
+        }
+
         // Check service status on page load
         async function checkServiceStatus() {
           try {
@@ -327,6 +427,11 @@ const Queueing = () => {
             return;
           }
           
+          if (!isValidJson) {
+            showToast('Please enter valid JSON task data', true);
+            return;
+          }
+          
           try {
             this.disabled = true;
             this.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Enqueuing...';
@@ -346,6 +451,7 @@ const Queueing = () => {
               
               // Clear the task data field
               document.getElementById('queueData').value = '';
+              validateAndFormatJson(''); // Reset validation state
               
               // Update queue size
               updateQueueSize();
@@ -417,6 +523,19 @@ const Queueing = () => {
             this.disabled = false;
             this.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Refresh Size';
           }
+        });
+
+        // Add event listener for JSON validation
+        document.getElementById('queueData').addEventListener('input', function(e) {
+          validateAndFormatJson(e.target.value);
+        });
+        
+        // Add event listener for paste events to handle JSON formatting
+        document.getElementById('queueData').addEventListener('paste', function(e) {
+          // Use setTimeout to allow paste to complete before validation
+          setTimeout(() => {
+            validateAndFormatJson(e.target.value);
+          }, 10);
         });
 
         // Initialize on page load

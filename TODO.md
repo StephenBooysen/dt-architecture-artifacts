@@ -25,11 +25,10 @@
 - Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation - done
  
 #### Server
-- Services: Screens should work - TODO
+- Services: Screens should work - done
 - Log out button should redirect to landing page - done
 - Put log out in header - done
-- File manager for folders  - TODO
-- File manager for git - TODO
+
 
 #### Plugins
 - Ms word to markdown - done
@@ -37,6 +36,8 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
+- File manager for folders  - TODO
+- File manager for git - TODO
 - Chat
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing

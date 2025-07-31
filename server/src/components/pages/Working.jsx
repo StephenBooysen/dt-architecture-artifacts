@@ -36,19 +36,25 @@ const Working = () => {
             </div>
             
             <div className="form-group">
-              <label htmlFor="worker-data">Data to Pass (JSON format)</label>
+              <label htmlFor="worker-data">Data to Pass (JSON format required if provided)</label>
               <textarea 
                 id="worker-data" 
                 name="worker-data" 
                 className="form-control textarea-control" 
-                placeholder='{"key": "value", "numbers": [1, 2, 3], "message": "Hello Worker!"}'
+                placeholder="Enter your JSON data (optional)...&#10;{&#10;  &quot;key&quot;: &quot;value&quot;,&#10;  &quot;numbers&quot;: [1, 2, 3],&#10;  &quot;message&quot;: &quot;Hello Worker!&quot;&#10;}"
               ></textarea>
+              <div className="json-validation-feedback" id="jsonValidation"></div>
               <div className="script-examples">
                 <strong>Note:</strong> Data must be valid JSON format. Leave empty if no data is needed.
               </div>
             </div>
             
-            <button type="submit" className="btn btn-primary">
+            <div className="form-group" id="jsonPreviewGroup" style={{display: 'none'}}>
+              <label>Formatted JSON Preview:</label>
+              <pre className="json-preview" id="jsonPreview"></pre>
+            </div>
+            
+            <button type="submit" className="btn btn-primary" id="runWorkerButton">
               <i className="bi bi-play-fill me-1"></i>Run Worker
             </button>
             <button type="button" className="btn btn-danger" onClick={() => window.stopWorker && window.stopWorker()}>
@@ -218,10 +224,98 @@ const Working = () => {
           margin: 0;
           padding-left: 1.5rem;
         }
+        .json-validation-feedback {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          min-height: 1.25rem;
+        }
+        .json-validation-feedback.valid {
+          color: #36b37e;
+        }
+        .json-validation-feedback.invalid {
+          color: #de350b;
+        }
+        .json-preview {
+          background: #f8f9fa;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.875rem;
+          color: #172b4d;
+          max-height: 300px;
+          overflow-y: auto;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .form-control.valid {
+          border-color: #36b37e;
+          box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.2);
+        }
+        .form-control.invalid {
+          border-color: #de350b;
+          box-shadow: 0 0 0 2px rgba(222, 53, 11, 0.2);
+        }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
         let statusCheckInterval;
+        let isValidJson = true; // Data is optional, so start as valid
+
+        // JSON validation and formatting function
+        function validateAndFormatJson(jsonString) {
+          const dataField = document.getElementById('worker-data');
+          const validationFeedback = document.getElementById('jsonValidation');
+          const previewGroup = document.getElementById('jsonPreviewGroup');
+          const previewElement = document.getElementById('jsonPreview');
+          const runButton = document.getElementById('runWorkerButton');
+          
+          try {
+            if (!jsonString.trim()) {
+              // Empty input is allowed for data field
+              dataField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = 'Optional - Leave empty if no data needed';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidJson = true;
+              runButton.disabled = false;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            dataField.classList.remove('invalid');
+            dataField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidJson = true;
+            runButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            dataField.classList.remove('valid');
+            dataField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidJson = false;
+            runButton.disabled = true;
+          }
+        }
 
         // Check service status
         async function checkWorkingStatus() {
@@ -274,6 +368,11 @@ const Working = () => {
           
           if (!scriptPath) {
             showToast('Script filename is required', 'error');
+            return;
+          }
+          
+          if (!isValidJson) {
+            showToast('Please enter valid JSON data', 'error');
             return;
           }
 
@@ -342,10 +441,26 @@ const Working = () => {
           }
         }
 
+        // Add event listener for JSON validation
+        document.getElementById('worker-data').addEventListener('input', function(e) {
+          validateAndFormatJson(e.target.value);
+        });
+        
+        // Add event listener for paste events to handle JSON formatting
+        document.getElementById('worker-data').addEventListener('paste', function(e) {
+          // Use setTimeout to allow paste to complete before validation
+          setTimeout(() => {
+            validateAndFormatJson(e.target.value);
+          }, 10);
+        });
+
         // Initialize status checking
         document.addEventListener('DOMContentLoaded', () => {
           checkWorkingStatus();
           statusCheckInterval = setInterval(checkWorkingStatus, 5000);
+          
+          // Initialize validation state
+          validateAndFormatJson(''); // Initialize as valid (optional)
         });
 
         // Cleanup on page unload

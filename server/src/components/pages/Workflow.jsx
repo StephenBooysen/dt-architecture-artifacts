@@ -12,16 +12,10 @@ const Workflow = () => {
         <p>Define and execute sequential workflows with Node.js scripts</p>
       </div>
 
-      <div className="workflow-tabs">
-        <button className="workflow-tab active" onClick={() => window.switchTab && window.switchTab('define')}>Define Workflow</button>
-        <button className="workflow-tab" onClick={() => window.switchTab && window.switchTab('execute')}>Execute Workflow</button>
-      </div>
-
-      {/* Define Workflow Tab */}
-      <div id="define-tab" className="tab-content active">
-        <div className="workflow-section">
-          <div className="workflow-form">
-            <h2><i className="bi bi-diagram-3 me-2"></i>Define Workflow Plan</h2>
+      {/* Define Workflow Section */}
+      <div className="workflow-section">
+        <div className="workflow-form">
+          <h2><i className="bi bi-diagram-3 me-2"></i>Define Workflow Plan</h2>
             <form id="define-workflow-form">
               <div className="form-group">
                 <label htmlFor="workflow-name">Workflow Name</label>
@@ -39,14 +33,15 @@ const Workflow = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="workflow-steps">Workflow Steps (JSON Array)</label>
+                <label htmlFor="workflow-steps">Workflow Steps (JSON Array required)</label>
                 <textarea 
                   id="workflow-steps" 
                   name="workflow-steps" 
                   className="form-control textarea-control" 
-                  placeholder='["./step1.js", "./step2.js", "./step3.js"]'
+                  placeholder="Enter your JSON array of steps...&#10;[&#10;  &quot;./step1.js&quot;,&#10;  &quot;./step2.js&quot;,&#10;  &quot;./step3.js&quot;&#10;]"
                   required
                 ></textarea>
+                <div className="json-validation-feedback" id="stepsJsonValidation"></div>
                 <div className="workflow-examples">
                   <strong>Steps Definition:</strong> JSON array of file paths to Node.js scripts
                   <pre>["./workflows/validate-data.js", "./workflows/process-data.js", "./workflows/save-results.js"]</pre>
@@ -54,24 +49,27 @@ const Workflow = () => {
                 </div>
               </div>
               
-              <button type="submit" className="btn btn-success">
+              <div className="form-group" id="stepsJsonPreviewGroup" style={{display: 'none'}}>
+                <label>Formatted JSON Preview:</label>
+                <pre className="json-preview" id="stepsJsonPreview"></pre>
+              </div>
+              
+              <button type="submit" className="btn btn-success" id="defineWorkflowButton" disabled>
                 <i className="bi bi-plus-circle me-1"></i>Define Workflow
               </button>
             </form>
 
-            <div id="define-result-display" className="result-display">
-              <h4>Definition Result:</h4>
-              <pre id="define-result-content"></pre>
-            </div>
+          <div id="define-result-display" className="result-display">
+            <h4>Definition Result:</h4>
+            <pre id="define-result-content"></pre>
           </div>
         </div>
       </div>
 
-      {/* Execute Workflow Tab */}
-      <div id="execute-tab" className="tab-content">
-        <div className="workflow-section">
-          <div className="workflow-form">
-            <h2><i className="bi bi-play-circle me-2"></i>Execute Workflow</h2>
+      {/* Execute Workflow Section */}
+      <div className="workflow-section">
+        <div className="workflow-form">
+          <h2><i className="bi bi-play-circle me-2"></i>Execute Workflow</h2>
             <form id="execute-workflow-form">
               <div className="form-group">
                 <label htmlFor="execution-workflow-name">Workflow Name</label>
@@ -89,13 +87,14 @@ const Workflow = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="workflow-data">Initial Data (JSON)</label>
+                <label htmlFor="workflow-data">Initial Data (JSON format required if provided)</label>
                 <textarea 
                   id="workflow-data" 
                   name="workflow-data" 
                   className="form-control textarea-control" 
-                  placeholder='{"userId": 123, "action": "process", "data": [1, 2, 3]}'
+                  placeholder="Enter your JSON data (optional)...&#10;{&#10;  &quot;userId&quot;: 123,&#10;  &quot;action&quot;: &quot;process&quot;,&#10;  &quot;data&quot;: [1, 2, 3]&#10;}"
                 ></textarea>
+                <div className="json-validation-feedback" id="dataJsonValidation"></div>
                 <div className="workflow-examples">
                   <strong>Initial Data:</strong> JSON object that will be passed to the first workflow step
                   <pre>{`{"input": "sample data", "config": {"retries": 3}, "metadata": {"timestamp": "2024-01-01"}}`}</pre>
@@ -103,15 +102,19 @@ const Workflow = () => {
                 </div>
               </div>
               
-              <button type="submit" className="btn btn-primary">
+              <div className="form-group" id="dataJsonPreviewGroup" style={{display: 'none'}}>
+                <label>Formatted JSON Preview:</label>
+                <pre className="json-preview" id="dataJsonPreview"></pre>
+              </div>
+              
+              <button type="submit" className="btn btn-primary" id="executeWorkflowButton">
                 <i className="bi bi-play-fill me-1"></i>Start Workflow
               </button>
             </form>
 
-            <div id="execute-result-display" className="result-display">
-              <h4>Execution Result:</h4>
-              <pre id="execute-result-content"></pre>
-            </div>
+          <div id="execute-result-display" className="result-display">
+            <h4>Execution Result:</h4>
+            <pre id="execute-result-content"></pre>
           </div>
         </div>
       </div>
@@ -284,60 +287,153 @@ const Workflow = () => {
           margin: 2rem 0;
           padding-top: 2rem;
         }
-        .workflow-tabs {
-          display: flex;
-          border-bottom: 1px solid #dfe1e6;
-          margin-bottom: 2rem;
+        .json-validation-feedback {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          min-height: 1.25rem;
         }
-        .workflow-tab {
-          padding: 1rem 1.5rem;
-          background: #f4f5f7;
-          border: none;
-          cursor: pointer;
-          font-weight: 500;
-          color: #5e6c84;
-          border-radius: 4px 4px 0 0;
-          margin-right: 0.25rem;
+        .json-validation-feedback.valid {
+          color: #36b37e;
         }
-        .workflow-tab.active {
-          background: #ffffff;
+        .json-validation-feedback.invalid {
+          color: #de350b;
+        }
+        .json-preview {
+          background: #f8f9fa;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.875rem;
           color: #172b4d;
-          border-bottom: 2px solid #0052cc;
+          max-height: 300px;
+          overflow-y: auto;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         }
-        .workflow-tab:hover {
-          background: #e4e6ea;
+        .form-control.valid {
+          border-color: #36b37e;
+          box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.2);
         }
-        .workflow-tab.active:hover {
-          background: #ffffff;
+        .form-control.invalid {
+          border-color: #de350b;
+          box-shadow: 0 0 0 2px rgba(222, 53, 11, 0.2);
         }
-        .tab-content {
-          display: none;
-        }
-        .tab-content.active {
-          display: block;
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
         let statusCheckInterval;
+        let isValidStepsJson = false;
+        let isValidDataJson = true; // Data is optional, so start as valid
 
-        // Tab switching functionality
-        window.switchTab = function switchTab(tabName) {
-          // Hide all tab contents
-          document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-          });
+        // JSON validation function for steps field
+        function validateStepsJson(jsonString) {
+          const stepsField = document.getElementById('workflow-steps');
+          const validationFeedback = document.getElementById('stepsJsonValidation');
+          const previewGroup = document.getElementById('stepsJsonPreviewGroup');
+          const previewElement = document.getElementById('stepsJsonPreview');
+          const defineButton = document.getElementById('defineWorkflowButton');
           
-          // Remove active class from all tabs
-          document.querySelectorAll('.workflow-tab').forEach(tab => {
-            tab.classList.remove('active');
-          });
+          try {
+            if (!jsonString.trim()) {
+              // Empty input
+              stepsField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = '';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidStepsJson = false;
+              defineButton.disabled = true;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Check if it's an array
+            if (!Array.isArray(parsed)) {
+              throw new Error('Steps must be an array');
+            }
+            
+            // Valid JSON array
+            stepsField.classList.remove('invalid');
+            stepsField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON Array';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidStepsJson = true;
+            defineButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            stepsField.classList.remove('valid');
+            stepsField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidStepsJson = false;
+            defineButton.disabled = true;
+          }
+        }
+
+        // JSON validation function for data field (optional)
+        function validateDataJson(jsonString) {
+          const dataField = document.getElementById('workflow-data');
+          const validationFeedback = document.getElementById('dataJsonValidation');
+          const previewGroup = document.getElementById('dataJsonPreviewGroup');
+          const previewElement = document.getElementById('dataJsonPreview');
+          const executeButton = document.getElementById('executeWorkflowButton');
           
-          // Show selected tab content
-          document.getElementById(tabName + '-tab').classList.add('active');
-          
-          // Add active class to selected tab
-          event.target.classList.add('active');
+          try {
+            if (!jsonString.trim()) {
+              // Empty input is allowed for data field
+              dataField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = 'Optional - Leave empty if no initial data needed';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidDataJson = true;
+              executeButton.disabled = false;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            dataField.classList.remove('invalid');
+            dataField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidDataJson = true;
+            executeButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            dataField.classList.remove('valid');
+            dataField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidDataJson = false;
+            executeButton.disabled = true;
+          }
         }
 
         // Check service status
@@ -391,6 +487,11 @@ const Workflow = () => {
           
           if (!workflowName || !stepsText) {
             showToast('Workflow name and steps are required', 'error');
+            return;
+          }
+          
+          if (!isValidStepsJson) {
+            showToast('Please enter valid JSON array for workflow steps', 'error');
             return;
           }
 
@@ -456,6 +557,11 @@ const Workflow = () => {
             showToast('Workflow name is required', 'error');
             return;
           }
+          
+          if (!isValidDataJson) {
+            showToast('Please enter valid JSON for workflow data', 'error');
+            return;
+          }
 
           let workflowData = null;
           if (dataText) {
@@ -505,10 +611,34 @@ const Workflow = () => {
           }
         });
 
+        // Add event listeners for JSON validation
+        document.getElementById('workflow-steps').addEventListener('input', function(e) {
+          validateStepsJson(e.target.value);
+        });
+        
+        document.getElementById('workflow-steps').addEventListener('paste', function(e) {
+          setTimeout(() => {
+            validateStepsJson(e.target.value);
+          }, 10);
+        });
+        
+        document.getElementById('workflow-data').addEventListener('input', function(e) {
+          validateDataJson(e.target.value);
+        });
+        
+        document.getElementById('workflow-data').addEventListener('paste', function(e) {
+          setTimeout(() => {
+            validateDataJson(e.target.value);
+          }, 10);
+        });
+
         // Initialize status checking
         document.addEventListener('DOMContentLoaded', () => {
           checkWorkflowStatus();
           statusCheckInterval = setInterval(checkWorkflowStatus, 5000);
+          
+          // Initialize validation states
+          validateDataJson(''); // Initialize data field as valid (optional)
         });
 
         // Cleanup on page unload

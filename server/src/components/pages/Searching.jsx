@@ -12,27 +12,21 @@ const Searching = () => {
         <p>Add JSON data to collections and perform text-based searches</p>
       </div>
 
-      <div className="search-tabs">
-        <button className="search-tab active" onClick={() => switchTab('add')}>Add Data</button>
-        <button className="search-tab" onClick={() => switchTab('search')}>Search Data</button>
-        <button className="search-tab" onClick={() => switchTab('delete')}>Delete Data</button>
-      </div>
-
-      {/* Add Data Tab */}
-      <div id="add-tab" className="tab-content active">
-        <div className="search-section">
-          <div className="search-form">
-            <h2><i className="bi bi-plus-circle me-2"></i>Add JSON Data</h2>
+      {/* Add Data Section */}
+      <div className="search-section">
+        <div className="search-form">
+          <h2><i className="bi bi-plus-circle me-2"></i>Add JSON Data</h2>
             <form id="add-data-form">
               <div className="form-group">
-                <label htmlFor="json-data">JSON Data</label>
+                <label htmlFor="json-data">JSON Data (JSON format required)</label>
                 <textarea 
                   id="json-data" 
                   name="json-data" 
                   className="form-control textarea-control" 
-                  placeholder='{"name": "John Doe", "email": "john@example.com", "role": "developer"}'
+                  placeholder="Enter your JSON data...&#10;{&#10;  &quot;name&quot;: &quot;John Doe&quot;,&#10;  &quot;email&quot;: &quot;john@example.com&quot;,&#10;  &quot;role&quot;: &quot;developer&quot;&#10;}"
                   required
                 ></textarea>
+                <div className="json-validation-feedback" id="jsonValidation"></div>
                 <div className="search-examples">
                   <strong>Example JSON Data:</strong>
                   <pre>{`{"user": {"name": "Alice Smith", "department": "Engineering", "skills": ["JavaScript", "Python", "React"]}, "project": "Web Application", "status": "active"}`}</pre>
@@ -40,24 +34,27 @@ const Searching = () => {
                 </div>
               </div>
               
-              <button type="submit" className="btn btn-success">
+              <div className="form-group" id="jsonPreviewGroup" style={{display: 'none'}}>
+                <label>Formatted JSON Preview:</label>
+                <pre className="json-preview" id="jsonPreview"></pre>
+              </div>
+              
+              <button type="submit" className="btn btn-success" id="addDataButton" disabled>
                 <i className="bi bi-plus-circle me-1"></i>Add Data
               </button>
             </form>
 
-            <div id="add-result-display" className="result-display">
-              <h4>Add Result:</h4>
-              <pre id="add-result-content"></pre>
-            </div>
+          <div id="add-result-display" className="result-display">
+            <h4>Add Result:</h4>
+            <pre id="add-result-content"></pre>
           </div>
         </div>
       </div>
 
-      {/* Search Data Tab */}
-      <div id="search-tab" className="tab-content">
-        <div className="search-section">
-          <div className="search-form">
-            <h2><i className="bi bi-search me-2"></i>Search JSON Data</h2>
+      {/* Search Data Section */}
+      <div className="search-section">
+        <div className="search-form">
+          <h2><i className="bi bi-search me-2"></i>Search JSON Data</h2>
             <form id="search-data-form">
               <div className="form-group">
                 <label htmlFor="search-term">Search Term</label>
@@ -85,21 +82,19 @@ const Searching = () => {
               </button>
             </form>
 
-            <div id="search-result-display" className="result-display">
-              <h4>Search Results:</h4>
-              <div id="search-results-container">
-                <div className="no-results">No search performed yet</div>
-              </div>
+          <div id="search-result-display" className="result-display">
+            <h4>Search Results:</h4>
+            <div id="search-results-container">
+              <div className="no-results">No search performed yet</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Delete Data Tab */}
-      <div id="delete-tab" className="tab-content">
-        <div className="search-section">
-          <div className="search-form">
-            <h2><i className="bi bi-trash me-2"></i>Delete JSON Data</h2>
+      {/* Delete Data Section */}
+      <div className="search-section">
+        <div className="search-form">
+          <h2><i className="bi bi-trash me-2"></i>Delete JSON Data</h2>
             <form id="delete-data-form">
               <div className="form-group">
                 <label htmlFor="delete-key">Data Key</label>
@@ -123,10 +118,9 @@ const Searching = () => {
               </div>
             </form>
 
-            <div id="delete-result-display" className="result-display">
-              <h4>Delete Result:</h4>
-              <pre id="delete-result-content"></pre>
-            </div>
+          <div id="delete-result-display" className="result-display">
+            <h4>Delete Result:</h4>
+            <pre id="delete-result-content"></pre>
           </div>
         </div>
       </div>
@@ -309,38 +303,6 @@ const Searching = () => {
           margin: 2rem 0;
           padding-top: 2rem;
         }
-        .search-tabs {
-          display: flex;
-          border-bottom: 1px solid #dfe1e6;
-          margin-bottom: 2rem;
-        }
-        .search-tab {
-          padding: 1rem 1.5rem;
-          background: #f4f5f7;
-          border: none;
-          cursor: pointer;
-          font-weight: 500;
-          color: #5e6c84;
-          border-radius: 4px 4px 0 0;
-          margin-right: 0.25rem;
-        }
-        .search-tab.active {
-          background: #ffffff;
-          color: #172b4d;
-          border-bottom: 2px solid #0052cc;
-        }
-        .search-tab:hover {
-          background: #e4e6ea;
-        }
-        .search-tab.active:hover {
-          background: #ffffff;
-        }
-        .tab-content {
-          display: none;
-        }
-        .tab-content.active {
-          display: block;
-        }
         .search-results {
           max-height: 400px;
           overflow-y: auto;
@@ -385,28 +347,97 @@ const Searching = () => {
         .delete-key-input .form-control {
           flex: 1;
         }
+        .json-validation-feedback {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          min-height: 1.25rem;
+        }
+        .json-validation-feedback.valid {
+          color: #36b37e;
+        }
+        .json-validation-feedback.invalid {
+          color: #de350b;
+        }
+        .json-preview {
+          background: #f8f9fa;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.875rem;
+          color: #172b4d;
+          max-height: 300px;
+          overflow-y: auto;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .form-control.valid {
+          border-color: #36b37e;
+          box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.2);
+        }
+        .form-control.invalid {
+          border-color: #de350b;
+          box-shadow: 0 0 0 2px rgba(222, 53, 11, 0.2);
+        }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
         let statusCheckInterval;
+        let isValidJson = false;
 
-        // Tab switching functionality
-        function switchTab(tabName) {
-          // Hide all tab contents
-          document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-          });
+        // JSON validation and formatting function
+        function validateAndFormatJson(jsonString) {
+          const dataField = document.getElementById('json-data');
+          const validationFeedback = document.getElementById('jsonValidation');
+          const previewGroup = document.getElementById('jsonPreviewGroup');
+          const previewElement = document.getElementById('jsonPreview');
+          const addButton = document.getElementById('addDataButton');
           
-          // Remove active class from all tabs
-          document.querySelectorAll('.search-tab').forEach(tab => {
-            tab.classList.remove('active');
-          });
-          
-          // Show selected tab content
-          document.getElementById(tabName + '-tab').classList.add('active');
-          
-          // Add active class to selected tab
-          event.target.classList.add('active');
+          try {
+            if (!jsonString.trim()) {
+              // Empty input
+              dataField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = '';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidJson = false;
+              addButton.disabled = true;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            dataField.classList.remove('invalid');
+            dataField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidJson = true;
+            addButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            dataField.classList.remove('valid');
+            dataField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidJson = false;
+            addButton.disabled = true;
+          }
         }
 
         // Check service status
@@ -461,6 +492,11 @@ const Searching = () => {
             showToast('JSON data is required', 'error');
             return;
           }
+          
+          if (!isValidJson) {
+            showToast('Please enter valid JSON data', 'error');
+            return;
+          }
 
           let jsonData;
           try {
@@ -486,6 +522,7 @@ const Searching = () => {
               resultContent.textContent = 'Data added successfully! A unique key has been generated.';
               showToast('JSON data added successfully', 'success');
               document.getElementById('json-data').value = '';
+              validateAndFormatJson(''); // Reset validation state
             } else {
               resultDisplay.className = 'result-display error';
               resultContent.textContent = result || 'Failed to add data';
@@ -600,6 +637,19 @@ const Searching = () => {
             resultDisplay.style.display = 'block';
             showToast('Error deleting data', 'error');
           }
+        });
+
+        // Add event listener for JSON validation
+        document.getElementById('json-data').addEventListener('input', function(e) {
+          validateAndFormatJson(e.target.value);
+        });
+        
+        // Add event listener for paste events to handle JSON formatting
+        document.getElementById('json-data').addEventListener('paste', function(e) {
+          // Use setTimeout to allow paste to complete before validation
+          setTimeout(() => {
+            validateAndFormatJson(e.target.value);
+          }, 10);
         });
 
         // Initialize status checking

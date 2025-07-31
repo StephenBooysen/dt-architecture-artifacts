@@ -22,12 +22,22 @@ const Caching = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="cacheValue">Cache Value (for PUT operation):</label>
-            <textarea id="cacheValue" className="form-control" placeholder="Enter value to cache..."></textarea>
+            <label htmlFor="cacheValue">Cache Value (JSON format required for PUT operation):</label>
+            <textarea 
+              id="cacheValue" 
+              className="form-control" 
+              placeholder="Enter your JSON value...&#10;{&#10;  &quot;data&quot;: &quot;your cached data here&quot;,&#10;  &quot;timestamp&quot;: &quot;2024-01-01T00:00:00Z&quot;,&#10;  &quot;metadata&quot;: {}&#10;}"
+            ></textarea>
+            <div className="json-validation-feedback" id="jsonValidation"></div>
+          </div>
+          
+          <div className="form-group" id="jsonPreviewGroup" style={{display: 'none'}}>
+            <label>Formatted JSON Preview:</label>
+            <pre className="json-preview" id="jsonPreview"></pre>
           </div>
           
           <div className="cache-operations">
-            <button type="button" className="btn btn-success" id="putButton">
+            <button type="button" className="btn btn-success" id="putButton" disabled>
               <i className="bi bi-plus-circle me-2"></i>PUT
             </button>
             <button type="button" className="btn btn-primary" id="getButton">
@@ -168,9 +178,98 @@ const Caching = () => {
             grid-template-columns: 1fr;
           }
         }
+        .json-validation-feedback {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          min-height: 1.25rem;
+        }
+        .json-validation-feedback.valid {
+          color: #36b37e;
+        }
+        .json-validation-feedback.invalid {
+          color: #de350b;
+        }
+        .json-preview {
+          background: #f8f9fa;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.875rem;
+          color: #172b4d;
+          max-height: 300px;
+          overflow-y: auto;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .form-control.valid {
+          border-color: #36b37e;
+          box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.2);
+        }
+        .form-control.invalid {
+          border-color: #de350b;
+          box-shadow: 0 0 0 2px rgba(222, 53, 11, 0.2);
+        }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
+        let isValidJson = false;
+
+        // JSON validation and formatting function
+        function validateAndFormatJson(jsonString) {
+          const valueField = document.getElementById('cacheValue');
+          const validationFeedback = document.getElementById('jsonValidation');
+          const previewGroup = document.getElementById('jsonPreviewGroup');
+          const previewElement = document.getElementById('jsonPreview');
+          const putButton = document.getElementById('putButton');
+          
+          try {
+            if (!jsonString.trim()) {
+              // Empty input
+              valueField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = '';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidJson = false;
+              putButton.disabled = true;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            valueField.classList.remove('invalid');
+            valueField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidJson = true;
+            putButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            valueField.classList.remove('valid');
+            valueField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidJson = false;
+            putButton.disabled = true;
+          }
+        }
+
         // Check service status on page load
         async function checkServiceStatus() {
           try {
@@ -223,6 +322,11 @@ const Caching = () => {
           
           if (!value) {
             showToast('Please enter a value to cache', true);
+            return;
+          }
+          
+          if (!isValidJson) {
+            showToast('Please enter a valid JSON value', true);
             return;
           }
           
@@ -323,6 +427,19 @@ const Caching = () => {
             this.disabled = false;
             this.innerHTML = '<i class="bi bi-trash me-2"></i>DELETE';
           }
+        });
+
+        // Add event listener for JSON validation
+        document.getElementById('cacheValue').addEventListener('input', function(e) {
+          validateAndFormatJson(e.target.value);
+        });
+        
+        // Add event listener for paste events to handle JSON formatting
+        document.getElementById('cacheValue').addEventListener('paste', function(e) {
+          // Use setTimeout to allow paste to complete before validation
+          setTimeout(() => {
+            validateAndFormatJson(e.target.value);
+          }, 10);
         });
 
         // Initialize on page load
