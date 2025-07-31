@@ -24,13 +24,12 @@
 - Navigation - add upload button like folder and file - done
 - Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation - done
 - Swagger - Service - done
-- swagger - todo
+- Swagger - Core API - todo
  
 #### Server
 - Services: Screens should work - done
 - Log out button should redirect to landing page - done
 - Put log out in header - done
-
 
 #### Plugins
 - Ms word to markdown - done
@@ -40,20 +39,16 @@
 #### Client
 - File manager for folders  - TODO
 - File manager for git - TODO
-- Chat
+- Chat - Todo
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing
-- Subscribe to changes
-- Template: Blueprints config that create folders and file
-- Platform: Client and server plugins
-- Locked pages
+- Subscribe to changes and notify in notification popup
 - Markdown - Tree drag files into folders
 - Bug Files greater than 10mb failing
 
 #### Server
 - Security: Roles and permissions (read, write, backoffice)
 - Settings: Git and files
-- Services: Caching for markdown files for search and categories
 - Infrastucture: Multi threaded
 
 #### Plugins
@@ -65,25 +60,25 @@
 - Readonly pages
 
 #### Server
+
+- View: Knowledge View
+- Platform: Client and server plugins
+- Optomisations: Caching for markdown files for search and categories
+- Optomisations: Searching for markdown files for search and categories
+- Services: Workflow for Plugins
+
+#### Plugins
 - Import ARIS items
 - Import Jira
 - Import Code 
-- Display Knowledge View
-
-#### Plugins
-- 
 
 ### Phase 4: AI with ollama
 #### Client
-- 
+- Auto complete markdown
+- Ask questions about data
 
 #### Server
-- 
+- AI Settings
 
 #### Plugins
 - 
-
-pkill -f "npm run dev" || pkill -f "react-scripts start" || pkill -f "nodemon" || true
-
-
-Can you please continue with where gemini was going, I want to create a swagger page in the server from a link on the left nav Called API testing. Gemini was looking through all the routes under server/routes not the services routes to generate the OPEN Api specification to pass to the swagger package. Please look at was has already been done and continue, do not start from scratch ... and make sure you think very hard.
