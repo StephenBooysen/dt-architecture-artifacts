@@ -301,3 +301,14 @@ ISC License
 ## Support
 
 For issues and questions, please create an issue in the repository. For enterprise support and custom implementations, contact the development team.
+
+<!-- METADATA_DATA_START
+{
+  "recentEdits": [],
+  "starred": true,
+  "version": "1.0",
+  "createdAt": "2025-07-31T09:43:51.783Z",
+  "lastUpdated": "2025-07-31T09:43:51.783Z",
+  "starredAt": "2025-07-31T09:43:51.783Z"
+}
+METADATA_DATA_END -->

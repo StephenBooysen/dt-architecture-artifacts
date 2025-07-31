@@ -63,6 +63,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
   const [commentsForFile, setCommentsForFile] = useState([]);
   const [isStarred, setIsStarred] = useState(false);
   const [isStarring, setIsStarring] = useState(false);
+  const [viewMode, setViewMode] = useState('preview'); // default to preview mode
   const [commentsHeight, setCommentsHeight] = useState(() => {
     const saved = localStorage.getItem('architecture-artifacts-comments-height');
     return saved ? parseInt(saved, 10) : 200;
@@ -319,7 +320,25 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
             <i className="bi bi-box-arrow-up-right me-1"></i>Preview Window
           </button>
           
-          <div className="vr mx-2"></div>
+          {/* View mode buttons for markdown files */}
+          {isMarkdown && (
+            <>
+              <button
+                className={`btn btn-sm ${viewMode === 'preview' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('preview')}
+                title="Preview mode">
+                <i className="bi bi-eye me-1"></i>Preview
+              </button>
+              <button
+                className={`btn btn-sm ${viewMode === 'edit' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('edit')}
+                title="Edit mode">
+                <i className="bi bi-pencil me-1"></i>Edit
+              </button>
+              
+              <div className="vr mx-2"></div>
+            </>
+          )}
           
           <button
             className="btn btn-success btn-sm"
@@ -342,7 +361,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
           <MDEditor
             value={cleanContent}
             onChange={handleContentChange}
-            preview="edit"
+            preview={viewMode}
             hideToolbar={false}
             data-color-mode={isDark ? 'dark' : 'light'}
             height="100%"

@@ -17,12 +17,13 @@
 - Markdowm: Comments - done
 - View: Search results screen - done
 - View: Homepage - done
-- Markdown - Preview first - TODO
-- Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation
-- Markdown - Tree drag files into folders
-- BUG: Alternative files (PDF) viewer not working
+- Markdown - Preview first - done
+    I would like to make a change based on me using the client for a bit. Currently the default view when clicking on a mardown file is edit mode. I would like to change this to become that when you click on a mardown file then the default view is to preview. And then you click on a button to edit, so then load the current mardown editor. Please thing about this and execute it for me.     
+- BUG: Alternative files (PDF) viewer not working - done
 - Navigation - add ... to end of folder and filenames not fold
 - Navigation - add upload button like folder and file
+- Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation
+- Markdown - Tree drag files into folders
 - Bug Files greater than 10mb failing
  
 #### Server
@@ -50,6 +51,7 @@
 - Security: Roles and permissions (read, write, backoffice)
 - Settings: Git and files
 - Services: Caching for markdown files for search and categories
+- Infrastucture: Multi threaded
 
 #### Plugins
 - 
@@ -78,4 +80,4 @@
 #### Plugins
 - 
 
-
+pkill -f "npm run dev" || pkill -f "react-scripts start" || pkill -f "nodemon" || true
