@@ -2,7 +2,7 @@
  * @fileoverview Unit tests for the in-memory cache.
  */
 
-const createCache = require('../../../server/src/services/caching');
+const createCache = require('../../server/src/services/caching');
 const EventEmitter = require('events');
 
 describe('Cache', () => {

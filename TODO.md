@@ -6,7 +6,7 @@
 - Phase 3: Shoprite enterprise integration
 - Phase 4: AI with ollama
 
-### Phase 1
+### Phase 1: Fully functioning wiki for only me (1 user)
 #### Client
 - Templates: Add templates list view and remove from left nav - done
 - Templates: replace fields like {datetime}, {date}, {user}, {dayofweek}, {folder}, {filename} - done
@@ -17,6 +17,7 @@
 - Markdowm: Comments - done
 - View: Search results screen - done
 - View: Homepage - done
+- Markdown - Preview first
 
 #### Server
 - Services: Screens should work
@@ -30,7 +31,7 @@
 - MS powerpoint to markdown - done
 
 
-### Phase 2
+### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
 - Chat
 - Show who is looking at the page (socket.io)
@@ -41,15 +42,16 @@
 - Platform: Client and server plugins
 
 #### Server
-- Roles and permissions
+- Roles and permissions (read, write, backoffice)
+- Settings
+ - Git and files
+- Caching for markdown files for search and categories
 
 #### Plugins
 - 
--
--
--
 
-### Phase 3
+
+### Phase 3: Shoprite enterprise integration
 #### Client
 - 
 
@@ -58,6 +60,15 @@
 
 #### Plugins
 - 
--
--
--
+
+### Phase 4: AI with ollama
+#### Client
+- 
+
+#### Server
+- 
+
+#### Plugins
+- 
+
+

@@ -19,7 +19,7 @@ async function runCachingLoadTest(
     await cache.put(key, value);
     await cache.get(key);
     if (i % 1000 === 0) {
-      // console.log(`Caching iteration ${i}`);
+      console.log(`Caching iteration ${i}`);
     }
   }
 

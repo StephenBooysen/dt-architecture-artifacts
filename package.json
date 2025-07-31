@@ -26,6 +26,7 @@
     "express": "*",
     "express-rate-limit": "*",
     "express-session": "^1.18.2",
+    "fs-extra": "^11.3.0",
     "ftp": "^0.3.10",
     "helmet": "*",
     "ioredis": "^5.6.1",
