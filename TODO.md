@@ -30,33 +30,34 @@
 - Ms word to markdown - done
 - MS powerpoint to markdown - done
 
-
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
 - Chat
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing
-- Macros aka "/" Forward slash
 - Subscribe to changes
 - Template: Blueprints config that create folders and file
 - Platform: Client and server plugins
+- Locked pages
 
 #### Server
-- Roles and permissions (read, write, backoffice)
-- Settings
- - Git and files
-- Caching for markdown files for search and categories
+- Security: Roles and permissions (read, write, backoffice)
+- Settings: Git and files
+- Services: Caching for markdown files for search and categories
 
 #### Plugins
 - 
 
-
 ### Phase 3: Shoprite enterprise integration
 #### Client
-- 
+- Knowledge view
+- Readonly pages
 
 #### Server
-- 
+- Import ARIS items
+- Import Jira
+- Import Code 
+- Display Knowledge View
 
 #### Plugins
 - 
