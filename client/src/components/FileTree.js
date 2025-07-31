@@ -383,6 +383,23 @@ const FileTree = ({
                 title="Create file">
                 <i className="bi bi-file-earmark-plus"></i>
               </button>
+              <button
+                className="action-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUploadClick(item.path);
+                }}
+                onContextMenu={(e) => e.stopPropagation()}
+                title={isUploading ? "Uploading file..." : "Upload file"}
+                disabled={isUploading}>
+                {isUploading ? (
+                  <div className="spinner-border spinner-border-sm" role="status" style={{ width: '12px', height: '12px' }}>
+                    <span className="visually-hidden">Uploading...</span>
+                  </div>
+                ) : (
+                  <i className="bi bi-upload"></i>
+                )}
+              </button>
             </div>
           </div>
           {!isCollapsed && item.children &&
@@ -513,6 +530,19 @@ const FileTree = ({
             disabled={isLoading}
             title="Create new file">
             <i className="bi bi-file-earmark-plus"></i>
+          </button>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => handleUploadClick('')}
+            disabled={isLoading || isUploading}
+            title={isUploading ? "Uploading file..." : "Upload file"}>
+            {isUploading ? (
+              <div className="spinner-border spinner-border-sm" role="status" style={{ width: '14px', height: '14px' }}>
+                <span className="visually-hidden">Uploading...</span>
+              </div>
+            ) : (
+              <i className="bi bi-upload"></i>
+            )}
           </button>
         </div>
       </div>
