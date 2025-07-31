@@ -9,11 +9,12 @@ module.exports = (options, eventEmitter, logger) => {
   if (options['express-app'] && logger) {
     const app = options['express-app'];
 
-    app.post('/api/logging/log', (req, res) => {
+    app.post('/api/logging/log/:logname', (req, res) => {
+      const logname = req.params.logname;
       const message = req.body;
-      if (message) {
+      if (logname && message) {
         logger
-          .log(message)
+          .log(logname,message)
           .then(() => res.status(200).send('OK'))
           .catch((err) => res.status(500).send(err.message));
       } else {

@@ -2,7 +2,7 @@
 http://localhost:5000/api/logging/status
 
 ### POST a cache record for a key
-POST http://localhost:5000/api/logging/log HTTP/1.1
+POST http://localhost:5000/api/logging/log/sample HTTP/1.1
 content-type: application/json
 
 {

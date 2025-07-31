@@ -20,12 +20,13 @@ class FileLogger {
 
   /**
    * Logs a message to a file.
+   * @param {string} logname The name of the log.
    * @param {string} message The message to log.
    */
-  async log(message) {
-    fs.appendFileSync(this.filename_, message + '\n');
+  async log(logname, message) {
+    fs.appendFileSync(this.filename_, `${logname}: ${message}\n`);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('log:log', { filename: this.filename_, message });
+      this.eventEmitter_.emit('log:log', { filename: this.filename_, logname, message });
   }
 }
 
