@@ -1301,7 +1301,7 @@ app.get('/monitoring/api', requireServerAuth, (req, res) => {
 // Logging Service Page
 app.get('/services/logging', requireServerAuth, (req, res) => {
   const html = renderComponent('logging', {
-    activeSection: 'services',
+    activeSection: 'logging',
     title: 'Logging Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1310,7 +1310,7 @@ app.get('/services/logging', requireServerAuth, (req, res) => {
 // Caching Service Page
 app.get('/services/caching', requireServerAuth, (req, res) => {
   const html = renderComponent('caching', {
-    activeSection: 'services',
+    activeSection: 'caching',
     title: 'Caching Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1319,7 +1319,7 @@ app.get('/services/caching', requireServerAuth, (req, res) => {
 // Queueing Service Page
 app.get('/services/queueing', requireServerAuth, (req, res) => {
   const html = renderComponent('queueing', {
-    activeSection: 'services',
+    activeSection: 'queueing',
     title: 'Queueing Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1327,7 +1327,7 @@ app.get('/services/queueing', requireServerAuth, (req, res) => {
 // Measuring Service Page
 app.get('/services/measuring', requireServerAuth, (req, res) => {
   const html = renderComponent('measuring', {
-    activeSection: 'services',
+    activeSection: 'measuring',
     title: 'Measuring Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1335,7 +1335,7 @@ app.get('/services/measuring', requireServerAuth, (req, res) => {
 // Notifying Service Page
 app.get('/services/notifying', requireServerAuth, (req, res) => {
   const html = renderComponent('notifying', {
-    activeSection: 'services',
+    activeSection: 'notifying',
     title: 'Notifying Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1343,7 +1343,7 @@ app.get('/services/notifying', requireServerAuth, (req, res) => {
 // Scheduling Service Page
 app.get('/services/scheduling', requireServerAuth, (req, res) => {
   const html = renderComponent('scheduling', {
-    activeSection: 'services',
+    activeSection: 'scheduling',
     title: 'Scheduling Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1351,7 +1351,7 @@ app.get('/services/scheduling', requireServerAuth, (req, res) => {
 // Working Service Page
 app.get('/services/working', requireServerAuth, (req, res) => {
   const html = renderComponent('working', {
-    activeSection: 'services',
+    activeSection: 'working',
     title: 'Working Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1359,7 +1359,7 @@ app.get('/services/working', requireServerAuth, (req, res) => {
 // Workflow Service Page
 app.get('/services/workflow', requireServerAuth, (req, res) => {
   const html = renderComponent('workflow', {
-    activeSection: 'services',
+    activeSection: 'workflow',
     title: 'Workflow Service - Architecture Artifacts'
   });
   res.send(html);
@@ -1367,7 +1367,7 @@ app.get('/services/workflow', requireServerAuth, (req, res) => {
 // Search Service Page
 app.get('/services/searching', requireServerAuth, (req, res) => {
   const html = renderComponent('searching', {
-    activeSection: 'services',
+    activeSection: 'searching',
     title: 'Searching Service - Architecture Artifacts'
   });
   res.send(html);
