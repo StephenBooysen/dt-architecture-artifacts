@@ -1,0 +1,472 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Workflow Service API",
+    "description": "A comprehensive workflow orchestration service API that provides capabilities for defining multi-step workflows and executing them with data passing between steps. Supports step-based workflow definitions and asynchronous workflow execution with completion callbacks.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/workflow",
+      "description": "Workflow Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "workflow-definition",
+      "description": "Workflow definition and management operations"
+    },
+    {
+      "name": "workflow-execution",
+      "description": "Workflow execution operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/defineworkflow": {
+      "post": {
+        "tags": ["workflow-definition"],
+        "summary": "Define a new workflow",
+        "description": "Creates a new workflow definition with a name and a series of steps. Each step can define actions, conditions, and data transformations that will be executed in sequence when the workflow runs.",
+        "operationId": "defineWorkflow",
+        "requestBody": {
+          "required": true,
+          "description": "The workflow definition including name and steps",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The unique name of the workflow",
+                    "example": "order-processing"
+                  },
+                  "steps": {
+                    "type": "array",
+                    "description": "Array of workflow steps to execute in sequence",
+                    "items": {
+                      "$ref": "#/components/schemas/WorkflowStep"
+                    },
+                    "example": [
+                      {
+                        "name": "validate-order",
+                        "action": "validate",
+                        "parameters": {
+                          "required": ["customerId", "items", "total"]
+                        }
+                      },
+                      {
+                        "name": "process-payment",
+                        "action": "payment",
+                        "parameters": {
+                          "gateway": "stripe",
+                          "currency": "USD"
+                        }
+                      },
+                      {
+                        "name": "update-inventory",
+                        "action": "inventory",
+                        "parameters": {
+                          "operation": "decrement"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "examples": {
+                "order-processing": {
+                  "summary": "Order processing workflow",
+                  "value": {
+                    "name": "order-processing",
+                    "steps": [
+                      {
+                        "name": "validate-order",
+                        "action": "validate",
+                        "parameters": {
+                          "required": ["customerId", "items", "total"]
+                        }
+                      },
+                      {
+                        "name": "process-payment",
+                        "action": "payment",
+                        "parameters": {
+                          "gateway": "stripe",
+                          "currency": "USD"
+                        }
+                      },
+                      {
+                        "name": "update-inventory",
+                        "action": "inventory",
+                        "parameters": {
+                          "operation": "decrement"
+                        }
+                      },
+                      {
+                        "name": "send-confirmation",
+                        "action": "notification",
+                        "parameters": {
+                          "type": "email",
+                          "template": "order-confirmation"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "user-onboarding": {
+                  "summary": "User onboarding workflow",
+                  "value": {
+                    "name": "user-onboarding",
+                    "steps": [
+                      {
+                        "name": "create-profile",
+                        "action": "create-user",
+                        "parameters": {
+                          "sendWelcomeEmail": true
+                        }
+                      },
+                      {
+                        "name": "setup-permissions",
+                        "action": "assign-roles",
+                        "parameters": {
+                          "defaultRole": "user"
+                        }
+                      },
+                      {
+                        "name": "send-welcome-kit",
+                        "action": "notification",
+                        "parameters": {
+                          "type": "email",
+                          "template": "welcome-kit"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow defined successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workflowId": {
+                      "type": "string",
+                      "description": "The unique identifier of the created workflow",
+                      "example": "workflow-12345-abcdef"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing workflow name",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing workflow name"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to define workflow",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while defining workflow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/start": {
+      "post": {
+        "tags": ["workflow-execution"],
+        "summary": "Start workflow execution",
+        "description": "Starts the execution of a previously defined workflow with optional input data. The workflow will execute all steps in sequence, passing data between steps as configured.",
+        "operationId": "startWorkflow",
+        "requestBody": {
+          "required": true,
+          "description": "The workflow execution request with name and input data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the workflow to execute",
+                    "example": "order-processing"
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Input data to pass to the workflow",
+                    "additionalProperties": true,
+                    "example": {
+                      "customerId": "12345",
+                      "items": [
+                        {
+                          "id": "item-1",
+                          "quantity": 2,
+                          "price": 29.99
+                        }
+                      ],
+                      "total": 59.98
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "order-execution": {
+                  "summary": "Execute order processing workflow",
+                  "value": {
+                    "name": "order-processing",
+                    "data": {
+                      "customerId": "cust-12345",
+                      "customerEmail": "john.doe@example.com",
+                      "items": [
+                        {
+                          "id": "item-abc",
+                          "name": "Wireless Headphones",
+                          "quantity": 1,
+                          "price": 299.99
+                        },
+                        {
+                          "id": "item-def",
+                          "name": "Phone Case",
+                          "quantity": 2,
+                          "price": 19.99
+                        }
+                      ],
+                      "total": 339.97,
+                      "paymentMethod": "card-ending-1234"
+                    }
+                  }
+                },
+                "user-onboarding-execution": {
+                  "summary": "Execute user onboarding workflow",
+                  "value": {
+                    "name": "user-onboarding",
+                    "data": {
+                      "email": "newuser@example.com",
+                      "firstName": "Jane",
+                      "lastName": "Smith",
+                      "department": "Engineering",
+                      "role": "Developer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow execution started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workflowId": {
+                      "type": "string",
+                      "description": "The unique identifier of the workflow execution instance",
+                      "example": "execution-67890-fedcba"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing workflow name",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing workflow name"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workflow not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Workflow not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to start workflow",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while starting workflow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the workflow service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "workflow api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WorkflowDefinition": {
+        "type": "object",
+        "description": "A workflow definition with name and steps",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The unique name of the workflow",
+            "example": "order-processing"
+          },
+          "steps": {
+            "type": "array",
+            "description": "Array of workflow steps",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowStep"
+            }
+          }
+        }
+      },
+      "WorkflowStep": {
+        "type": "object",
+        "description": "A single step in a workflow",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the step",
+            "example": "validate-order"
+          },
+          "action": {
+            "type": "string",
+            "description": "The action to perform in this step",
+            "example": "validate"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Parameters for the step action",
+            "additionalProperties": true,
+            "example": {
+              "required": ["customerId", "items", "total"]
+            }
+          },
+          "condition": {
+            "type": "object",
+            "description": "Optional condition that must be met for step to execute",
+            "additionalProperties": true
+          }
+        },
+        "required": ["name", "action"]
+      },
+      "WorkflowExecution": {
+        "type": "object",
+        "description": "Workflow execution request",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the workflow to execute",
+            "example": "order-processing"
+          },
+          "data": {
+            "type": "object",
+            "description": "Input data for the workflow",
+            "additionalProperties": true,
+            "example": {
+              "customerId": "12345",
+              "items": [{"id": "item-1", "quantity": 2, "price": 29.99}],
+              "total": 59.98
+            }
+          }
+        }
+      },
+      "WorkflowResponse": {
+        "type": "object",
+        "description": "Response containing workflow ID",
+        "properties": {
+          "workflowId": {
+            "type": "string",
+            "description": "The unique identifier of the workflow",
+            "example": "workflow-12345-abcdef"
+          }
+        },
+        "required": ["workflowId"]
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "workflow api running"
+      }
+    }
+  }
+}

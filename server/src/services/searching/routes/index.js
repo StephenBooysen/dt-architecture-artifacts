@@ -3,6 +3,9 @@
  */
 'use strict';
 const crypto = require('crypto');
+const swaggerUi = require('swagger-ui-express');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * Searching routes for the Express app.
@@ -14,6 +17,16 @@ module.exports = (options, eventEmitter, search) => {
 
   if (options['express-app'] && search) {
     const app = options['express-app'];
+    
+    // Load OpenAPI specification
+    const openApiPath = path.join(__dirname, '../openapi.json');
+    let openApiSpec = {};
+    try {
+      const openApiContent = fs.readFileSync(openApiPath, 'utf8');
+      openApiSpec = JSON.parse(openApiContent);
+    } catch (error) {
+      console.error('Failed to load OpenAPI specification:', error);
+    }
 
     app.post('/api/searching/add/', (req, res) => {
       const key = crypto.randomUUID();
@@ -50,5 +63,23 @@ module.exports = (options, eventEmitter, search) => {
       eventEmitter.emit('api-searching-status', 'searching api running');
       res.status(200).json('searching api is running');
     });
+
+    // Swagger UI routes
+    app.get('/api/searching/openapi.json', (req, res) => {
+      res.json(openApiSpec);
+    });
+
+    // Swagger UI setup
+    const swaggerOptions = {
+      explorer: true,
+      customCss: `
+        .swagger-ui .topbar { display: none; }
+        .swagger-ui .info { margin: 20px 0; }
+        .swagger-ui .scheme-container { display: none; }
+      `,
+      customSiteTitle: 'Searching Service API Documentation'
+    };
+
+    app.use('/api/searching/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
   }
 };

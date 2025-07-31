@@ -1,0 +1,302 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Scheduling Service API",
+    "description": "A comprehensive task scheduling service API that provides cron-based job scheduling capabilities. Allows scheduling tasks with cron expressions and managing scheduled jobs with cancellation support.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/scheduling",
+      "description": "Scheduling Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "scheduling",
+      "description": "Task scheduling operations"
+    },
+    {
+      "name": "task-management",
+      "description": "Scheduled task management operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/schedule": {
+      "post": {
+        "tags": ["scheduling"],
+        "summary": "Schedule a new task",
+        "description": "Schedules a new task to run according to the specified cron expression. The task will be executed repeatedly based on the cron schedule until cancelled.",
+        "operationId": "scheduleTask",
+        "requestBody": {
+          "required": true,
+          "description": "The task details and cron schedule",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["task", "cron"],
+                "properties": {
+                  "task": {
+                    "type": "object",
+                    "description": "The task configuration and parameters",
+                    "additionalProperties": true,
+                    "example": {
+                      "name": "backup-database",
+                      "action": "backup",
+                      "database": "production"
+                    }
+                  },
+                  "cron": {
+                    "type": "string",
+                    "description": "Cron expression defining when the task should run",
+                    "pattern": "^([0-9*,-/]+\\s+){4}[0-9*,-/]+$",
+                    "example": "0 2 * * *"
+                  }
+                }
+              },
+              "examples": {
+                "daily-backup": {
+                  "summary": "Daily database backup at 2 AM",
+                  "value": {
+                    "task": {
+                      "name": "backup-database",
+                      "action": "backup",
+                      "database": "production",
+                      "retention": "30 days"
+                    },
+                    "cron": "0 2 * * *"
+                  }
+                },
+                "hourly-cleanup": {
+                  "summary": "Hourly log cleanup",
+                  "value": {
+                    "task": {
+                      "name": "cleanup-logs",
+                      "action": "cleanup",
+                      "directory": "/var/log/app",
+                      "maxAge": "24h"
+                    },
+                    "cron": "0 * * * *"
+                  }
+                },
+                "weekly-report": {
+                  "summary": "Weekly report generation on Mondays at 9 AM",
+                  "value": {
+                    "task": {
+                      "name": "generate-weekly-report",
+                      "action": "report",
+                      "type": "weekly",
+                      "recipients": ["admin@example.com"]
+                    },
+                    "cron": "0 9 * * 1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task scheduled successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing task or cron expression",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing task or cron expression"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to schedule task",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while scheduling task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cancel/{taskId}": {
+      "delete": {
+        "tags": ["task-management"],
+        "summary": "Cancel a scheduled task",
+        "description": "Cancels a previously scheduled task by its task ID. The task will no longer execute according to its cron schedule.",
+        "operationId": "cancelTask",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the task to cancel",
+            "schema": {
+              "type": "string",
+              "example": "task-12345-abcdef"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task cancelled successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Task not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to cancel task",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while cancelling task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the scheduling service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "scheduling api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ScheduleRequest": {
+        "type": "object",
+        "description": "Request object for scheduling a new task",
+        "required": ["task", "cron"],
+        "properties": {
+          "task": {
+            "type": "object",
+            "description": "The task configuration and parameters",
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "A descriptive name for the task",
+                "example": "backup-database"
+              },
+              "action": {
+                "type": "string",
+                "description": "The action to perform",
+                "example": "backup"
+              }
+            },
+            "example": {
+              "name": "backup-database",
+              "action": "backup",
+              "database": "production"
+            }
+          },
+          "cron": {
+            "type": "string",
+            "description": "Cron expression defining when the task should run (minute hour day month weekday)",
+            "pattern": "^([0-9*,-/]+\\s+){4}[0-9*,-/]+$",
+            "example": "0 2 * * *"
+          }
+        }
+      },
+      "CronExpression": {
+        "type": "string",
+        "description": "A cron expression string",
+        "pattern": "^([0-9*,-/]+\\s+){4}[0-9*,-/]+$",
+        "examples": [
+          "0 2 * * *",
+          "0 * * * *",
+          "0 9 * * 1",
+          "*/15 * * * *",
+          "0 0 1 * *"
+        ]
+      },
+      "TaskId": {
+        "type": "string",
+        "description": "Unique identifier for a scheduled task",
+        "example": "task-12345-abcdef"
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "scheduling api running"
+      }
+    }
+  }
+}

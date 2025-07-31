@@ -1,0 +1,246 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Dataserve Service API",
+    "description": "A data storage and retrieval service providing key-value database operations with flexible data management capabilities.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/dataserve",
+      "description": "Dataserve Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "data",
+      "description": "Data operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/put/{key}": {
+      "post": {
+        "tags": ["data"],
+        "summary": "Store data",
+        "description": "Stores data with the specified key in the database. Supports any JSON-serializable data type.",
+        "operationId": "putData",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The data key to store the value under",
+            "schema": {
+              "type": "string",
+              "example": "document:12345"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The data to store - can be any JSON-serializable data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {"type": "string"},
+                  {"type": "number"},
+                  {"type": "boolean"},
+                  {"type": "object"},
+                  {"type": "array"}
+                ]
+              },
+              "examples": {
+                "document": {
+                  "summary": "Document data example",
+                  "value": {
+                    "title": "My Document",
+                    "content": "Document content here",
+                    "author": "John Doe",
+                    "createdAt": "2024-01-01T12:00:00Z"
+                  }
+                },
+                "configuration": {
+                  "summary": "Configuration data example",
+                  "value": {
+                    "settings": {
+                      "theme": "dark",
+                      "language": "en",
+                      "notifications": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data stored successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Storage operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Storage operation failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get/{key}": {
+      "get": {
+        "tags": ["data"],
+        "summary": "Retrieve data",
+        "description": "Retrieves the data associated with the specified key from the database.",
+        "operationId": "getData",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The data key to retrieve",
+            "schema": {
+              "type": "string",
+              "example": "document:12345"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"},
+                    {"type": "object"},
+                    {"type": "array"},
+                    {"type": "null"}
+                  ]
+                },
+                "examples": {
+                  "document-response": {
+                    "summary": "Document data response",
+                    "value": {
+                      "title": "My Document",
+                      "content": "Document content here",
+                      "author": "John Doe",
+                      "createdAt": "2024-01-01T12:00:00Z"
+                    }
+                  },
+                  "not-found": {
+                    "summary": "Key not found",
+                    "value": null
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Data retrieval failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Data retrieval failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete/{key}": {
+      "delete": {
+        "tags": ["data"],
+        "summary": "Delete data",
+        "description": "Removes the data associated with the specified key from the database.",
+        "operationId": "deleteData",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The data key to delete",
+            "schema": {
+              "type": "string",
+              "example": "document:12345"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data deleted successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Data deletion failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Data deletion failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the dataserve service to verify it's running and operational.",
+        "operationId": "getDataserveStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "running"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,416 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Measuring Service API",
+    "description": "A comprehensive metrics collection and analysis service API that provides capabilities for adding metrics, listing historical data, and calculating totals and averages over specified date ranges.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/measuring",
+      "description": "Measuring Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "metrics",
+      "description": "Metric collection and analysis operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/add": {
+      "post": {
+        "tags": ["metrics"],
+        "summary": "Add a metric value",
+        "description": "Records a new metric value with the specified metric name and numeric value. The timestamp is automatically recorded when the metric is added.",
+        "operationId": "addMetric",
+        "requestBody": {
+          "required": true,
+          "description": "The metric name and value to record",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["metric", "value"],
+                "properties": {
+                  "metric": {
+                    "type": "string",
+                    "description": "The name of the metric to record",
+                    "example": "response_time"
+                  },
+                  "value": {
+                    "type": "number",
+                    "description": "The numeric value of the metric",
+                    "example": 125.5
+                  }
+                }
+              },
+              "examples": {
+                "response-time": {
+                  "summary": "Response time metric",
+                  "value": {
+                    "metric": "response_time",
+                    "value": 125.5
+                  }
+                },
+                "user-count": {
+                  "summary": "User count metric",
+                  "value": {
+                    "metric": "active_users",
+                    "value": 1542
+                  }
+                },
+                "memory-usage": {
+                  "summary": "Memory usage metric",
+                  "value": {
+                    "metric": "memory_usage_mb",
+                    "value": 2048.7
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Metric added successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing metric or value",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing metric or value"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to add metric",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while adding metric"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list/{metric}/{datestart}/{dateend}": {
+      "get": {
+        "tags": ["metrics"],
+        "summary": "List metric values",
+        "description": "Retrieves all recorded values for a specific metric within the specified date range.",
+        "operationId": "listMetrics",
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "description": "The name of the metric to retrieve",
+            "schema": {
+              "type": "string",
+              "example": "response_time"
+            }
+          },
+          {
+            "name": "datestart",
+            "in": "path",
+            "required": true,
+            "description": "The start date for the query range (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "dateend",
+            "in": "path",
+            "required": true,
+            "description": "The end date for the query range (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of metric values retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MetricEntry"
+                  }
+                },
+                "examples": [
+                  {
+                    "timestamp": "2024-01-15T10:30:00Z",
+                    "value": 125.5
+                  },
+                  {
+                    "timestamp": "2024-01-15T11:00:00Z",
+                    "value": 98.2
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to retrieve metrics",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while retrieving metrics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/total/{metric}/{datestart}/{dateend}": {
+      "get": {
+        "tags": ["metrics"],
+        "summary": "Get metric total",
+        "description": "Calculates and returns the total sum of all metric values within the specified date range.",
+        "operationId": "getMetricTotal",
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "description": "The name of the metric to calculate total for",
+            "schema": {
+              "type": "string",
+              "example": "response_time"
+            }
+          },
+          {
+            "name": "datestart",
+            "in": "path",
+            "required": true,
+            "description": "The start date for the calculation range (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "dateend",
+            "in": "path",
+            "required": true,
+            "description": "The end date for the calculation range (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metric total calculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "description": "The total sum of all metric values in the date range",
+                  "example": 15247.8
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to calculate total",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while calculating total"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/average/{metric}/{datestart}/{dateend}": {
+      "get": {
+        "tags": ["metrics"],
+        "summary": "Get metric average",
+        "description": "Calculates and returns the average value of all metric values within the specified date range.",
+        "operationId": "getMetricAverage",
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "description": "The name of the metric to calculate average for",
+            "schema": {
+              "type": "string",
+              "example": "response_time"
+            }
+          },
+          {
+            "name": "datestart",
+            "in": "path",
+            "required": true,
+            "description": "The start date for the calculation range (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "dateend",
+            "in": "path",
+            "required": true,
+            "description": "The end date for the calculation range (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metric average calculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "description": "The average value of all metric values in the date range",
+                  "example": 112.3
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to calculate average",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while calculating average"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the measuring service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "measuring api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MetricRequest": {
+        "type": "object",
+        "description": "Request object for adding a new metric",
+        "required": ["metric", "value"],
+        "properties": {
+          "metric": {
+            "type": "string",
+            "description": "The name of the metric",
+            "example": "response_time"
+          },
+          "value": {
+            "type": "number",
+            "description": "The numeric value of the metric",
+            "example": 125.5
+          }
+        }
+      },
+      "MetricEntry": {
+        "type": "object",
+        "description": "A single metric entry with timestamp and value",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the metric was recorded",
+            "example": "2024-01-15T10:30:00Z"
+          },
+          "value": {
+            "type": "number",
+            "description": "The recorded metric value",
+            "example": 125.5
+          }
+        }
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "measuring api running"
+      }
+    }
+  }
+}

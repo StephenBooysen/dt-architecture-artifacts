@@ -1,0 +1,246 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Caching Service API",
+    "description": "A multi-provider caching service supporting Redis, Memcached, and in-memory caching with key-value storage capabilities.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/caching",
+      "description": "Caching Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "cache",
+      "description": "Cache operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/put/{key}": {
+      "post": {
+        "tags": ["cache"],
+        "summary": "Store a value in cache",
+        "description": "Stores a value with the specified key in the cache. Supports any JSON-serializable data type.",
+        "operationId": "putCache",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The cache key to store the value under",
+            "schema": {
+              "type": "string",
+              "example": "user:12345"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The value to cache - can be any JSON-serializable data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {"type": "string"},
+                  {"type": "number"},
+                  {"type": "boolean"},
+                  {"type": "object"},
+                  {"type": "array"}
+                ]
+              },
+              "examples": {
+                "string-value": {
+                  "summary": "String value example",
+                  "value": "Hello, World!"
+                },
+                "object-value": {
+                  "summary": "Object value example",
+                  "value": {
+                    "id": 12345,
+                    "name": "John Doe",
+                    "active": true
+                  }
+                },
+                "array-value": {
+                  "summary": "Array value example",
+                  "value": ["item1", "item2", "item3"]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Value cached successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Caching operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Cache operation failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get/{key}": {
+      "get": {
+        "tags": ["cache"],
+        "summary": "Retrieve a value from cache",
+        "description": "Retrieves the value associated with the specified key from the cache.",
+        "operationId": "getCache",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The cache key to retrieve",
+            "schema": {
+              "type": "string",
+              "example": "user:12345"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Value retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"},
+                    {"type": "object"},
+                    {"type": "array"},
+                    {"type": "null"}
+                  ]
+                },
+                "examples": {
+                  "string-response": {
+                    "summary": "String response",
+                    "value": "Hello, World!"
+                  },
+                  "object-response": {
+                    "summary": "Object response",
+                    "value": {
+                      "id": 12345,
+                      "name": "John Doe",
+                      "active": true
+                    }
+                  },
+                  "null-response": {
+                    "summary": "Key not found",
+                    "value": null
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Cache retrieval failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Cache retrieval failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete/{key}": {
+      "delete": {
+        "tags": ["cache"],
+        "summary": "Delete a value from cache",
+        "description": "Removes the value associated with the specified key from the cache.",
+        "operationId": "deleteCache",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The cache key to delete",
+            "schema": {
+              "type": "string",
+              "example": "user:12345"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Value deleted successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Cache deletion failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Cache deletion failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the caching service to verify it's running and operational.",
+        "operationId": "getCacheStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "caching api running"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

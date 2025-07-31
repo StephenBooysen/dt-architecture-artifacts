@@ -1,0 +1,367 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Searching Service API",
+    "description": "A comprehensive JSON data storage and search service API that provides capabilities for storing JSON objects with auto-generated keys, searching through stored data using recursive text matching, and managing stored records with deletion support.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/searching",
+      "description": "Searching Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "data-storage",
+      "description": "JSON data storage operations"
+    },
+    {
+      "name": "search",
+      "description": "Data search operations"
+    },
+    {
+      "name": "data-management",
+      "description": "Data management operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/add/": {
+      "post": {
+        "tags": ["data-storage"],
+        "summary": "Add JSON data",
+        "description": "Stores a JSON object in the search service with an auto-generated UUID key. The data can be any valid JSON object and will be searchable using the search endpoint.",
+        "operationId": "addData",
+        "requestBody": {
+          "required": true,
+          "description": "The JSON data to store in the search service",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "JSON data object - can be any valid JSON structure",
+                "additionalProperties": true,
+                "example": {
+                  "title": "Sample Document",
+                  "content": "This is a sample document with searchable content",
+                  "tags": ["sample", "document", "test"],
+                  "author": "John Doe"
+                }
+              },
+              "examples": {
+                "document": {
+                  "summary": "Document example",
+                  "value": {
+                    "title": "User Manual",
+                    "content": "This is the user manual for the application",
+                    "tags": ["manual", "documentation", "help"],
+                    "author": "Technical Writer",
+                    "version": "1.0",
+                    "lastUpdated": "2024-01-15"
+                  }
+                },
+                "user-profile": {
+                  "summary": "User profile example",
+                  "value": {
+                    "name": "Jane Smith",
+                    "email": "jane.smith@example.com",
+                    "role": "Administrator",
+                    "preferences": {
+                      "theme": "dark",
+                      "notifications": true
+                    },
+                    "lastLogin": "2024-01-15T10:30:00Z"
+                  }
+                },
+                "product-info": {
+                  "summary": "Product information example",
+                  "value": {
+                    "name": "Wireless Headphones",
+                    "description": "High-quality wireless headphones with noise cancellation",
+                    "price": 299.99,
+                    "category": "Electronics",
+                    "features": ["Noise Cancellation", "Bluetooth 5.0", "40h Battery"],
+                    "inStock": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data added successfully with auto-generated key",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Key already exists (should not occur with UUID generation)",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Key already exists."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to add data",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while adding data"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete/{key}": {
+      "delete": {
+        "tags": ["data-management"],
+        "summary": "Delete stored data",
+        "description": "Removes a stored JSON object from the search service using its unique key.",
+        "operationId": "deleteData",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The unique key of the data to delete",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data deleted successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Key not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Not Found: Key not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to delete data",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while deleting data"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/{term}": {
+      "get": {
+        "tags": ["search"],
+        "summary": "Search stored data",
+        "description": "Performs a recursive case-insensitive text search across all stored JSON data. Searches through nested objects and arrays to find matches for the specified term.",
+        "operationId": "searchData",
+        "parameters": [
+          {
+            "name": "term",
+            "in": "path",
+            "required": true,
+            "description": "The search term to look for in the stored data",
+            "schema": {
+              "type": "string",
+              "example": "user manual"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Array of search results containing matching data objects",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchResult"
+                  }
+                },
+                "examples": [
+                  {
+                    "key": "123e4567-e89b-12d3-a456-426614174000",
+                    "data": {
+                      "title": "User Manual",
+                      "content": "This is the user manual for the application",
+                      "tags": ["manual", "documentation", "help"],
+                      "author": "Technical Writer"
+                    }
+                  },
+                  {
+                    "key": "456f7890-f12c-34e5-b678-789012345678",
+                    "data": {
+                      "name": "Jane Smith",
+                      "email": "jane.smith@example.com",
+                      "role": "Administrator"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing search term",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing query"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Search operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred during search operation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the searching service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "searching api is running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JsonData": {
+        "type": "object",
+        "description": "A JSON data object to be stored",
+        "additionalProperties": true,
+        "example": {
+          "title": "Sample Document",
+          "content": "This is a sample document with searchable content",
+          "tags": ["sample", "document", "test"],
+          "author": "John Doe"
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "description": "A search result containing the key and matching data",
+        "properties": {
+          "key": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique key of the matching data",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "data": {
+            "type": "object",
+            "description": "The matching data object",
+            "additionalProperties": true,
+            "example": {
+              "title": "User Manual",
+              "content": "This is the user manual for the application",
+              "tags": ["manual", "documentation", "help"],
+              "author": "Technical Writer"
+            }
+          }
+        },
+        "required": ["key", "data"]
+      },
+      "DataKey": {
+        "type": "string",
+        "format": "uuid",
+        "description": "A unique identifier for stored data",
+        "example": "123e4567-e89b-12d3-a456-426614174000"
+      },
+      "SearchTerm": {
+        "type": "string",
+        "description": "A search term for finding data",
+        "minLength": 1,
+        "example": "user manual"
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "searching api is running"
+      }
+    }
+  }
+}

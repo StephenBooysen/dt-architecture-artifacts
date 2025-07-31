@@ -1,0 +1,495 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Notifying Service API",
+    "description": "A comprehensive notification service API that provides topic-based messaging capabilities with subscription management. Users can create topics, subscribe/unsubscribe to topics, and send notifications to all subscribers of a topic.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/notifying",
+      "description": "Notifying Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "topics",
+      "description": "Topic management operations"
+    },
+    {
+      "name": "subscriptions",
+      "description": "Subscription management operations"
+    },
+    {
+      "name": "notifications",
+      "description": "Notification sending operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/topic": {
+      "post": {
+        "tags": ["topics"],
+        "summary": "Create a new topic",
+        "description": "Creates a new notification topic that can be used for publishing messages and managing subscriptions.",
+        "operationId": "createTopic",
+        "requestBody": {
+          "required": true,
+          "description": "The topic information to create",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["topic"],
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "The name of the topic to create",
+                    "example": "user-notifications"
+                  }
+                }
+              },
+              "examples": {
+                "user-notifications": {
+                  "summary": "User notifications topic",
+                  "value": {
+                    "topic": "user-notifications"
+                  }
+                },
+                "system-alerts": {
+                  "summary": "System alerts topic",
+                  "value": {
+                    "topic": "system-alerts"
+                  }
+                },
+                "marketing-updates": {
+                  "summary": "Marketing updates topic",
+                  "value": {
+                    "topic": "marketing-updates"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Topic created successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing topic name",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing topic"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to create topic",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while creating topic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscribe/topic/{topic}": {
+      "post": {
+        "tags": ["subscriptions"],
+        "summary": "Subscribe to a topic",
+        "description": "Subscribes a callback URL to receive notifications when messages are published to the specified topic.",
+        "operationId": "subscribeToTopic",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "path",
+            "required": true,
+            "description": "The name of the topic to subscribe to",
+            "schema": {
+              "type": "string",
+              "example": "user-notifications"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The callback URL for receiving notifications",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["callbackUrl"],
+                "properties": {
+                  "callbackUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The callback URL to receive notifications",
+                    "example": "https://example.com/webhook/notifications"
+                  }
+                }
+              },
+              "examples": {
+                "webhook-endpoint": {
+                  "summary": "Webhook endpoint subscription",
+                  "value": {
+                    "callbackUrl": "https://example.com/webhook/notifications"
+                  }
+                },
+                "local-endpoint": {
+                  "summary": "Local development endpoint",
+                  "value": {
+                    "callbackUrl": "http://localhost:3000/api/notifications"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully subscribed to topic",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing topic or callback URL",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing topic or callback URL"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to subscribe",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while subscribing to topic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unsubscribe/topic/{topic}": {
+      "post": {
+        "tags": ["subscriptions"],
+        "summary": "Unsubscribe from a topic",
+        "description": "Removes a callback URL subscription from the specified topic, stopping future notifications to that endpoint.",
+        "operationId": "unsubscribeFromTopic",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "path",
+            "required": true,
+            "description": "The name of the topic to unsubscribe from",
+            "schema": {
+              "type": "string",
+              "example": "user-notifications"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The callback URL to remove from subscriptions",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["callbackUrl"],
+                "properties": {
+                  "callbackUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The callback URL to unsubscribe",
+                    "example": "https://example.com/webhook/notifications"
+                  }
+                }
+              },
+              "examples": {
+                "webhook-endpoint": {
+                  "summary": "Webhook endpoint unsubscription",
+                  "value": {
+                    "callbackUrl": "https://example.com/webhook/notifications"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully unsubscribed from topic",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing topic or callback URL",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing topic or callback URL"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to unsubscribe",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while unsubscribing from topic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notify/topic/{topic}": {
+      "post": {
+        "tags": ["notifications"],
+        "summary": "Send notification to topic",
+        "description": "Sends a notification message to all subscribers of the specified topic. All registered callback URLs will receive the message.",
+        "operationId": "notifyTopic",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "path",
+            "required": true,
+            "description": "The name of the topic to send notifications to",
+            "schema": {
+              "type": "string",
+              "example": "user-notifications"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The notification message to send",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": {
+                    "type": "object",
+                    "description": "The notification message content",
+                    "additionalProperties": true,
+                    "example": {
+                      "title": "New Message",
+                      "body": "You have received a new message",
+                      "timestamp": "2024-01-15T10:30:00Z"
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "user-message": {
+                  "summary": "User message notification",
+                  "value": {
+                    "message": {
+                      "title": "New Message",
+                      "body": "You have received a new message from John",
+                      "timestamp": "2024-01-15T10:30:00Z",
+                      "userId": "12345"
+                    }
+                  }
+                },
+                "system-alert": {
+                  "summary": "System alert notification",
+                  "value": {
+                    "message": {
+                      "title": "System Maintenance",
+                      "body": "Scheduled maintenance will begin in 30 minutes",
+                      "timestamp": "2024-01-15T14:30:00Z",
+                      "severity": "warning"
+                    }
+                  }
+                },
+                "simple-message": {
+                  "summary": "Simple text notification",
+                  "value": {
+                    "message": {
+                      "text": "Hello, this is a simple notification!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully to all subscribers",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing recipient or message",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing recipient or message"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to send notification",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while sending notification"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the notifying service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "notifying api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TopicRequest": {
+        "type": "object",
+        "description": "Request object for creating a new topic",
+        "required": ["topic"],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "The name of the topic",
+            "example": "user-notifications"
+          }
+        }
+      },
+      "SubscriptionRequest": {
+        "type": "object",
+        "description": "Request object for subscription operations",
+        "required": ["callbackUrl"],
+        "properties": {
+          "callbackUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "The callback URL for receiving notifications",
+            "example": "https://example.com/webhook/notifications"
+          }
+        }
+      },
+      "NotificationRequest": {
+        "type": "object",
+        "description": "Request object for sending notifications",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "object",
+            "description": "The notification message content",
+            "additionalProperties": true,
+            "example": {
+              "title": "New Message",
+              "body": "You have received a new message",
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          }
+        }
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "notifying api running"
+      }
+    }
+  }
+}

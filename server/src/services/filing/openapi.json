@@ -1,0 +1,243 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Filing Service API",
+    "description": "A multi-cloud file storage service supporting local filesystem, FTP, and AWS S3 with upload, download, and file management capabilities.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/filing",
+      "description": "Filing Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "files",
+      "description": "File operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/upload/{key}": {
+      "post": {
+        "tags": ["files"],
+        "summary": "Upload a file",
+        "description": "Uploads a file with the specified key to the configured storage provider (local, FTP, or S3).",
+        "operationId": "uploadFile",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The file key/path to store the file under",
+            "schema": {
+              "type": "string",
+              "example": "documents/report.pdf"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The file content to upload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {"type": "string"},
+                  {"type": "object"}
+                ]
+              },
+              "examples": {
+                "text-file": {
+                  "summary": "Text file content",
+                  "value": "This is the file content"
+                },
+                "binary-file": {
+                  "summary": "Base64 encoded binary file",
+                  "value": {
+                    "content": "data:application/pdf;base64,JVBERi0xLjQKJdPr6...",
+                    "encoding": "base64"
+                  }
+                },
+                "json-data": {
+                  "summary": "JSON file content",
+                  "value": {
+                    "data": {
+                      "name": "John Doe",
+                      "email": "john@example.com"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Upload operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Upload operation failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/download/{key}": {
+      "get": {
+        "tags": ["files"],
+        "summary": "Download a file",
+        "description": "Downloads the file associated with the specified key from the storage provider.",
+        "operationId": "downloadFile",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The file key/path to download",
+            "schema": {
+              "type": "string",
+              "example": "documents/report.pdf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File downloaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {"type": "string"},
+                    {"type": "object"},
+                    {"type": "null"}
+                  ]
+                },
+                "examples": {
+                  "text-file": {
+                    "summary": "Text file response",
+                    "value": "This is the file content"
+                  },
+                  "json-file": {
+                    "summary": "JSON file response",
+                    "value": {
+                      "name": "John Doe",
+                      "email": "john@example.com"
+                    }
+                  },
+                  "not-found": {
+                    "summary": "File not found",
+                    "value": null
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Download operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Download operation failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/remove/{key}": {
+      "delete": {
+        "tags": ["files"],
+        "summary": "Remove a file",
+        "description": "Removes the file associated with the specified key from the storage provider.",
+        "operationId": "removeFile",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "description": "The file key/path to remove",
+            "schema": {
+              "type": "string",
+              "example": "documents/report.pdf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File removed successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Remove operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Remove operation failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the filing service to verify it's running and operational.",
+        "operationId": "getFilingStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "filing api running"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

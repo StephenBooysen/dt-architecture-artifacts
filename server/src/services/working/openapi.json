@@ -1,0 +1,389 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Working Service API",
+    "description": "A comprehensive background worker service API that provides capabilities for running background tasks asynchronously, managing worker processes, and controlling task execution with start/stop functionality.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/working",
+      "description": "Working Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "task-execution",
+      "description": "Background task execution operations"
+    },
+    {
+      "name": "worker-management",
+      "description": "Worker process management operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/run": {
+      "post": {
+        "tags": ["task-execution"],
+        "summary": "Run a background task",
+        "description": "Starts execution of a background task with optional data. The task runs asynchronously and completion is signaled through the event system with a 'worker-complete' event.",
+        "operationId": "runTask",
+        "requestBody": {
+          "required": true,
+          "description": "The task configuration and optional data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["task"],
+                "properties": {
+                  "task": {
+                    "type": "object",
+                    "description": "The task configuration and parameters",
+                    "additionalProperties": true,
+                    "example": {
+                      "name": "data-processing",
+                      "type": "batch",
+                      "source": "database",
+                      "operation": "cleanup"
+                    }
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Optional input data for the task",
+                    "additionalProperties": true,
+                    "example": {
+                      "batchSize": 1000,
+                      "maxAge": "30 days",
+                      "dryRun": false
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "data-processing": {
+                  "summary": "Data processing task",
+                  "value": {
+                    "task": {
+                      "name": "data-processing",
+                      "type": "batch",
+                      "source": "user_logs",
+                      "operation": "cleanup"
+                    },
+                    "data": {
+                      "batchSize": 1000,
+                      "maxAge": "30 days",
+                      "dryRun": false,
+                      "notify": true
+                    }
+                  }
+                },
+                "image-processing": {
+                  "summary": "Image processing task",
+                  "value": {
+                    "task": {
+                      "name": "image-processing",
+                      "type": "media",
+                      "operation": "resize",
+                      "quality": "high"
+                    },
+                    "data": {
+                      "imageIds": ["img-123", "img-456", "img-789"],
+                      "sizes": ["thumbnail", "medium", "large"],
+                      "format": "webp"
+                    }
+                  }
+                },
+                "report-generation": {
+                  "summary": "Report generation task",
+                  "value": {
+                    "task": {
+                      "name": "report-generation",
+                      "type": "analytics",
+                      "format": "pdf",
+                      "template": "monthly-summary"
+                    },
+                    "data": {
+                      "month": "2024-01",
+                      "departments": ["sales", "marketing", "support"],
+                      "includeCharts": true,
+                      "recipients": ["manager@example.com"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Task execution result or acknowledgment",
+                  "additionalProperties": true,
+                  "example": {
+                    "taskId": "task-12345-abcdef",
+                    "status": "started",
+                    "estimatedDuration": "5 minutes"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing task configuration",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing task"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to start task",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while starting task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stop": {
+      "get": {
+        "tags": ["worker-management"],
+        "summary": "Stop worker processes",
+        "description": "Stops all currently running worker processes. This will gracefully terminate background tasks and clean up resources.",
+        "operationId": "stopWorkers",
+        "responses": {
+          "200": {
+            "description": "Workers stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Stop operation result",
+                  "additionalProperties": true,
+                  "example": {
+                    "message": "All workers stopped successfully",
+                    "stoppedCount": 3,
+                    "timestamp": "2024-01-15T10:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to stop workers",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while stopping workers"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the working service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "working api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TaskRequest": {
+        "type": "object",
+        "description": "Request object for running a background task",
+        "required": ["task"],
+        "properties": {
+          "task": {
+            "type": "object",
+            "description": "The task configuration",
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the task",
+                "example": "data-processing"
+              },
+              "type": {
+                "type": "string",
+                "description": "The type of task",
+                "example": "batch"
+              },
+              "operation": {
+                "type": "string",
+                "description": "The operation to perform",
+                "example": "cleanup"
+              }
+            },
+            "example": {
+              "name": "data-processing",
+              "type": "batch",
+              "source": "database",
+              "operation": "cleanup"
+            }
+          },
+          "data": {
+            "type": "object",
+            "description": "Optional input data for the task",
+            "additionalProperties": true,
+            "example": {
+              "batchSize": 1000,
+              "maxAge": "30 days",
+              "dryRun": false
+            }
+          }
+        }
+      },
+      "TaskResponse": {
+        "type": "object",
+        "description": "Response from task execution",
+        "additionalProperties": true,
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "description": "Unique identifier for the task",
+            "example": "task-12345-abcdef"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the task",
+            "enum": ["started", "running", "completed", "failed"],
+            "example": "started"
+          },
+          "estimatedDuration": {
+            "type": "string",
+            "description": "Estimated time to completion",
+            "example": "5 minutes"
+          }
+        },
+        "example": {
+          "taskId": "task-12345-abcdef",
+          "status": "started",
+          "estimatedDuration": "5 minutes"
+        }
+      },
+      "StopResponse": {
+        "type": "object",
+        "description": "Response from stop operation",
+        "additionalProperties": true,
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Status message",
+            "example": "All workers stopped successfully"
+          },
+          "stoppedCount": {
+            "type": "integer",
+            "description": "Number of workers that were stopped",
+            "example": 3
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the stop operation completed",
+            "example": "2024-01-15T10:30:00Z"
+          }
+        },
+        "example": {
+          "message": "All workers stopped successfully",
+          "stoppedCount": 3,
+          "timestamp": "2024-01-15T10:30:00Z"
+        }
+      },
+      "TaskConfiguration": {
+        "type": "object",
+        "description": "Configuration for a background task",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the task",
+            "example": "data-processing"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of task",
+            "enum": ["batch", "media", "analytics", "maintenance", "notification"],
+            "example": "batch"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Task priority level",
+            "enum": ["low", "normal", "high", "urgent"],
+            "example": "normal"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Task timeout in seconds",
+            "example": 3600
+          }
+        },
+        "required": ["name", "type"]
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "working api running"
+      }
+    }
+  }
+}

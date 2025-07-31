@@ -9,7 +9,16 @@ const Caching = () => {
           Caching Service
           <div className="status-indicator" id="caching-status"></div>
         </h1>
-        <p>Interact with the application caching service</p>
+        <div className="header-actions">
+          <p>Interact with the application caching service</p>
+          <button 
+            className="btn btn-outline-primary api-docs-btn" 
+            id="openApiDocsBtn"
+            title="View API Documentation"
+          >
+            <i className="bi bi-book me-2"></i>API Documentation
+          </button>
+        </div>
       </div>
 
       <div className="caching-section">
@@ -121,7 +130,34 @@ const Caching = () => {
           color: #172b4d;
           font-size: 1.5rem;
           font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+        .header-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           margin-bottom: 1.5rem;
+        }
+        .header-actions p {
+          margin: 0;
+          color: #5e6c84;
+        }
+        .api-docs-btn {
+          font-size: 0.875rem;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          border-color: #0052cc;
+          color: #0052cc;
+          background: transparent;
+          transition: all 0.2s ease;
+        }
+        .api-docs-btn:hover {
+          background: #0052cc;
+          color: white;
+          border-color: #0052cc;
         }
         .status-indicator {
           width: 10px;
@@ -440,6 +476,28 @@ const Caching = () => {
           setTimeout(() => {
             validateAndFormatJson(e.target.value);
           }, 10);
+        });
+
+        // Open API Documentation popup
+        document.getElementById('openApiDocsBtn').addEventListener('click', function() {
+          const apiDocsUrl = '/api/caching/docs';
+          const popupWidth = 1200;
+          const popupHeight = 800;
+          const left = (screen.width - popupWidth) / 2;
+          const top = (screen.height - popupHeight) / 2;
+          
+          const popup = window.open(
+            apiDocsUrl,
+            'CachingAPIDocumentation',
+            \`width=\${popupWidth},height=\${popupHeight},left=\${left},top=\${top},scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no\`
+          );
+          
+          if (popup) {
+            popup.focus();
+          } else {
+            // Fallback if popup was blocked
+            showToast('Please allow popups for this site and try again, or visit /api/caching/docs directly.', true);
+          }
         });
 
         // Initialize on page load

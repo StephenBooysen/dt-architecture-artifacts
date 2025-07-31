@@ -1,0 +1,215 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Logging Service API",
+    "description": "A comprehensive logging service API that supports multiple logging providers (console and file-based logging) with structured message logging capabilities.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/logging",
+      "description": "Logging Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "logging",
+      "description": "Logging operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/log/{logname}": {
+      "post": {
+        "tags": ["logging"],
+        "summary": "Log a message",
+        "description": "Logs a message with the specified log name. The message should be in JSON format and will be processed by the configured logging provider (console or file).",
+        "operationId": "logMessage",
+        "parameters": [
+          {
+            "name": "logname",
+            "in": "path",
+            "required": true,
+            "description": "The name of the log category or identifier",
+            "schema": {
+              "type": "string",
+              "example": "user-activity"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The message to log in JSON format",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Log message payload - can be any valid JSON object",
+                "additionalProperties": true,
+                "examples": [
+                  {
+                    "level": "info",
+                    "message": "User logged in successfully",
+                    "timestamp": "2024-01-01T12:00:00Z",
+                    "userId": "12345"
+                  }
+                ]
+              },
+              "examples": {
+                "info-log": {
+                  "summary": "Information log example",
+                  "value": {
+                    "level": "info",
+                    "message": "User logged in successfully",
+                    "timestamp": "2024-01-01T12:00:00Z",
+                    "userId": "12345"
+                  }
+                },
+                "error-log": {
+                  "summary": "Error log example",
+                  "value": {
+                    "level": "error",
+                    "message": "Database connection failed",
+                    "timestamp": "2024-01-01T12:05:00Z",
+                    "error": "Connection timeout after 30 seconds",
+                    "service": "user-service"
+                  }
+                },
+                "debug-log": {
+                  "summary": "Debug log example",
+                  "value": {
+                    "level": "debug",
+                    "message": "Processing user request",
+                    "timestamp": "2024-01-01T12:03:00Z",
+                    "requestId": "req-abc123",
+                    "payload": {
+                      "action": "update-profile",
+                      "userId": "12345"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message logged successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing or invalid message",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing message"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Logging operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while logging message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the logging service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "logging api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LogMessage": {
+        "type": "object",
+        "description": "A log message object with flexible structure",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Log level",
+            "enum": ["debug", "info", "warn", "error", "fatal"],
+            "example": "info"
+          },
+          "message": {
+            "type": "string",
+            "description": "The main log message",
+            "example": "User action completed successfully"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the log event occurred",
+            "example": "2024-01-01T12:00:00Z"
+          }
+        },
+        "additionalProperties": true,
+        "required": ["message"]
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "logging api running"
+      }
+    }
+  }
+}

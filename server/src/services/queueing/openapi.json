@@ -1,0 +1,339 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Queueing Service API",
+    "description": "A comprehensive message queueing service API that provides queue management capabilities including enqueuing messages, dequeuing messages, and monitoring queue sizes. Supports multiple named queues for different use cases.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Architecture Artifacts Platform",
+      "email": "support@architectureartifacts.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/queueing",
+      "description": "Queueing Service API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "queue-operations",
+      "description": "Queue message operations"
+    },
+    {
+      "name": "queue-monitoring",
+      "description": "Queue monitoring and size operations"
+    },
+    {
+      "name": "status",
+      "description": "Service status and health checks"
+    }
+  ],
+  "paths": {
+    "/enqueue/{queueName}": {
+      "post": {
+        "tags": ["queue-operations"],
+        "summary": "Add message to queue",
+        "description": "Enqueues a message or task to the specified queue. The message can be any valid JSON object and will be processed in FIFO (First In, First Out) order.",
+        "operationId": "enqueueMessage",
+        "parameters": [
+          {
+            "name": "queueName",
+            "in": "path",
+            "required": true,
+            "description": "The name of the queue to add the message to",
+            "schema": {
+              "type": "string",
+              "example": "email-queue"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The message or task to add to the queue",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Message payload - can be any valid JSON object",
+                "additionalProperties": true,
+                "example": {
+                  "type": "email",
+                  "to": "user@example.com",
+                  "subject": "Welcome!",
+                  "body": "Welcome to our platform!"
+                }
+              },
+              "examples": {
+                "email-task": {
+                  "summary": "Email sending task",
+                  "value": {
+                    "type": "email",
+                    "to": "user@example.com",
+                    "subject": "Welcome to our platform!",
+                    "body": "Thank you for joining us. We're excited to have you!",
+                    "priority": "normal"
+                  }
+                },
+                "image-processing": {
+                  "summary": "Image processing task",
+                  "value": {
+                    "type": "image-resize",
+                    "imageUrl": "https://example.com/image.jpg",
+                    "sizes": ["small", "medium", "large"],
+                    "format": "webp"
+                  }
+                },
+                "notification-task": {
+                  "summary": "Push notification task",
+                  "value": {
+                    "type": "push-notification",
+                    "userId": "12345",
+                    "title": "New Message",
+                    "body": "You have a new message waiting",
+                    "badge": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message enqueued successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing queue name or value",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing queue name or value"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to enqueue message",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while enqueuing message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dequeue/{queueName}": {
+      "get": {
+        "tags": ["queue-operations"],
+        "summary": "Retrieve message from queue",
+        "description": "Dequeues and returns the next message from the specified queue. Returns the oldest message in the queue (FIFO order) and removes it from the queue.",
+        "operationId": "dequeueMessage",
+        "parameters": [
+          {
+            "name": "queueName",
+            "in": "path",
+            "required": true,
+            "description": "The name of the queue to retrieve a message from",
+            "schema": {
+              "type": "string",
+              "example": "email-queue"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The dequeued message object",
+                  "additionalProperties": true,
+                  "example": {
+                    "type": "email",
+                    "to": "user@example.com",
+                    "subject": "Welcome!",
+                    "body": "Welcome to our platform!"
+                  }
+                },
+                "examples": [
+                  {
+                    "type": "email",
+                    "to": "user@example.com",
+                    "subject": "Welcome to our platform!",
+                    "body": "Thank you for joining us. We're excited to have you!",
+                    "priority": "normal"
+                  },
+                  {
+                    "type": "image-resize",
+                    "imageUrl": "https://example.com/image.jpg",
+                    "sizes": ["small", "medium", "large"],
+                    "format": "webp"
+                  },
+                  null
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to dequeue message",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while dequeuing message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/size/{queueName}": {
+      "get": {
+        "tags": ["queue-monitoring"],
+        "summary": "Get queue size",
+        "description": "Returns the current number of messages waiting in the specified queue. Useful for monitoring queue depth and system load.",
+        "operationId": "getQueueSize",
+        "parameters": [
+          {
+            "name": "queueName",
+            "in": "path",
+            "required": true,
+            "description": "The name of the queue to check the size of",
+            "schema": {
+              "type": "string",
+              "example": "email-queue"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queue size retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "description": "The number of messages currently in the queue",
+                  "minimum": 0,
+                  "example": 42
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to get queue size",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while getting queue size"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Get service status",
+        "description": "Returns the current status of the queueing service to verify it's running and operational.",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "Service is running normally",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "queueing api running"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service is experiencing issues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "QueueMessage": {
+        "type": "object",
+        "description": "A message object to be queued",
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of message or task",
+            "example": "email"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Message priority level",
+            "enum": ["low", "normal", "high", "urgent"],
+            "example": "normal"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the message was created",
+            "example": "2024-01-15T10:30:00Z"
+          }
+        },
+        "example": {
+          "type": "email",
+          "to": "user@example.com",
+          "subject": "Welcome!",
+          "body": "Welcome to our platform!",
+          "priority": "normal"
+        }
+      },
+      "QueueSize": {
+        "type": "integer",
+        "description": "The number of messages in the queue",
+        "minimum": 0,
+        "example": 42
+      },
+      "StatusResponse": {
+        "type": "string",
+        "description": "Service status response",
+        "example": "queueing api running"
+      }
+    }
+  }
+}
