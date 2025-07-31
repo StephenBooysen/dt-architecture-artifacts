@@ -17,14 +17,20 @@
 - Markdowm: Comments - done
 - View: Search results screen - done
 - View: Homepage - done
-- Markdown - Preview first
-
+- Markdown - Preview first - TODO
+- Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation
+- Markdown - Tree drag files into folders
+- BUG: Alternative files (PDF) viewer not working
+- Navigation - add ... to end of folder and filenames not fold
+- Navigation - add upload button like folder and file
+- Bug Files greater than 10mb failing
+ 
 #### Server
-- Services: Screens should work
+- Services: Screens should work - TODO
 - Log out button should redirect to landing page - done
 - Put log out in header - done
-- File manager for folders 
-- File manager for git - done
+- File manager for folders  - TODO
+- File manager for git - TODO
 
 #### Plugins
 - Ms word to markdown - done

@@ -200,10 +200,12 @@ const FileTree = ({
     if (!file) return;
 
     // Validate file size (10MB limit)
+    /*
     if (file.size > 10 * 1024 * 1024) {
       alert('File size must be less than 10MB');
       return;
     }
+    */
 
     setIsUploading(true);
 
