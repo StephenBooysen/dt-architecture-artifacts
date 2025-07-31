@@ -35,6 +35,73 @@ const Sidebar = ({ activeSection }) => {
           </div>
           
           <div className="nav-section">
+            <div className="nav-section-title">Services</div>
+            <a 
+              href="/services/logging" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-list-columns-reverse me-2"></i>
+              Logging
+            </a>
+            <a 
+              href="/services/caching" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-database-check me-2"></i>
+              Caching
+            </a>
+            <a 
+              href="/services/queueing" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-stack me-2"></i>
+              Queueing
+            </a>
+            <a 
+              href="/services/measuring" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-speedometer2 me-2"></i>
+              Measuring
+            </a>
+            <a 
+              href="/services/notifying" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-envelope-check me-2"></i>
+              Notifying
+            </a>
+            <a 
+              href="/services/scheduling" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-clock-history me-2"></i>
+              Scheduling
+            </a>
+            <a 
+              href="/services/searching" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-search me-2"></i>
+              Searching
+            </a>
+            <a 
+              href="/services/workflow" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-bounding-box me-2"></i>
+              Workflow
+            </a>
+            <a 
+              href="/services/working" 
+              className={`nav-item ${activeSection === 'services' ? 'active' : ''}`}
+            >
+              <i className="bi bi-gear-wide me-2"></i>
+              Working
+            </a>
+          </div>
+
+          <div className="nav-section">
             <div className="nav-section-title">Monitoring</div>
             <a 
               href="/monitoring/api" 

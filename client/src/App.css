@@ -221,10 +221,22 @@ body {
   transition: background-color 0.15s ease;
   margin-bottom: 2px;
   position: relative;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .file-tree-item:hover {
   background-color: var(--confluence-border-subtle);
+}
+
+.file-tree-item:focus {
+  outline: 2px solid var(--confluence-primary);
+  outline-offset: -2px;
+  background-color: var(--confluence-border-subtle);
+}
+
+.file-tree-item:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .file-tree-item.selected {
@@ -243,10 +255,20 @@ body {
   flex-shrink: 0;
 }
 
+.file-tree-item .file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
 .folder-content {
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .folder-content .icon {

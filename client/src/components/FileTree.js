@@ -100,8 +100,10 @@ const FileTree = ({
   const [renameValue, setRenameValue] = useState('');
   const [uploadPath, setUploadPath] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [focusedItem, setFocusedItem] = useState(null); // Track focused item for keyboard navigation
   const contextMenuRef = useRef(null);
   const fileInputRef = useRef(null);
+  const fileTreeRef = useRef(null);
 
   const handleCreateClick = (type, basePath = '') => {
     setCreateType(type);
@@ -282,6 +284,30 @@ const FileTree = ({
     };
   }, [contextMenu]);
 
+  // Keyboard navigation effect
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Only handle keyboard events when file tree is focused and no modals are open
+      if (!fileTreeRef.current || 
+          !fileTreeRef.current.contains(document.activeElement) || 
+          showCreateDialog || 
+          showRenameDialog || 
+          contextMenu) {
+        return;
+      }
+
+      if (event.key === 'Delete' && focusedItem) {
+        event.preventDefault();
+        handleDeleteClick(focusedItem.path);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [focusedItem, showCreateDialog, showRenameDialog, contextMenu, handleDeleteClick]);
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
@@ -354,13 +380,15 @@ const FileTree = ({
           <div
             className="file-tree-item directory"
             style={{paddingLeft: `${paddingLeft}rem`}}
+            tabIndex={0}
             onClick={() => toggleFolder(item.path)}
+            onFocus={() => setFocusedItem({path: item.path, type: 'directory', name: item.name})}
             onContextMenu={(e) => handleContextMenu(e, item.path, 'directory')}>
             <div className="folder-content">
               <span className="icon">
                 <i className={`bi ${isCollapsed ? 'bi-folder2' : 'bi-folder2-open'}`}></i>
               </span>
-              <span>{item.name}</span>
+              <span className="file-name" title={item.name}>{item.name}</span>
             </div>
             <div className="file-tree-actions">
               <button
@@ -413,12 +441,14 @@ const FileTree = ({
         key={item.path}
         className={`file-tree-item file ${isSelected ? 'selected' : ''}`}
         style={{paddingLeft: `${paddingLeft}rem`}}
+        tabIndex={0}
         onClick={() => onFileSelect(item.path)}
+        onFocus={() => setFocusedItem({path: item.path, type: 'file', name: item.name})}
         onContextMenu={(e) => handleContextMenu(e, item.path, 'file')}>
         <span className="icon">
           <i className="bi bi-file-earmark-text"></i>
         </span>
-        <span>{item.name}</span>
+        <span className="file-name" title={item.name}>{item.name}</span>
       </div>
     );
   };
@@ -432,7 +462,7 @@ const FileTree = ({
   }
 
   return (
-    <div className="file-tree d-flex flex-column h-100">
+    <div ref={fileTreeRef} className="file-tree d-flex flex-column h-100">
       {/* Hidden file input for upload */}
       <input
         type="file"

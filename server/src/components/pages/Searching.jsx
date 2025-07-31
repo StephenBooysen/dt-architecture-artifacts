@@ -35,7 +35,7 @@ const Searching = () => {
                 ></textarea>
                 <div className="search-examples">
                   <strong>Example JSON Data:</strong>
-                  <pre>{"user": {"name": "Alice Smith", "department": "Engineering", "skills": ["JavaScript", "Python", "React"]}, "project": "Web Application", "status": "active"}</pre>
+                  <pre>{`{"user": {"name": "Alice Smith", "department": "Engineering", "skills": ["JavaScript", "Python", "React"]}, "project": "Web Application", "status": "active"}`}</pre>
                   <strong>Note:</strong> A unique key will be automatically generated for this data.
                 </div>
               </div>

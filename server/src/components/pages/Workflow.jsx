@@ -98,7 +98,7 @@ const Workflow = () => {
                 ></textarea>
                 <div className="workflow-examples">
                   <strong>Initial Data:</strong> JSON object that will be passed to the first workflow step
-                  <pre>{"input": "sample data", "config": {"retries": 3}, "metadata": {"timestamp": "2024-01-01"}}</pre>
+                  <pre>{`{"input": "sample data", "config": {"retries": 3}, "metadata": {"timestamp": "2024-01-01"}}`}</pre>
                   <strong>Note:</strong> Leave empty if no initial data is needed.
                 </div>
               </div>
