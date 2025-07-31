@@ -22,11 +22,23 @@ const Logging = () => {
             </div>
             
             <div className="form-group">
-              <label htmlFor="logMessage">Message:</label>
-              <textarea id="logMessage" name="message" className="form-control" placeholder="Enter your log message..." required></textarea>
+              <label htmlFor="logMessage">Message (JSON format required):</label>
+              <textarea 
+                id="logMessage" 
+                name="message" 
+                className="form-control" 
+                placeholder="Enter your JSON message...&#10;{&#10;  &quot;level&quot;: &quot;info&quot;,&#10;  &quot;message&quot;: &quot;Your log message here&quot;,&#10;  &quot;timestamp&quot;: &quot;2024-01-01T00:00:00Z&quot;&#10;}" 
+                required
+              ></textarea>
+              <div className="json-validation-feedback" id="jsonValidation"></div>
             </div>
             
-            <button type="submit" className="btn btn-primary" id="logButton">
+            <div className="form-group" id="jsonPreviewGroup" style={{display: 'none'}}>
+              <label>Formatted JSON Preview:</label>
+              <pre className="json-preview" id="jsonPreview"></pre>
+            </div>
+            
+            <button type="submit" className="btn btn-primary" id="logButton" disabled>
               <i className="bi bi-journal-plus me-2"></i>Log Message
             </button>
           </form>
@@ -183,10 +195,98 @@ const Logging = () => {
           max-width: 300px;
           word-break: break-word;
         }
+        .json-validation-feedback {
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          min-height: 1.25rem;
+        }
+        .json-validation-feedback.valid {
+          color: #36b37e;
+        }
+        .json-validation-feedback.invalid {
+          color: #de350b;
+        }
+        .json-preview {
+          background: #f8f9fa;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+          margin: 0;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.875rem;
+          color: #172b4d;
+          max-height: 300px;
+          overflow-y: auto;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .form-control.valid {
+          border-color: #36b37e;
+          box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.2);
+        }
+        .form-control.invalid {
+          border-color: #de350b;
+          box-shadow: 0 0 0 2px rgba(222, 53, 11, 0.2);
+        }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
         let recentLogs = [];
+        let isValidJson = false;
+
+        // JSON validation and formatting function
+        function validateAndFormatJson(jsonString) {
+          const messageField = document.getElementById('logMessage');
+          const validationFeedback = document.getElementById('jsonValidation');
+          const previewGroup = document.getElementById('jsonPreviewGroup');
+          const previewElement = document.getElementById('jsonPreview');
+          const logButton = document.getElementById('logButton');
+          
+          try {
+            if (!jsonString.trim()) {
+              // Empty input
+              messageField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = '';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidJson = false;
+              logButton.disabled = true;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            messageField.classList.remove('invalid');
+            messageField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidJson = true;
+            logButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            messageField.classList.remove('valid');
+            messageField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidJson = false;
+            logButton.disabled = true;
+          }
+        }
 
         // Check service status on page load
         async function checkServiceStatus() {
@@ -225,6 +325,11 @@ const Logging = () => {
             return;
           }
           
+          if (!isValidJson) {
+            showToast('Please enter a valid JSON message.', 'error');
+            return;
+          }
+          
           // Disable button and show loading
           logButton.disabled = true;
           logButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Logging...';
@@ -254,6 +359,7 @@ const Logging = () => {
               // Clear form
               document.getElementById('logMessage').value = '';
               document.getElementById('logName').value = '';
+              validateAndFormatJson(''); // Reset validation state
             } else {
               throw new Error('Failed to log message');
             }
@@ -312,6 +418,19 @@ const Logging = () => {
             \`).join('');
           }
         }
+
+        // Add event listener for JSON validation
+        document.getElementById('logMessage').addEventListener('input', function(e) {
+          validateAndFormatJson(e.target.value);
+        });
+        
+        // Add event listener for paste events to handle JSON formatting
+        document.getElementById('logMessage').addEventListener('paste', function(e) {
+          // Use setTimeout to allow paste to complete before validation
+          setTimeout(() => {
+            validateAndFormatJson(e.target.value);
+          }, 10);
+        });
 
         // Check status periodically
         checkServiceStatus();
