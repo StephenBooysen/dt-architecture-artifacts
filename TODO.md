@@ -23,6 +23,8 @@
 - Navigation - add ... to end of folder and filenames not fold  - done
 - Navigation - add upload button like folder and file - done
 - Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation - done
+- Swagger - Service - done
+- swagger - todo
  
 #### Server
 - Services: Screens should work - done
@@ -82,3 +84,6 @@
 - 
 
 pkill -f "npm run dev" || pkill -f "react-scripts start" || pkill -f "nodemon" || true
+
+
+Can you please continue with where gemini was going, I want to create a swagger page in the server from a link on the left nav Called API testing. Gemini was looking through all the routes under server/routes not the services routes to generate the OPEN Api specification to pass to the swagger package. Please look at was has already been done and continue, do not start from scratch ... and make sure you think very hard.
