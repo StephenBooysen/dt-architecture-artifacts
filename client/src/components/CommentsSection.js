@@ -248,8 +248,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
         </div>
       ) : comments.length === 0 ? (
         <div className="text-center py-4 text-muted">
-          <i className="bi bi-chat-left-text display-4 mb-3 d-block"></i>
-          <p className="mb-0">No comments yet. Be the first to comment!</p>
+          <p className="mb-0">No comments yet.</p>
         </div>
       ) : (
         <div className="comments-list">

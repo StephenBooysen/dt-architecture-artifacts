@@ -428,6 +428,20 @@ const FileTree = ({
         <div className="nav-options mb-3">
           <div 
             className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer"
+            onClick={() => onViewChange && onViewChange('home')}
+            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+          >
+            <div className="d-flex align-items-center">
+              <i className="bi bi-house me-2 text-muted"></i>
+              <span className="text-confluence-text">Home</span>
+            </div>
+            <i className="bi bi-chevron-right text-muted"></i>
+          </div>
+          
+          <div 
+            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
             onClick={() => onViewChange && onViewChange('recent')}
             style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
             onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}

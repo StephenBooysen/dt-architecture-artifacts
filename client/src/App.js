@@ -34,6 +34,8 @@ import TemplateManager from './components/TemplateManager';
 import TemplatesList from './components/TemplatesList';
 import RecentFilesView from './components/RecentFilesView';
 import StarredFilesView from './components/StarredFilesView';
+import SearchResultsView from './components/SearchResultsView';
+import HomeView from './components/HomeView';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
 import {
@@ -69,7 +71,10 @@ function AppContent() {
   const [isFileLoading, setIsFileLoading] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('architecture-artifacts-sidebar-width');
+    return saved ? parseInt(saved, 10) : 300;
+  });
   const [isResizing, setIsResizing] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
@@ -83,7 +88,7 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
-  const [currentView, setCurrentView] = useState('files'); // 'files', 'templates', 'recent', 'starred'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
 
   useEffect(() => {
@@ -538,6 +543,7 @@ function AppContent() {
     
     if (newWidth >= minWidth && newWidth <= maxWidth) {
       setSidebarWidth(newWidth);
+      localStorage.setItem('architecture-artifacts-sidebar-width', newWidth.toString());
     }
   }, [isResizing]);
 
@@ -723,7 +729,8 @@ function AppContent() {
       
       setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
       setSearchResults(contentResults.slice(0, 20)); // More content results on submit
-      setShowSearchResults(true);
+      setShowSearchResults(false); // Hide dropdown
+      setCurrentView('search'); // Switch to search results view
     } catch (error) {
       console.error('Error searching:', error);
       toast.error('Search failed');
@@ -785,12 +792,20 @@ function AppContent() {
   const handleViewChange = (view) => {
     setCurrentView(view);
     // Clear selected file when switching to special views
-    if (view === 'recent' || view === 'starred') {
+    if (view === 'recent' || view === 'starred' || view === 'search' || view === 'home') {
       setSelectedFile(null);
       setFileContent('');
       setFileData(null);
       setHasChanges(false);
     }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchSuggestions([]);
+    setSearchResults([]);
+    setShowSearchResults(false);
+    setCurrentView('files');
   };
 
   // Close search results when clicking outside
@@ -909,14 +924,18 @@ function AppContent() {
                 <i className={`bi ${sidebarCollapsed ? 'bi-layout-sidebar' : 'bi-aspect-ratio'}`}></i>
               </button>
               
-              <a className="navbar-brand fw-medium me-3 d-flex align-items-center" href="#">
+              <button 
+                className="btn btn-link navbar-brand fw-medium me-3 d-flex align-items-center text-decoration-none border-0 bg-transparent p-0"
+                onClick={() => setCurrentView('home')}
+                style={{ cursor: 'pointer' }}
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="me-2">
                   <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
                   <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
                   <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
                 </svg>
                 Architecture Artifacts Editor
-              </a>
+              </button>
               
               
               <div className="flex-grow-1 me-3">
@@ -980,6 +999,13 @@ function AppContent() {
               </div>
 
               <div className="d-flex align-items-center gap-3">
+                <button
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setCurrentView('home')}
+                  title="Home"
+                >
+                  <i className="bi bi-house"></i>
+                </button>
                 
                 {isAuthenticated ? (
                   <>
@@ -1064,7 +1090,13 @@ function AppContent() {
         )}
 
         <section className="editor-section">
-          {currentView === 'templates' ? (
+          {currentView === 'home' ? (
+            <HomeView
+              onFileSelect={handleFileSelect}
+              onTemplateSelect={handleTemplateSelect}
+              isVisible={currentView === 'home'}
+            />
+          ) : currentView === 'templates' ? (
             <TemplatesList
               templates={templates}
               onTemplateEdit={handleTemplateEdit}
@@ -1082,6 +1114,15 @@ function AppContent() {
             <StarredFilesView
               onFileSelect={handleFileSelect}
               isVisible={currentView === 'starred'}
+            />
+          ) : currentView === 'search' ? (
+            <SearchResultsView
+              onFileSelect={handleFileSelect}
+              searchResults={searchResults}
+              fileSuggestions={searchSuggestions}
+              searchQuery={searchQuery}
+              isLoading={isLoading}
+              onClearSearch={handleClearSearch}
             />
           ) : (
             <MarkdownEditor

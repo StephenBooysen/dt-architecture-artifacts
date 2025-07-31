@@ -15,13 +15,15 @@
 - Markdowm: Left nav: Recent Files - done
 - Markdowm: Left nav: (show as starred in search) - done
 - Markdowm: Comments - done
+- View: Search results screen - done
+- View: Homepage - done
 
 #### Server
 - Services: Screens should work
 - Log out button should redirect to landing page - done
 - Put log out in header - done
 - File manager for folders 
-- File manager for git 
+- File manager for git - done
 
 #### Plugins
 - Ms word to markdown - done
@@ -34,10 +36,9 @@
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing
 - Macros aka "/" Forward slash
-- Spaces (Not sure what this is)
 - Subscribe to changes
 - Template: Blueprints config that create folders and file
-- Slide viewer
+- Platform: Client and server plugins
 
 #### Server
 - Roles and permissions

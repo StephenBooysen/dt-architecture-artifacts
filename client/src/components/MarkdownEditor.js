@@ -63,9 +63,64 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
   const [commentsForFile, setCommentsForFile] = useState([]);
   const [isStarred, setIsStarred] = useState(false);
   const [isStarring, setIsStarring] = useState(false);
+  const [commentsHeight, setCommentsHeight] = useState(() => {
+    const saved = localStorage.getItem('architecture-artifacts-comments-height');
+    return saved ? parseInt(saved, 10) : 200;
+  });
+  const [isResizingComments, setIsResizingComments] = useState(false);
+  const [containerRect, setContainerRect] = useState(null);
 
   const fileType = fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN;
   const isMarkdown = fileType === FILE_TYPES.MARKDOWN;
+
+  // Handle comments section resizing
+  const handleCommentsMouseDown = (e) => {
+    const container = e.currentTarget.closest('.editor-content');
+    if (container) {
+      setContainerRect(container.getBoundingClientRect());
+      setIsResizingComments(true);
+      e.preventDefault();
+    }
+  };
+
+  const handleCommentsMouseMove = React.useCallback((e) => {
+    if (!isResizingComments || !containerRect) return;
+    
+    const newHeight = containerRect.bottom - e.clientY;
+    const minHeight = 150;
+    const maxHeight = containerRect.height - 200; // Leave at least 200px for editor
+    
+    if (newHeight >= minHeight && newHeight <= maxHeight) {
+      setCommentsHeight(newHeight);
+      localStorage.setItem('architecture-artifacts-comments-height', newHeight.toString());
+    }
+  }, [isResizingComments, containerRect]);
+
+  const handleCommentsMouseUp = React.useCallback(() => {
+    setIsResizingComments(false);
+    setContainerRect(null);
+  }, []);
+
+  React.useEffect(() => {
+    if (isResizingComments) {
+      document.addEventListener('mousemove', handleCommentsMouseMove);
+      document.addEventListener('mouseup', handleCommentsMouseUp);
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.removeEventListener('mousemove', handleCommentsMouseMove);
+      document.removeEventListener('mouseup', handleCommentsMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleCommentsMouseMove);
+      document.removeEventListener('mouseup', handleCommentsMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizingComments, handleCommentsMouseMove, handleCommentsMouseUp]);
 
   // Separate clean content from comments when content changes
   useEffect(() => {
@@ -276,8 +331,14 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
         </div>
       </div>
 
-      <div className="editor-content flex-grow-1 d-flex flex-column" style={{ height: 'calc(100vh - 120px)' }}>
-        <div className="editor-pane" style={{ height: '60%', minHeight: '300px' }}>
+      <div className="editor-content flex-grow-1 d-flex flex-column" style={{ height: 'calc(100vh - 120px)', position: 'relative' }}>
+        <div 
+          className="editor-pane" 
+          style={{ 
+            height: isMarkdown ? `calc(100% - ${commentsHeight + 8}px)` : '100%', 
+            minHeight: '200px' 
+          }}
+        >
           <MDEditor
             value={cleanContent}
             onChange={handleContentChange}
@@ -290,21 +351,51 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
         
         {/* Comments section for markdown files */}
         {isMarkdown && (
-          <div 
-            className="comments-container mt-3 px-3 border-top" 
-            style={{ 
-              height: '40%', 
-              minHeight: '200px',
-              overflowY: 'auto',
-              borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-              paddingTop: '1rem'
-            }}
-          >
-            <CommentsSection 
-              fileName={fileName} 
-              isVisible={true}
-            />
-          </div>
+          <>
+            {/* Resizer bar */}
+            <div 
+              className="comments-resizer"
+              style={{
+                height: '8px',
+                background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                cursor: 'row-resize',
+                borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'}`,
+                borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'}`,
+                position: 'relative',
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseDown={handleCommentsMouseDown}
+              title="Drag to resize comments section"
+            >
+              <div 
+                style={{
+                  fontSize: '10px',
+                  color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                  letterSpacing: '2px'
+                }}
+              >
+                ⋮⋮⋮
+              </div>
+            </div>
+            
+            <div 
+              className="comments-container px-3" 
+              style={{ 
+                height: `${commentsHeight}px`,
+                minHeight: '150px',
+                overflowY: 'auto',
+                paddingTop: '0.5rem'
+              }}
+            >
+              <CommentsSection 
+                fileName={fileName} 
+                isVisible={true}
+              />
+            </div>
+          </>
         )}
       </div>
 
