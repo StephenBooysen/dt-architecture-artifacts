@@ -24,7 +24,7 @@
 - Navigation - add upload button like folder and file - done
 - Markdown - Shortcut keys :  Delete on tree, enter on mardown file creation - done
 - Swagger - Service - done
-- Swagger - Core API - todo
+- Swagger - Core API - done
  
 #### Server
 - Services: Screens should work - done

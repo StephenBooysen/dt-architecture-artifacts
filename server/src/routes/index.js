@@ -293,6 +293,22 @@ router.get('/server/status', (req, res) => {
   });
 });
 
+// OpenAPI specification endpoint
+router.get('/spec/swagger.json', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const swaggerPath = path.join(__dirname, '../openapi/swagger.json');
+  
+  try {
+    const swaggerSpec = fs.readFileSync(swaggerPath, 'utf8');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  } catch (error) {
+    console.error('Error serving OpenAPI specification:', error);
+    res.status(500).json({ error: 'Failed to load API specification' });
+  }
+});
+
 router.get('/auth/users', requireAuth, (req, res) => {
   try {
     const users = userStorage.getAllUsers();

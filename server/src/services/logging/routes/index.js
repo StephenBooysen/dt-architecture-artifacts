@@ -57,6 +57,11 @@ module.exports = (options, eventEmitter, logger) => {
       customSiteTitle: 'Logging Service API Documentation'
     };
 
-    app.use('/api/logging/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
+    // Create isolated router with own swagger middleware to prevent conflicts
+    const express = require('express');
+    const docsRouter = express.Router();
+    docsRouter.use(swaggerUi.serve);
+    docsRouter.get('/', swaggerUi.setup(openApiSpec, swaggerOptions));
+    app.use('/api/logging/docs', docsRouter);
   }
 };

@@ -77,6 +77,15 @@ module.exports = (options, eventEmitter, measuring) => {
       customSiteTitle: 'Measuring Service API Documentation'
     };
 
-    app.use('/api/measuring/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
+    // Create isolated router with own swagger middleware to prevent conflicts
+    const express = require('express');
+    const docsRouter = express.Router();
+    docsRouter.use(swaggerUi.serve);
+    docsRouter.get('/', swaggerUi.setup(openApiSpec, swaggerOptions));
+    app.use('/api/measuring/docs', docsRouter);
+    app.get('/api/measuring/docs', (req, res) => {
+      const html = swaggerUi.generateHTML(openApiSpec, swaggerOptions);
+      res.send(html);
+    });
   }
 };

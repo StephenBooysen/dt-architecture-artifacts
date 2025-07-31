@@ -43,6 +43,13 @@ const Sidebar = ({ activeSection }) => {
               <i className="bi bi-graph-up me-2"></i>
               API Monitor
             </a>
+            <a 
+              href="/test-apis" 
+              className={`nav-item ${activeSection === 'test-apis' ? 'active' : ''}`}
+            >
+              <i className="bi bi-code-square me-2"></i>
+              Test APIs
+            </a>
           </div>
           
           <div className="nav-section">

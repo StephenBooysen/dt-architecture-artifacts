@@ -102,16 +102,19 @@ app.use(helmet({
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
-        "https://cdn.jsdelivr.net"
+        "https://cdn.jsdelivr.net",
+        "https://unpkg.com"
       ],
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
-        "https://cdn.jsdelivr.net"
+        "https://cdn.jsdelivr.net",
+        "https://unpkg.com"
       ],
       fontSrc: [
         "'self'",
-        "https://cdn.jsdelivr.net"
+        "https://cdn.jsdelivr.net",
+        "https://unpkg.com"
       ],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"]
@@ -913,6 +916,9 @@ function getNavigation(activeSection) {
               <a href="/monitoring/api" class="nav-item ${activeSection === 'monitoring' ? 'active' : ''}">
                 <i class="bi bi-graph-up me-2"></i>API Monitor
               </a>
+              <a href="/test-apis" class="nav-item ${activeSection === 'test-apis' ? 'active' : ''}">
+                <i class="bi bi-code-square me-2"></i>Test APIs
+              </a>
             </div>
 
             <div class="nav-section">
@@ -1296,6 +1302,31 @@ app.get('/monitoring/api', requireServerAuth, (req, res) => {
     title: 'API Monitor - Architecture Artifacts'
   });
   res.send(html);
+});
+
+// Test APIs page with Swagger UI
+app.get('/test-apis', requireServerAuth, (req, res) => {
+  const html = renderComponent('swaggerui', {
+    activeSection: 'test-apis',
+    title: 'Test APIs - Architecture Artifacts'
+  });
+  res.send(html);
+});
+
+// Serve OpenAPI specification
+app.get('/api-spec/swagger.json', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const swaggerPath = path.join(__dirname, 'src/openapi/swagger.json');
+  
+  try {
+    const swaggerSpec = fs.readFileSync(swaggerPath, 'utf8');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  } catch (error) {
+    console.error('Error serving OpenAPI specification:', error);
+    res.status(500).json({ error: 'Failed to load API specification' });
+  }
 });
 
 // Logging Service Page

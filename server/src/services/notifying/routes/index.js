@@ -95,6 +95,15 @@ module.exports = (options, eventEmitter, notifier) => {
       customSiteTitle: 'Notifying Service API Documentation'
     };
 
-    app.use('/api/notifying/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
+    // Create isolated router with own swagger middleware to prevent conflicts
+    const express = require('express');
+    const docsRouter = express.Router();
+    docsRouter.use(swaggerUi.serve);
+    docsRouter.get('/', swaggerUi.setup(openApiSpec, swaggerOptions));
+    app.use('/api/notifying/docs', docsRouter);
+    app.get('/api/notifying/docs', (req, res) => {
+      const html = swaggerUi.generateHTML(openApiSpec, swaggerOptions);
+      res.send(html);
+    });
   }
 };

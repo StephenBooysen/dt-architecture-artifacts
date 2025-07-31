@@ -29,6 +29,7 @@ const Scheduling = require('../components/pages/Scheduling.jsx').default;
 const Searching = require('../components/pages/Searching.jsx').default;
 const Workflow = require('../components/pages/Workflow.jsx').default;
 const Working = require('../components/pages/Working.jsx').default;
+const SwaggerUI = require('../components/pages/SwaggerUI.jsx').default;
 
 /**
  * Render a React component to HTML string
@@ -79,6 +80,9 @@ function renderComponent(component, props = {}) {
       break;
     case 'working':
       pageComponent = React.createElement(Working);
+      break;
+    case 'swaggerui':
+      pageComponent = React.createElement(SwaggerUI);
       break;
     default:
       pageComponent = React.createElement('div', null, 'Page not found');

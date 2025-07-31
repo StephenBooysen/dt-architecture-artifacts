@@ -69,6 +69,15 @@ module.exports = (options, eventEmitter, filing) => {
       customSiteTitle: 'Filing Service API Documentation'
     };
 
-    app.use('/api/filing/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, swaggerOptions));
+    // Create isolated router with own swagger middleware to prevent conflicts
+    const express = require('express');
+    const docsRouter = express.Router();
+    docsRouter.use(swaggerUi.serve);
+    docsRouter.get('/', swaggerUi.setup(openApiSpec, swaggerOptions));
+    app.use('/api/filing/docs', docsRouter);
+    app.get('/api/filing/docs', (req, res) => {
+      const html = swaggerUi.generateHTML(openApiSpec, swaggerOptions);
+      res.send(html);
+    });
   }
 };
