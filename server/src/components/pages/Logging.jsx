@@ -230,16 +230,12 @@ const Logging = () => {
           logButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Logging...';
           
           try {
-            const response = await fetch('/api/logging/log', {
+            const response = await fetch('/api/logging/log/' + name, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                name: name,
-                message: message,
-                time: new Date().toISOString()
-              })
+              body: message
             });
             
             if (response.ok) {
