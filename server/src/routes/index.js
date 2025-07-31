@@ -381,7 +381,7 @@ router.get('/files', async (req, res) => {
   }
 });
 
-router.get('/files/*', async (req, res) => {
+router.get('/files/{*any}', async (req, res) => {
   try {
     const filePath = req.params[0];
     const fullPath = path.join(contentDir, filePath);
@@ -436,7 +436,7 @@ router.get('/files/*', async (req, res) => {
 });
 
 // Download endpoint for files
-router.get('/download/*', async (req, res) => {
+router.get('/download/{*any}', async (req, res) => {
   try {
     const filePath = req.params[0];
     const fullPath = path.join(contentDir, filePath);
@@ -542,7 +542,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/files/*', requireAuth, async (req, res) => {
+router.post('/files/{*any}', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const {content} = req.body;
@@ -591,7 +591,7 @@ router.post('/files/*', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/files/*', requireAuth, async (req, res) => {
+router.delete('/files/{*any}', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const fullPath = path.join(contentDir, filePath);
@@ -613,7 +613,7 @@ router.delete('/files/*', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/folders/*', async (req, res) => {
+router.delete('/folders/{*any}', async (req, res) => {
   try {
     const folderPath = req.params[0];
     const fullPath = path.join(contentDir, folderPath);
@@ -629,7 +629,7 @@ router.delete('/folders/*', async (req, res) => {
   }
 });
 
-router.put('/rename/*', async (req, res) => {
+router.put('/rename/{*any}', async (req, res) => {
   try {
     const oldPath = req.params[0];
     const {newName} = req.body;
@@ -1168,7 +1168,7 @@ const {
 } = require('../utils/metadataParser');
 
 // Get comments for a specific file
-router.get('/comments/*', async (req, res) => {
+router.get('/comments/{*any}', async (req, res) => {
   try {
     const filePath = req.params[0];
     const fullPath = path.join(contentDir, filePath);
@@ -1201,7 +1201,7 @@ router.get('/comments/*', async (req, res) => {
 });
 
 // Add a new comment to a file
-router.post('/comments/*', requireAuth, async (req, res) => {
+router.post('/comments/{*any}', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const { content: commentContent } = req.body;
@@ -1260,7 +1260,7 @@ router.post('/comments/*', requireAuth, async (req, res) => {
 });
 
 // Update an existing comment
-router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
+router.put('/comments/:commentId/{*any}', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const commentId = req.params.commentId;
@@ -1328,7 +1328,7 @@ router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
 });
 
 // Delete a comment
-router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
+router.delete('/comments/:commentId/{*any}', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const commentId = req.params.commentId;
@@ -1511,7 +1511,7 @@ router.get('/starred', async (req, res) => {
  * Toggle starred status for a file
  * POST /api/starred/*
  */
-router.post('/starred/*', requireAuth, async (req, res) => {
+router.post('/starred/{*any}', requireAuth, async (req, res) => {
   try {
     const filePath = req.params[0];
     const { starred } = req.body;
@@ -1572,7 +1572,7 @@ router.post('/starred/*', requireAuth, async (req, res) => {
  * Get metadata for a specific file
  * GET /api/metadata/*
  */
-router.get('/metadata/*', async (req, res) => {
+router.get('/metadata/{*any}', async (req, res) => {
   try {
     const filePath = req.params[0];
     
