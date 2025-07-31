@@ -33,6 +33,17 @@ const Sidebar = ({ activeSection }) => {
               Git Repository
             </a>
           </div>
+
+          <div className="nav-section">
+            <div className="nav-section-title">Monitoring</div>
+            <a 
+              href="/monitoring/api" 
+              className={`nav-item ${activeSection === 'monitoring' ? 'active' : ''}`}
+            >
+              <i className="bi bi-graph-up me-2"></i>
+              API Monitor
+            </a>
+          </div>
           
           <div className="nav-section">
             <div className="nav-section-title">Services</div>
@@ -101,16 +112,6 @@ const Sidebar = ({ activeSection }) => {
             </a>
           </div>
 
-          <div className="nav-section">
-            <div className="nav-section-title">Monitoring</div>
-            <a 
-              href="/monitoring/api" 
-              className={`nav-item ${activeSection === 'monitoring' ? 'active' : ''}`}
-            >
-              <i className="bi bi-graph-up me-2"></i>
-              API Monitor
-            </a>
-          </div>
         </nav>
       </div>
     </aside>
