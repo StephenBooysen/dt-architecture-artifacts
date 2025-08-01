@@ -408,9 +408,9 @@ router.get('/files', async (req, res) => {
   }
 });
 
-router.get('/files/{*any}', async (req, res) => {
+router.get('/files{/*path}', async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const fullPath = path.join(contentDir, filePath);
     if (!fullPath.startsWith(contentDir)) {
       return res.status(403).json({error: 'Access denied'});
@@ -418,7 +418,7 @@ router.get('/files/{*any}', async (req, res) => {
 
     const fileName = path.basename(filePath);
     const fileType = detectFileType(fileName);
-    
+
     // Handle different file types
     if (fileType === 'markdown' || fileType === 'text') {
       // Read as text
@@ -463,9 +463,9 @@ router.get('/files/{*any}', async (req, res) => {
 });
 
 // Download endpoint for files
-router.get('/download/{*any}', async (req, res) => {
+router.get('/download{/*path}', async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const fullPath = path.join(contentDir, filePath);
     if (!fullPath.startsWith(contentDir)) {
       return res.status(403).json({error: 'Access denied'});
@@ -569,9 +569,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/files/{*any}', requireAuth, async (req, res) => {
+router.post('/files{/*path}', requireAuth, async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const {content} = req.body;
     const fullPath = path.join(contentDir, filePath);
     if (!fullPath.startsWith(contentDir)) {
@@ -618,9 +618,9 @@ router.post('/files/{*any}', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/files/{*any}', requireAuth, async (req, res) => {
+router.delete('/files{/*path}', requireAuth, async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const fullPath = path.join(contentDir, filePath);
     if (!fullPath.startsWith(contentDir)) {
       return res.status(403).json({error: 'Access denied'});
@@ -640,9 +640,9 @@ router.delete('/files/{*any}', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/folders/{*any}', async (req, res) => {
+router.delete('/folders{/*path}', async (req, res) => {
   try {
-    const folderPath = req.params[0];
+    const folderPath = req.params.path[0] || '';
     const fullPath = path.join(contentDir, folderPath);
     if (!fullPath.startsWith(contentDir)) {
       return res.status(403).json({error: 'Access denied'});
@@ -656,9 +656,9 @@ router.delete('/folders/{*any}', async (req, res) => {
   }
 });
 
-router.put('/rename/{*any}', async (req, res) => {
+router.put('/rename{/*path}', async (req, res) => {
   try {
-    const oldPath = req.params[0];
+    const oldPath = req.params.path[0] || '';
     const {newName} = req.body;
     
     if (!newName) {
@@ -925,7 +925,6 @@ router.get('/search/content', async (req, res) => {
 router.get('/templates', async (req, res) => {
   try {
     const templatesDir = path.resolve('./content-templates');
-    console.log(templatesDir);
     
     // Create templates directory if it doesn't exist
     try {
@@ -1195,9 +1194,9 @@ const {
 } = require('../utils/metadataParser');
 
 // Get comments for a specific file
-router.get('/comments/{*any}', async (req, res) => {
+router.get('/comments{/*path}', async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const fullPath = path.join(contentDir, filePath);
     
     if (!fullPath.startsWith(contentDir)) {
@@ -1228,9 +1227,9 @@ router.get('/comments/{*any}', async (req, res) => {
 });
 
 // Add a new comment to a file
-router.post('/comments/{*any}', requireAuth, async (req, res) => {
+router.post('/comments{/*path}', requireAuth, async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const { content: commentContent } = req.body;
     const fullPath = path.join(contentDir, filePath);
     
@@ -1287,9 +1286,9 @@ router.post('/comments/{*any}', requireAuth, async (req, res) => {
 });
 
 // Update an existing comment
-router.put('/comments/:commentId/{*any}', requireAuth, async (req, res) => {
+router.put('/comments/:commentId{/*path}', requireAuth, async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const commentId = req.params.commentId;
     const { content: commentContent } = req.body;
     const fullPath = path.join(contentDir, filePath);
@@ -1355,9 +1354,9 @@ router.put('/comments/:commentId/{*any}', requireAuth, async (req, res) => {
 });
 
 // Delete a comment
-router.delete('/comments/:commentId/{*any}', requireAuth, async (req, res) => {
+router.delete('/comments/:commentId{/*path}', requireAuth, async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const commentId = req.params.commentId;
     const fullPath = path.join(contentDir, filePath);
     
@@ -1538,9 +1537,9 @@ router.get('/starred', async (req, res) => {
  * Toggle starred status for a file
  * POST /api/starred/*
  */
-router.post('/starred/{*any}', requireAuth, async (req, res) => {
+router.post('/starred{/*path}', requireAuth, async (req, res) => {
   try {
-    const filePath = req.params[0];
+    const filePath = req.params.path.join("/") || '';
     const { starred } = req.body;
     
     if (!filePath) {
@@ -1599,10 +1598,10 @@ router.post('/starred/{*any}', requireAuth, async (req, res) => {
  * Get metadata for a specific file
  * GET /api/metadata/*
  */
-router.get('/metadata/{*any}', async (req, res) => {
+router.get('/metadata{/*path}', async (req, res) => {
   try {
-    const filePath = req.params[0];
-    
+    const filePath = req.params.path.join("/") || '';
+
     if (!filePath) {
       return res.status(400).json({ error: 'File path is required' });
     }
