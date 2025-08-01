@@ -1,0 +1,143 @@
+{
+  "name": "architecture-artifacts-vscode",
+  "displayName": "Architecture Artifacts",
+  "description": "Search and preview architecture documentation from your Architecture Artifacts server directly in VS Code",
+  "version": "1.0.0",
+  "publisher": "architecture-artifacts",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Documentation",
+    "Search"
+  ],
+  "keywords": [
+    "architecture",
+    "documentation",
+    "markdown",
+    "search",
+    "artifacts"
+  ],
+  "icon": "icons/icon-128.svg",
+  "galleryBanner": {
+    "color": "#0052cc",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onCommand:architectureArtifacts.search",
+    "onCommand:architectureArtifacts.login",
+    "onCommand:architectureArtifacts.logout",
+    "onCommand:architectureArtifacts.settings"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "architectureArtifacts.search",
+        "title": "Search Documentation",
+        "category": "Architecture Artifacts",
+        "icon": "$(search)"
+      },
+      {
+        "command": "architectureArtifacts.login",
+        "title": "Sign In",
+        "category": "Architecture Artifacts",
+        "icon": "$(sign-in)"
+      },
+      {
+        "command": "architectureArtifacts.logout",
+        "title": "Sign Out",
+        "category": "Architecture Artifacts",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "architectureArtifacts.settings",
+        "title": "Settings",
+        "category": "Architecture Artifacts",
+        "icon": "$(settings)"
+      }
+    ],
+    "configuration": {
+      "title": "Architecture Artifacts",
+      "properties": {
+        "architectureArtifacts.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:5000",
+          "description": "Architecture Artifacts server URL"
+        },
+        "architectureArtifacts.autoLogin": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically check authentication status on startup"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "architectureArtifacts",
+          "title": "Architecture Artifacts",
+          "icon": "$(book)"
+        }
+      ]
+    },
+    "views": {
+      "architectureArtifacts": [
+        {
+          "id": "architectureArtifactsExplorer",
+          "name": "Documentation Search",
+          "when": "true"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "architectureArtifacts.search",
+          "when": "view == architectureArtifactsExplorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "architectureArtifacts.login",
+          "when": "view == architectureArtifactsExplorer && !architectureArtifacts.authenticated",
+          "group": "navigation@2"
+        },
+        {
+          "command": "architectureArtifacts.logout",
+          "when": "view == architectureArtifactsExplorer && architectureArtifacts.authenticated",
+          "group": "navigation@2"
+        },
+        {
+          "command": "architectureArtifacts.settings",
+          "when": "view == architectureArtifactsExplorer",
+          "group": "navigation@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "architectureArtifacts.search",
+          "when": "true"
+        },
+        {
+          "command": "architectureArtifacts.login",
+          "when": "!architectureArtifacts.authenticated"
+        },
+        {
+          "command": "architectureArtifacts.logout",
+          "when": "architectureArtifacts.authenticated"
+        },
+        {
+          "command": "architectureArtifacts.settings",
+          "when": "true"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "echo 'No compilation needed for JavaScript'"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
