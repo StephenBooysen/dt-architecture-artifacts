@@ -8,27 +8,28 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
+
+- File manager for git - todo
+- Workspaces concept that can user different storage solutions (Private, Public, Enterprise)
 - Bug Files greater than 10mb failing - done
 - Extensions to have login - done
 - VSCode extensions - done
 - File manager for folders - done
-- File manager for git
-- Workspaces concept that can user different storage solutions (Private, Public, Enterprise)
-- View: Have a knowledge view that has no editing
-- Subscribe to changes and notify in notification popup
-- Markdown - Tree drag files into folders
 
 #### Server
-- Security: Roles and permissions (read, write, backoffice) - done
 - Settings: Git and files
+- API Monitor for serverices
+- Security: Roles and permissions (read, write, backoffice) - done
 
 #### Plugins
 - 
 
 ### Phase 3: Shoprite enterprise integration
 #### Client
-- Knowledge view
+- View: Have a knowledge view that has no editing
 - Readonly pages
+- Subscribe to changes and notify in notification popup
+- Markdown - Tree drag files into folders
 
 #### Server
 
