@@ -169,7 +169,8 @@ patchEmitter(eventEmitter);
 
 const log = require('./src/services/logging')('', { 'express-app': app }, eventEmitter);
 const cacheing = require('./src/services/caching')('', { 'express-app': app }, eventEmitter);
-const filing = require('./src/services/filing')('', { 'express-app': app }, eventEmitter);
+const createFilingService = require('./src/services/filing');
+const filing = createFilingService('local', { 'express-app': app }, eventEmitter);
 const measuring = require('./src/services/measuring')('', { 'express-app': app }, eventEmitter);
 const notifying = require('./src/services/notifying')('', { 'express-app': app }, eventEmitter);
 const queueing = require('./src/services/queueing')('', { 'express-app': app }, eventEmitter);
@@ -1856,6 +1857,6 @@ app.put('/api/users/:id', requireServerAuth, (req, res) => {
 //   });
 // }
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

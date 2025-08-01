@@ -302,13 +302,35 @@ ISC License
 
 For issues and questions, please create an issue in the repository. For enterprise support and custom implementations, contact the development team.
 
+<!-- COMMENTS_DATA_START
+{
+  "comments": [
+    {
+      "id": "comment_mdspaclo_qi5janbji",
+      "author": "admin",
+      "content": "This rocks",
+      "timestamp": "2025-08-01T10:48:26.700Z",
+      "createdAt": "2025-08-01T10:48:26.700Z"
+    }
+  ],
+  "version": "1.0"
+}
+COMMENTS_DATA_END -->
+
 <!-- METADATA_DATA_START
 {
-  "recentEdits": [],
+  "recentEdits": [
+    {
+      "id": "edit_mdsvsrc2_m3qa5jyl3",
+      "username": "admin",
+      "timestamp": "2025-08-01T13:50:43.298Z",
+      "date": "2025-08-01T13:50:43.298Z"
+    }
+  ],
   "starred": true,
   "version": "1.0",
-  "createdAt": "2025-07-31T09:43:51.783Z",
-  "lastUpdated": "2025-07-31T09:43:51.783Z",
-  "starredAt": "2025-07-31T09:43:51.783Z"
+  "createdAt": "2025-08-01T13:50:43.297Z",
+  "lastUpdated": "2025-08-01T13:50:47.694Z",
+  "starredAt": "2025-08-01T13:50:47.694Z"
 }
 METADATA_DATA_END -->

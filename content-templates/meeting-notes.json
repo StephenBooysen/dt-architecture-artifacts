@@ -1,6 +1,7 @@
 {
   "name": "meeting-notes.md",
-  "content": "## Meeting for {date}\n\n## Attendees\n*\n*\n\n## Summary\n\n\n## Action Items\n*\n*",
-  "description": "Meeting Notes Template",
-  "createdAt": "2025-07-28T13:09:17.026Z"
+  "content": "## Meeting for {date}\n\n## Attendees\n*\n*\n\n## Summary\n\n\n## Action Items\n*\n*\n",
+  "description": "",
+  "createdAt": "2025-07-28T13:09:17.026Z",
+  "updatedAt": "2025-08-01T13:27:58.514Z"
 }

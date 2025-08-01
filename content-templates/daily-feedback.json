@@ -1,7 +1,7 @@
 {
   "name": "daily-feedback.md",
-  "content": "# Daily Feedback - {date}\n\n**Created:** {datetime}  \n**Day:** {dayofweek}  \n**Author:** {user}  \n**Location:** {folder}  \n**File:** {filename}\n\n## What did we get done today\n- \n- \n- \n\n## Challenges encountered\n- \n- \n\n## Action Items for tomorrow\n- [ ] \n- [ ] \n- [ ] \n- [ ] \n\n## Notes\n\n",
-  "description": "Daily feedback template with dynamic placeholders",
+  "content": "# Daily Feedback - {date}\n\n**Created:** {datetime}  \n**Day:** {dayofweek}  \n**Author:** {user}  \n**Location:** {folder}  \n**File:** {filename}\n\n## What did we get done today\n- \n- \n- \n\n## Challenges encountered\n- \n- \n\n## Action Items for tomorrow\n- [ ] \n- [ ] \n- [ ] \n- [ ] \n\n## Notes\n2342343243242\n",
+  "description": "",
   "createdAt": "2025-07-29T08:35:17.334Z",
-  "updatedAt": "2025-07-30T11:15:04.842Z"
+  "updatedAt": "2025-08-01T13:27:42.109Z"
 }

@@ -4,7 +4,7 @@
   "description": "Architecture artifacts markdown editor with glassmorphism theme",
   "main": "server/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server\" \"npm run client\" --ignore 'content/*' --ignore 'content-templates/*'",
     "server": "nodemon server/index.js",
     "client": "cd client && npm start",
     "electron": "concurrently \"npm run server\" \"cd client-electron && npm run electron-dev\"",

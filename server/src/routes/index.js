@@ -16,6 +16,9 @@ const simpleGit = require('simple-git');
 const multer = require('multer');
 const userStorage = require('../auth/userStorage');
 const passport = require('../auth/passport');
+const EventEmitter = require('events');
+const createFilingService = require('../services/filing/index.js');
+const filing = createFilingService('local', {}, new EventEmitter());
 
 const router = express.Router();
 const git = simpleGit();
@@ -107,9 +110,12 @@ const upload = multer({
  */
 async function ensureContentDir() {
   try {
-    await fs.access(contentDir);
-  } catch {
-    await fs.mkdir(contentDir, {recursive: true});
+    const exists = await filing.exists(contentDir);
+    if (!exists) {
+      await filing.mkdir(contentDir, {recursive: true});
+    }
+  } catch (error) {
+    await filing.mkdir(contentDir, {recursive: true});
   }
 }
 
@@ -202,7 +208,7 @@ function replacePlaceholders(content, context = {}) {
  * @return {Promise<Array>} The directory tree structure.
  */
 async function getDirectoryTree(dirPath, relativePath = '') {
-  const items = await fs.readdir(dirPath, {withFileTypes: true});
+  const items = await filing.listDetailed(dirPath);
   const tree = [];
 
   for (const item of items) {
@@ -214,7 +220,7 @@ async function getDirectoryTree(dirPath, relativePath = '') {
     const fullPath = path.join(dirPath, item.name);
     const relPath = path.join(relativePath, item.name);
 
-    if (item.isDirectory()) {
+    if (item.isDirectory) {
       const children = await getDirectoryTree(fullPath, relPath);
       tree.push({
         name: item.name,
@@ -308,13 +314,13 @@ router.get('/server/status', (req, res) => {
 });
 
 // OpenAPI specification endpoint
-router.get('/spec/swagger.json', (req, res) => {
+router.get('/spec/swagger.json', async (req, res) => {
   const fs = require('fs');
   const path = require('path');
   const swaggerPath = path.join(__dirname, '../openapi/swagger.json');
   
   try {
-    const swaggerSpec = fs.readFileSync(swaggerPath, 'utf8');
+    const swaggerSpec = await filing.read(swaggerPath, 'utf8');
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
   } catch (error) {
@@ -351,7 +357,7 @@ router.post('/folders', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    await fs.mkdir(fullPath, {recursive: true});
+    await filing.mkdir(fullPath, {recursive: true});
     res.json({message: 'Folder created successfully', path: folderPath});
   } catch (error) {
     console.error('Error creating folder:', error);
@@ -382,16 +388,14 @@ router.post('/files', requireAuth, async (req, res) => {
     }
 
     // Check if file already exists
-    try {
-      await fs.access(fullPath);
+    const fileExists = await filing.exists(fullPath);
+    if (fileExists) {
       return res.status(409).json({error: 'File already exists'});
-    } catch {
-      // File doesn't exist, continue with creation
     }
 
     // Ensure directory exists
-    await fs.mkdir(path.dirname(fullPath), {recursive: true});
-    await fs.writeFile(fullPath, content, 'utf8');
+    await filing.mkdir(path.dirname(fullPath), {recursive: true});
+    await filing.create(fullPath, content);
     
     res.json({message: 'File created successfully', path: filePath});
   } catch (error) {
@@ -425,7 +429,7 @@ router.get('/files/*', async (req, res) => {
     // Handle different file types
     if (fileType === 'markdown' || fileType === 'text') {
       // Read as text
-      const content = await fs.readFile(fullPath, 'utf8');
+      const content = await filing.read(fullPath, 'utf8');
       
       // For markdown files, return both full content and clean content
       if (fileType === 'markdown') {
@@ -446,12 +450,12 @@ router.get('/files/*', async (req, res) => {
       }
     } else if (fileType === 'image' || fileType === 'pdf') {
       // Read as binary and convert to base64
-      const buffer = await fs.readFile(fullPath);
+      const buffer = await filing.read(fullPath);
       const base64Content = buffer.toString('base64');
       res.json({content: base64Content, path: filePath, fileType, encoding: 'base64'});
     } else {
       // Unknown file type - return file info for download
-      const stats = await fs.stat(fullPath);
+      const stats = await filing.stat(fullPath);
       res.json({
         path: filePath,
         fileType,
@@ -475,7 +479,7 @@ router.get('/download/*', async (req, res) => {
     }
 
     const fileName = path.basename(filePath);
-    const stats = await fs.stat(fullPath);
+    const stats = await filing.stat(fullPath);
     
     // Set appropriate headers for download
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -509,8 +513,8 @@ router.get('/download/*', async (req, res) => {
     res.setHeader('Content-Type', contentType);
     
     // Stream the file
-    const fileStream = await fs.readFile(fullPath);
-    res.send(fileStream);
+    const fileBuffer = await filing.read(fullPath);
+    res.send(fileBuffer);
   } catch (error) {
     console.error('Error downloading file:', error);
     res.status(404).json({error: 'File not found'});
@@ -537,17 +541,17 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // Validate that the final path is within the content directory
     if (!finalFullPath.startsWith(contentDir)) {
       // Clean up temp file
-      await fs.unlink(tempFilePath);
+      await filing.delete(tempFilePath);
       return res.status(403).json({ error: 'Access denied' });
     }
 
     // Create the target directory if it doesn't exist
     const targetDir = path.dirname(finalFullPath);
-    await fs.mkdir(targetDir, { recursive: true });
+    await filing.mkdir(targetDir, { recursive: true });
     
     // Move the file to the correct location
     if (tempFilePath !== finalFullPath) {
-      await fs.rename(tempFilePath, finalFullPath);
+      await filing.move(tempFilePath, finalFullPath);
     }
 
     res.json({
@@ -562,7 +566,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // Clean up temp file if it exists
     if (req.file && req.file.path) {
       try {
-        await fs.unlink(req.file.path);
+        await filing.delete(req.file.path);
       } catch (cleanupError) {
         console.error('Error cleaning up temp file:', cleanupError);
       }
@@ -573,6 +577,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 router.post('/files/*', requireAuth, async (req, res) => {
+  console.log("Create Update Files")
   try {
     const filePath = req.params[0] || '';
     const {content} = req.body;
@@ -580,8 +585,8 @@ router.post('/files/*', requireAuth, async (req, res) => {
     if (!fullPath.startsWith(contentDir)) {
       return res.status(403).json({error: 'Access denied'});
     }
-
-    await fs.mkdir(path.dirname(fullPath), {recursive: true});
+    
+    await filing.mkdir(path.dirname(fullPath), {recursive: true});
     
     // For markdown files, add metadata tracking
     let finalContent = content;
@@ -613,7 +618,7 @@ router.post('/files/*', requireAuth, async (req, res) => {
       }
     }
     
-    await fs.writeFile(fullPath, finalContent, 'utf8');
+    await filing.update(fullPath, finalContent);
     res.json({message: 'File saved successfully', path: filePath});
   } catch (error) {
     console.error('Error saving file:', error);
@@ -629,12 +634,12 @@ router.delete('/files/*', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    const stats = await fs.stat(fullPath);
-    if (stats.isDirectory()) {
-      await fs.rm(fullPath, {recursive: true, force: true});
+    const stats = await filing.stat(fullPath);
+    if (stats.isDirectory) {
+      await filing.delete(fullPath);
       res.json({message: 'Folder deleted successfully', path: filePath});
     } else {
-      await fs.unlink(fullPath);
+      await filing.delete(fullPath);
       res.json({message: 'File deleted successfully', path: filePath});
     }
   } catch (error) {
@@ -651,7 +656,7 @@ router.delete('/folders/*', async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    await fs.rm(fullPath, {recursive: true, force: true});
+    await filing.delete(fullPath);
     res.json({message: 'Folder deleted successfully', path: folderPath});
   } catch (error) {
     console.error('Error deleting folder:', error);
@@ -682,15 +687,13 @@ router.put('/rename/*', async (req, res) => {
     }
 
     // Check if new path already exists
-    try {
-      await fs.access(newFullPath);
+    const newPathExists = await filing.exists(newFullPath);
+    if (newPathExists) {
       return res.status(409).json({error: 'A file or folder with that name already exists'});
-    } catch {
-      // File doesn't exist, continue with rename
     }
 
     // Perform the rename
-    await fs.rename(oldFullPath, newFullPath);
+    await filing.move(oldFullPath, newFullPath);
     
     const newPath = path.relative(contentDir, newFullPath);
     res.json({message: 'Item renamed successfully', oldPath, newPath});
@@ -750,9 +753,9 @@ router.post('/clone', async (req, res) => {
     await ensureContentDir();
     
     // Clear existing content directory
-    const items = await fs.readdir(contentDir);
+    const items = await filing.list(contentDir);
     for (const item of items) {
-      await fs.rm(path.join(contentDir, item), {recursive: true, force: true});
+      await filing.delete(path.join(contentDir, item));
     }
 
     // Clone repository into content directory
@@ -806,15 +809,15 @@ router.get('/search/files', async (req, res) => {
     // Recursive function to search through files
     const searchInDirectory = async (dirPath) => {
       try {
-        const items = await fs.readdir(dirPath, { withFileTypes: true });
+        const items = await filing.listDetailed(dirPath);
         
         for (const item of items) {
           const fullPath = path.join(dirPath, item.name);
           const relativePath = path.relative(contentDir, fullPath);
           
-          if (item.isDirectory()) {
+          if (item.isDirectory) {
             await searchInDirectory(fullPath);
-          } else if (item.isFile() && item.name.endsWith('.md')) {
+          } else if (item.isFile && item.name.endsWith('.md')) {
             // Check if filename contains the search query (case insensitive)
             if (item.name.toLowerCase().includes(query.toLowerCase())) {
               searchResults.push({
@@ -854,17 +857,17 @@ router.get('/search/content', async (req, res) => {
     // Recursive function to search through file contents
     const searchInDirectory = async (dirPath) => {
       try {
-        const items = await fs.readdir(dirPath, { withFileTypes: true });
+        const items = await filing.listDetailed(dirPath);
         
         for (const item of items) {
           const fullPath = path.join(dirPath, item.name);
           const relativePath = path.relative(contentDir, fullPath);
           
-          if (item.isDirectory()) {
+          if (item.isDirectory) {
             await searchInDirectory(fullPath);
-          } else if (item.isFile() && item.name.endsWith('.md')) {
+          } else if (item.isFile && item.name.endsWith('.md')) {
             try {
-              const content = await fs.readFile(fullPath, 'utf8');
+              const content = await filing.read(fullPath, 'utf8');
               const matches = [];
               let match;
               
@@ -930,19 +933,15 @@ router.get('/templates', async (req, res) => {
     const templatesDir = path.resolve('./content-templates');
     
     // Create templates directory if it doesn't exist
-    try {
-      await fs.access(templatesDir);
-    } catch {
-      await fs.mkdir(templatesDir, { recursive: true });
-    }
+    await filing.ensureDir(templatesDir);
     
-    const files = await fs.readdir(templatesDir);
+    const files = await filing.list(templatesDir);
     const templates = [];
     
     for (const file of files) {
       if (file.endsWith('.json')) {
         const filePath = path.join(templatesDir, file);
-        const templateData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+        const templateData = JSON.parse(await filing.read(filePath, 'utf8'));
         templates.push(templateData);
       }
     }
@@ -962,7 +961,7 @@ router.get('/templates/:templateName', async (req, res) => {
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
-    const templateData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+    const templateData = JSON.parse(await filing.read(filePath, 'utf8'));
     res.json(templateData);
   } catch (error) {
     console.error('Error fetching template:', error);
@@ -982,21 +981,15 @@ router.post('/templates', async (req, res) => {
     const templatesDir = path.resolve('./content-templates');
     
     // Create templates directory if it doesn't exist
-    try {
-      await fs.access(templatesDir);
-    } catch {
-      await fs.mkdir(templatesDir, { recursive: true });
-    }
+    await filing.ensureDir(templatesDir);
     
     const templateFile = `${name.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
     // Check if template already exists
-    try {
-      await fs.access(filePath);
+    const templateExists = await filing.exists(filePath);
+    if (templateExists) {
       return res.status(400).json({error: 'Template already exists'});
-    } catch {
-      // Template doesn't exist, continue
     }
     
     const templateData = {
@@ -1006,7 +999,7 @@ router.post('/templates', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     
-    await fs.writeFile(filePath, JSON.stringify(templateData, null, 2));
+    await filing.create(filePath, JSON.stringify(templateData, null, 2));
     res.json({message: 'Template created successfully', template: templateData});
   } catch (error) {
     console.error('Error creating template:', error);
@@ -1025,7 +1018,7 @@ router.put('/templates/:templateName', async (req, res) => {
     const oldFilePath = path.join(templatesDir, oldTemplateFile);
     
     // Read existing template
-    const existingTemplate = JSON.parse(await fs.readFile(oldFilePath, 'utf8'));
+    const existingTemplate = JSON.parse(await filing.read(oldFilePath, 'utf8'));
     
     // Update template data
     const updatedTemplate = {
@@ -1042,17 +1035,15 @@ router.put('/templates/:templateName', async (req, res) => {
       const newFilePath = path.join(templatesDir, newTemplateFile);
       
       // Check if new name already exists
-      try {
-        await fs.access(newFilePath);
+      const newNameExists = await filing.exists(newFilePath);
+      if (newNameExists) {
         return res.status(400).json({error: 'Template with new name already exists'});
-      } catch {
-        // New name doesn't exist, continue
       }
       
-      await fs.writeFile(newFilePath, JSON.stringify(updatedTemplate, null, 2));
-      await fs.unlink(oldFilePath);
+      await filing.create(newFilePath, JSON.stringify(updatedTemplate, null, 2));
+      await filing.delete(oldFilePath);
     } else {
-      await fs.writeFile(oldFilePath, JSON.stringify(updatedTemplate, null, 2));
+      await filing.update(oldFilePath, JSON.stringify(updatedTemplate, null, 2));
     }
     
     res.json({message: 'Template updated successfully', template: updatedTemplate});
@@ -1070,7 +1061,7 @@ router.delete('/templates/:templateName', async (req, res) => {
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
-    await fs.unlink(filePath);
+    await filing.delete(filePath);
     res.json({message: 'Template deleted successfully'});
   } catch (error) {
     console.error('Error deleting template:', error);
@@ -1099,7 +1090,7 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
     
     let templateData;
     try {
-      templateData = JSON.parse(await fs.readFile(templateFilePath, 'utf8'));
+      templateData = JSON.parse(await filing.read(templateFilePath, 'utf8'));
     } catch (error) {
       return res.status(404).json({error: 'Template not found'});
     }
@@ -1139,16 +1130,14 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
     }
 
     // Check if file already exists
-    try {
-      await fs.access(fullPath);
+    const fileExists = await filing.exists(fullPath);
+    if (fileExists) {
       return res.status(409).json({error: 'File already exists'});
-    } catch {
-      // File doesn't exist, continue with creation
     }
 
     // Ensure directory exists
-    await fs.mkdir(path.dirname(fullPath), {recursive: true});
-    await fs.writeFile(fullPath, processedContent, 'utf8');
+    await filing.ensureDir(path.dirname(fullPath));
+    await filing.create(fullPath, processedContent);
     
     res.json({
       message: 'File created from template successfully', 
@@ -1211,7 +1200,7 @@ router.get('/comments/*', async (req, res) => {
       return res.status(400).json({error: 'Comments are only supported for markdown files'});
     }
 
-    const content = await fs.readFile(fullPath, 'utf8');
+    const content = await filing.read(fullPath, 'utf8');
     const comments = extractComments(content);
     const sortedComments = sortCommentsByNewest(comments);
     
@@ -1249,7 +1238,7 @@ router.post('/comments/*', requireAuth, async (req, res) => {
     }
 
     // Read the current file content
-    const markdownContent = await fs.readFile(fullPath, 'utf8');
+    const markdownContent = await filing.read(fullPath, 'utf8');
     
     // Extract existing comments and clean content
     const existingComments = extractComments(markdownContent);
@@ -1267,7 +1256,7 @@ router.post('/comments/*', requireAuth, async (req, res) => {
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
     // Save the updated content
-    await fs.writeFile(fullPath, updatedMarkdownContent, 'utf8');
+    await filing.update(fullPath, updatedMarkdownContent);
     
     // Return the new comment and updated list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1309,7 +1298,7 @@ router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
     }
 
     // Read the current file content
-    const markdownContent = await fs.readFile(fullPath, 'utf8');
+    const markdownContent = await filing.read(fullPath, 'utf8');
     
     // Extract existing comments and clean content
     const existingComments = extractComments(markdownContent);
@@ -1335,7 +1324,7 @@ router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
     // Save the updated content
-    await fs.writeFile(fullPath, updatedMarkdownContent, 'utf8');
+    await filing.update(fullPath, updatedMarkdownContent);
     
     // Return the updated comment and list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1372,7 +1361,7 @@ router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
     }
 
     // Read the current file content
-    const markdownContent = await fs.readFile(fullPath, 'utf8');
+    const markdownContent = await filing.read(fullPath, 'utf8');
     
     // Extract existing comments and clean content
     const existingComments = extractComments(markdownContent);
@@ -1398,7 +1387,7 @@ router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
       : cleanContent;
     
     // Save the updated content
-    await fs.writeFile(fullPath, updatedMarkdownContent, 'utf8');
+    await filing.update(fullPath, updatedMarkdownContent);
     
     // Return the updated list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1429,17 +1418,17 @@ router.get('/recent', async (req, res) => {
     const recentFiles = [];
     
     async function processDir(dirPath, relativePath = '') {
-      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      const entries = await filing.listDetailed(dirPath);
       
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
         const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
         
-        if (entry.isDirectory()) {
+        if (entry.isDirectory) {
           await processDir(fullPath, entryRelativePath);
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        } else if (entry.isFile && entry.name.endsWith('.md')) {
           try {
-            const content = await fs.readFile(fullPath, 'utf8');
+            const content = await filing.read(fullPath, 'utf8');
             const metadata = extractMetadata(content);
             
             if (hasRecentEdits(metadata, days)) {
@@ -1488,17 +1477,17 @@ router.get('/starred', async (req, res) => {
     const starredFiles = [];
     
     async function processDir(dirPath, relativePath = '') {
-      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      const entries = await filing.listDetailed(dirPath);
       
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
         const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
         
-        if (entry.isDirectory()) {
+        if (entry.isDirectory) {
           await processDir(fullPath, entryRelativePath);
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        } else if (entry.isFile && entry.name.endsWith('.md')) {
           try {
-            const content = await fs.readFile(fullPath, 'utf8');
+            const content = await filing.read(fullPath, 'utf8');
             const metadata = extractMetadata(content);
             
             if (metadata.starred) {
@@ -1557,14 +1546,13 @@ router.post('/starred/*', requireAuth, async (req, res) => {
     const fullPath = path.join(contentDir, filePath);
     
     // Check if file exists
-    try {
-      await fs.access(fullPath);
-    } catch (error) {
+    const fileExists = await filing.exists(fullPath);
+    if (!fileExists) {
       return res.status(404).json({ error: 'File not found' });
     }
     
     // Read current content
-    const content = await fs.readFile(fullPath, 'utf8');
+    const content = await filing.read(fullPath, 'utf8');
     const metadata = extractMetadata(content);
     const comments = extractComments(content);
     const cleanContent = getCleanMarkdownContent(content);
@@ -1584,7 +1572,7 @@ router.post('/starred/*', requireAuth, async (req, res) => {
     updatedContent = injectMetadata(updatedContent, updatedMetadata);
     
     // Write updated content
-    await fs.writeFile(fullPath, updatedContent, 'utf8');
+    await filing.update(fullPath, updatedContent);
     
     res.json({
       message: `File ${updatedMetadata.starred ? 'starred' : 'unstarred'} successfully`,
@@ -1617,14 +1605,13 @@ router.get('/metadata/*', async (req, res) => {
     const fullPath = path.join(contentDir, filePath);
     
     // Check if file exists
-    try {
-      await fs.access(fullPath);
-    } catch (error) {
+    const fileExists = await filing.exists(fullPath);
+    if (!fileExists) {
       return res.status(404).json({ error: 'File not found' });
     }
     
     // Read and extract metadata
-    const content = await fs.readFile(fullPath, 'utf8');
+    const content = await filing.read(fullPath, 'utf8');
     const metadata = extractMetadata(content);
     
     res.json({

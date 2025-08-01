@@ -16,8 +16,8 @@ class LocalFilingProvider {
       this.eventEmitter_.emit('filing:create', { filePath, content });
   }
 
-  async read(filePath) {
-    const content = await fs.readFile(filePath, 'utf8');
+  async read(filePath,encoding) {
+    const content = await fs.readFile(filePath, encoding);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:read', { filePath, content });
     return content;
@@ -101,6 +101,24 @@ class LocalFilingProvider {
     return result;
   }
 
+  async readdir(dirPath) {
+    const files = await fs.readdir(dirPath);
+    const detailed = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(dirPath, file);
+        const stats = await this.stat(filePath);
+        return {
+          name: file,
+          path: filePath,
+          ...stats
+        };
+      })
+    );
+    if (this.eventEmitter_)
+      this.eventEmitter_.emit('filing:readdir', { dirPath, files: detailed });
+    return detailed
+  } 
+
   async listDetailed(dirPath) {
     const files = await fs.readdir(dirPath);
     const detailed = await Promise.all(
@@ -129,6 +147,14 @@ class LocalFilingProvider {
         throw error;
       }
     }
+  }
+
+  async rename(sourcePath, destPath) {
+    return this.move(sourcePath, destPath);
+  }
+
+  async unlink(filePath) {
+    return this.delete(filePath);
   }
 }
 

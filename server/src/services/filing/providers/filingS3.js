@@ -3,6 +3,7 @@
  */
 
 const AWS = require('@aws-sdk/client-s3');
+const path = require('path');
 
 class S3FilingProvider {
   /**
@@ -157,6 +158,160 @@ class S3FilingProvider {
         });
       throw error;
     }
+  }
+
+  async upload(filePath, content) {
+    return this.create(filePath, content);
+  }
+
+  async download(filePath) {
+    return this.read(filePath);
+  }
+
+  async remove(filePath) {
+    return this.delete(filePath);
+  }
+
+  async exists(filePath) {
+    try {
+      const params = {
+        Bucket: this.bucketName,
+        Key: filePath,
+      };
+      await this.s3.headObject(params).promise();
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:exists', { filePath, exists: true });
+      return true;
+    } catch (error) {
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:exists', { filePath, exists: false });
+      return false;
+    }
+  }
+
+  async mkdir(dirPath, options = { recursive: true }) {
+    // S3 doesn't have directories, but we can create a placeholder object
+    const params = {
+      Bucket: this.bucketName,
+      Key: dirPath.endsWith('/') ? dirPath : dirPath + '/',
+      Body: '',
+    };
+    try {
+      await this.s3.upload(params).promise();
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:mkdir', { dirPath, options });
+    } catch (error) {
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:mkdir:error', {
+          dirPath,
+          error: error.message,
+        });
+      throw error;
+    }
+  }
+
+  async copy(sourcePath, destPath) {
+    const params = {
+      Bucket: this.bucketName,
+      CopySource: `${this.bucketName}/${sourcePath}`,
+      Key: destPath,
+    };
+    try {
+      await this.s3.copyObject(params).promise();
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:copy', { sourcePath, destPath });
+    } catch (error) {
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:copy:error', {
+          sourcePath,
+          destPath,
+          error: error.message,
+        });
+      throw error;
+    }
+  }
+
+  async move(sourcePath, destPath) {
+    await this.copy(sourcePath, destPath);
+    await this.delete(sourcePath);
+    if (this.eventEmitter_)
+      this.eventEmitter_.emit('filing:move', { sourcePath, destPath });
+  }
+
+  async stat(filePath) {
+    const params = {
+      Bucket: this.bucketName,
+      Key: filePath,
+    };
+    try {
+      const data = await this.s3.headObject(params).promise();
+      const result = {
+        size: data.ContentLength,
+        isFile: () => true,
+        isDirectory: () => false,
+        mtime: data.LastModified,
+        ctime: data.LastModified,
+        atime: data.LastModified,
+        mode: 0o644
+      };
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:stat', { filePath, stats: result });
+      return result;
+    } catch (error) {
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:stat:error', {
+          filePath,
+          error: error.message,
+        });
+      throw error;
+    }
+  }
+
+  async readdir(dirPath) {
+    return this.listDetailed(dirPath);
+  }
+
+  async listDetailed(dirPath) {
+    const params = {
+      Bucket: this.bucketName,
+      Prefix: dirPath,
+    };
+    try {
+      const data = await this.s3.listObjectsV2(params).promise();
+      const detailed = data.Contents ? data.Contents.map((item) => ({
+        name: path.basename(item.Key),
+        path: item.Key,
+        size: item.Size,
+        isFile: true,
+        isDirectory: false,
+        mtime: item.LastModified,
+        ctime: item.LastModified,
+        atime: item.LastModified,
+        mode: 0o644
+      })) : [];
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:listDetailed', { dirPath, files: detailed });
+      return detailed;
+    } catch (error) {
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:listDetailed:error', {
+          dirPath,
+          error: error.message,
+        });
+      throw error;
+    }
+  }
+
+  async ensureDir(dirPath) {
+    return this.mkdir(dirPath);
+  }
+
+  async rename(sourcePath, destPath) {
+    return this.move(sourcePath, destPath);
+  }
+
+  async unlink(filePath) {
+    return this.delete(filePath);
   }
 }
 

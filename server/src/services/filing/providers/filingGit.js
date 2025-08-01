@@ -113,6 +113,94 @@ class FilingGitProvider {
     }
   }
 
+  async upload(filePath, content) {
+    return this.create(filePath, content);
+  }
+
+  async download(filePath) {
+    return this.read(filePath);
+  }
+
+  async remove(filePath) {
+    return this.delete(filePath);
+  }
+
+  async exists(filePath) {
+    const absolutePath = this._resolvePath(filePath);
+    return fs.pathExists(absolutePath);
+  }
+
+  async mkdir(dirPath, options = { recursive: true }) {
+    const absolutePath = this._resolvePath(dirPath);
+    return fs.ensureDir(absolutePath);
+  }
+
+  async copy(sourcePath, destPath) {
+    const sourceAbsolutePath = this._resolvePath(sourcePath);
+    const destAbsolutePath = this._resolvePath(destPath);
+    return fs.copy(sourceAbsolutePath, destAbsolutePath);
+  }
+
+  async move(sourcePath, destPath) {
+    const sourceAbsolutePath = this._resolvePath(sourcePath);
+    const destAbsolutePath = this._resolvePath(destPath);
+    return fs.move(sourceAbsolutePath, destAbsolutePath);
+  }
+
+  async stat(filePath) {
+    const absolutePath = this._resolvePath(filePath);
+    const stats = await fs.stat(absolutePath);
+    return {
+      size: stats.size,
+      isFile: stats.isFile(),
+      isDirectory: stats.isDirectory(),
+      mtime: stats.mtime,
+      ctime: stats.ctime,
+      atime: stats.atime,
+      mode: stats.mode
+    };
+  }
+
+  async readdir(dirPath) {
+    return this.listDetailed(dirPath);
+  }
+
+  async listDetailed(dirPath) {
+    const absolutePath = this._resolvePath(dirPath);
+    const files = await fs.readdir(absolutePath);
+    const detailed = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(absolutePath, file);
+        const stats = await fs.stat(filePath);
+        return {
+          name: file,
+          path: path.join(dirPath, file),
+          size: stats.size,
+          isFile: stats.isFile(),
+          isDirectory: stats.isDirectory(),
+          mtime: stats.mtime,
+          ctime: stats.ctime,
+          atime: stats.atime,
+          mode: stats.mode
+        };
+      })
+    );
+    return detailed;
+  }
+
+  async ensureDir(dirPath) {
+    const absolutePath = this._resolvePath(dirPath);
+    return fs.ensureDir(absolutePath);
+  }
+
+  async rename(sourcePath, destPath) {
+    return this.move(sourcePath, destPath);
+  }
+
+  async unlink(filePath) {
+    return this.delete(filePath);
+  }
+
   destroy() {
     if (this.fetchIntervalId) {
       clearInterval(this.fetchIntervalId);
