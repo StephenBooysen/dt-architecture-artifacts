@@ -19,7 +19,6 @@ module.exports = (options, eventEmitter, workflow) => {
     try {
       const openApiContent = fs.readFileSync(openApiPath, 'utf8');
       openApiSpec = JSON.parse(openApiContent);
-      console.log('Workflow service loaded OpenAPI spec with title:', openApiSpec.info?.title);
     } catch (error) {
       console.error('Failed to load OpenAPI specification:', error);
     }

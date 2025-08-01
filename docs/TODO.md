@@ -8,14 +8,16 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
-- Subscribe to changes and notify in notification popup
-- Markdown - Tree drag files into folders
-- Bug Files greater than 10mb failing
+- Extensions to have login
+- VSCode extensions
+- Bug Files greater than 10mb failing - todo
+- Workspaces concept that can user different storage solutions (Private, Public, Enterprise)
 - File manager for folders 
 - File manager for git
 - Show who is looking at the page (socket.io)
 - View: Have a knowledge view that has no editing
-- Workspaces concept that can user different storage solutions (Private, Public, Enterprise)
+- Subscribe to changes and notify in notification popup
+- Markdown - Tree drag files into folders
 
 #### Server
 - Security: Roles and permissions (read, write, backoffice) - done
