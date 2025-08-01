@@ -26,7 +26,7 @@ function createWindow() {
 
   // Load the app
   const startUrl = isDev 
-    ? 'http://localhost:3000' 
+    ? 'http://localhost:3002' 
     : `file://${path.join(__dirname, 'build/index.html')}`;
   
   mainWindow.loadURL(startUrl);
@@ -56,7 +56,7 @@ function createWindow() {
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
     const parsedUrl = new URL(navigationUrl);
     
-    if (parsedUrl.origin !== 'http://localhost:3000' && parsedUrl.origin !== 'http://localhost:5000') {
+    if (parsedUrl.origin !== 'http://localhost:3002' && parsedUrl.origin !== 'http://localhost:5000') {
       event.preventDefault();
       shell.openExternal(navigationUrl);
     }
@@ -187,7 +187,7 @@ app.on('web-contents-created', (event, contents) => {
   contents.on('will-navigate', (event, navigationUrl) => {
     const parsedUrl = new URL(navigationUrl);
     
-    if (parsedUrl.origin !== 'http://localhost:3000' && parsedUrl.origin !== 'http://localhost:5000') {
+    if (parsedUrl.origin !== 'http://localhost:3002' && parsedUrl.origin !== 'http://localhost:5000') {
       event.preventDefault();
     }
   });

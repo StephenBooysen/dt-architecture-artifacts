@@ -1,0 +1,22 @@
+{
+  "short_name": "Architecture Editor",
+  "name": "Architecture Artifacts Editor (Electron)",
+  "description": "Desktop application for Architecture Artifacts Editor with comprehensive file management and Git integration",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["productivity", "developer", "documentation"],
+  "lang": "en",
+  "dir": "ltr"
+}

@@ -78,9 +78,6 @@ function AppContent() {
   const [isResizing, setIsResizing] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
-  const [defaultEditorMode, setDefaultEditorMode] = useState(() => {
-    return localStorage.getItem('editorDefaultMode') || 'edit';
-  });
   const [templates, setTemplates] = useState([]);
   const [isTemplatesLoading, setIsTemplatesLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -130,6 +127,115 @@ function AppContent() {
     }
   }, [loading, isAuthenticated]);
 
+  // Set up periodic sync to catch external changes
+  useEffect(() => {
+    if (isAuthenticated && files.length > 0) {
+      const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
+      
+      return () => clearInterval(syncInterval);
+    }
+  }, [isAuthenticated, files.length]);
+
+  // Tree manipulation utilities for local updates
+  const findNodeInTree = (tree, path) => {
+    for (const node of tree) {
+      if (node.path === path) {
+        return node;
+      }
+      if (node.type === 'directory' && node.children) {
+        const found = findNodeInTree(node.children, path);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const findParentInTree = (tree, childPath) => {
+    const pathParts = childPath.split('/');
+    if (pathParts.length === 1) return null; // Root level
+    
+    const parentPath = pathParts.slice(0, -1).join('/');
+    return findNodeInTree(tree, parentPath);
+  };
+
+  const addNodeToTree = (tree, newNode, parentPath = null) => {
+    const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
+    
+    if (!parentPath) {
+      // Add to root level
+      newTree.push(newNode);
+      return sortTree(newTree);
+    }
+    
+    const parent = findNodeInTree(newTree, parentPath);
+    if (parent && parent.type === 'directory') {
+      if (!parent.children) {
+        parent.children = [];
+      }
+      parent.children.push(newNode);
+      parent.children = sortTree(parent.children);
+    } else {
+      // If parent not found, try to create parent structure or add to root
+      console.warn(`Parent path ${parentPath} not found, adding to root`);
+      newTree.push(newNode);
+      return sortTree(newTree);
+    }
+    
+    return newTree;
+  };
+
+  const removeNodeFromTree = (tree, targetPath) => {
+    const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
+    
+    const removeFromLevel = (nodes) => {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].path === targetPath) {
+          nodes.splice(i, 1);
+          return true;
+        }
+        if (nodes[i].type === 'directory' && nodes[i].children) {
+          if (removeFromLevel(nodes[i].children)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    removeFromLevel(newTree);
+    return newTree;
+  };
+
+  const updateNodeInTree = (tree, targetPath, updates) => {
+    const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
+    
+    const updateInLevel = (nodes) => {
+      for (const node of nodes) {
+        if (node.path === targetPath) {
+          Object.assign(node, updates);
+          return true;
+        }
+        if (node.type === 'directory' && node.children) {
+          if (updateInLevel(node.children)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    updateInLevel(newTree);
+    return newTree;
+  };
+
+  const sortTree = (nodes) => {
+    return [...nodes].sort((a, b) => {
+      if (a.type === 'directory' && b.type === 'file') return -1;
+      if (a.type === 'file' && b.type === 'directory') return 1;
+      return a.name.localeCompare(b.name);
+    });
+  };
+
   const loadFiles = async (force = false) => {
     try {
       setIsLoading(true);
@@ -144,6 +250,22 @@ function AppContent() {
       toast.error('Failed to load files');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Periodic sync with server to catch external changes
+  const syncFiles = async () => {
+    try {
+      const fileTree = await fetchFiles();
+      const updatedTree = diffAndUpdateTree(files, fileTree);
+      
+      // Only update if tree actually changed (silent sync)
+      if (JSON.stringify(updatedTree) !== JSON.stringify(files)) {
+        setFiles(updatedTree);
+      }
+    } catch (error) {
+      // Silent failure for background sync
+      console.warn('Background sync failed:', error);
     }
   };
 
@@ -198,7 +320,14 @@ function AppContent() {
       setFileData(data);
       setFileContent(data.content || '');
       setHasChanges(false);
-      setCurrentView('files');
+      
+      // Check if this is a template file and set editing state
+      setIsEditingTemplate(filePath.startsWith('templates/'));
+      
+      // Switch to files view to show the editor (from any view)
+      if (currentView !== 'files') {
+        setCurrentView('files');
+      }
       
       // Handle downloadable files
       if (data.downloadable) {
@@ -265,95 +394,138 @@ function AppContent() {
   };
 
   const handleCreateFolder = async (folderPath) => {
+    // Optimistic update - add folder to tree immediately
+    const pathParts = folderPath.split('/');
+    const folderName = pathParts[pathParts.length - 1];
+    const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
+    
+    const newFolder = {
+      name: folderName,
+      type: 'directory',
+      path: folderPath,
+      children: []
+    };
+    
+    // Update tree locally first
+    const updatedTree = addNodeToTree(files, newFolder, parentPath);
+    setFiles(updatedTree);
+    
+    // Expand all parent folders of the newly created folder  
+    const newExpanded = new Set(expandedFolders);
+    for (let i = 0; i < pathParts.length; i++) {
+      const parentPath = pathParts.slice(0, i + 1).join('/');
+      newExpanded.add(parentPath);
+    }
+    setExpandedFolders(newExpanded);
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       await createFolder(folderPath);
-      
-      // Expand all parent folders of the newly created folder
-      const pathParts = folderPath.split('/');
-      const newExpanded = new Set(expandedFolders);
-      
-      // Add all parent paths to expanded set
-      for (let i = 0; i < pathParts.length; i++) {
-        const parentPath = pathParts.slice(0, i + 1).join('/');
-        newExpanded.add(parentPath);
-      }
-      
-      setExpandedFolders(newExpanded);
-      await loadFiles(true); // Force refresh after creating folder
       toast.success('Folder created successfully');
     } catch (error) {
+      // Rollback on error - remove the folder from tree
+      setFiles(files);
       toast.error('Failed to create folder');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleCreateFile = async (filePath, templateContent = '') => {
+    // Optimistic update - add file to tree immediately
+    const pathParts = filePath.split('/');
+    const fileName = pathParts[pathParts.length - 1];
+    const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
+    
+    const newFile = {
+      name: fileName,
+      type: 'file',
+      path: filePath,
+      fileType: 'markdown' // Assume markdown for now
+    };
+    
+    // Update tree locally first
+    const updatedTree = addNodeToTree(files, newFile, parentPath);
+    setFiles(updatedTree);
+    
+    // Expand all parent folders of the newly created file
+    const newExpanded = new Set(expandedFolders);
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      const parentPath = pathParts.slice(0, i + 1).join('/');
+      newExpanded.add(parentPath);
+    }
+    setExpandedFolders(newExpanded);
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       await createFile(filePath, templateContent);
-      
-      // Expand all parent folders of the newly created file
-      const pathParts = filePath.split('/');
-      const newExpanded = new Set(expandedFolders);
-      
-      // Add all parent directory paths to expanded set (exclude the file itself)
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        const parentPath = pathParts.slice(0, i + 1).join('/');
-        newExpanded.add(parentPath);
-      }
-      
-      setExpandedFolders(newExpanded);
-      await loadFiles(true); // Force refresh after creating file
       toast.success('File created successfully');
       // Automatically open the newly created file
       await handleFileSelect(filePath);
     } catch (error) {
+      // Rollback on error - remove the file from tree
+      setFiles(files);
       toast.error('Failed to create file');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleDeleteItem = async (itemPath) => {
+    // Store original tree for rollback
+    const originalTree = files;
+    
+    // Optimistic update - remove item from tree immediately
+    const updatedTree = removeNodeFromTree(files, itemPath);
+    setFiles(updatedTree);
+    
+    // If the deleted item was the currently selected file, clear the selection
+    if (selectedFile === itemPath) {
+      setSelectedFile(null);
+      setFileContent('');
+      setFileData(null);
+      setHasChanges(false);
+    }
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       await deleteItem(itemPath);
-      await loadFiles(true); // Force refresh after deleting item
-      
-      // If the deleted item was the currently selected file, clear the selection
-      if (selectedFile === itemPath) {
-        setSelectedFile(null);
-        setFileContent('');
-        setFileData(null);
-        setHasChanges(false);
-      }
-      
       toast.success('Item deleted successfully');
     } catch (error) {
+      // Rollback on error - restore original tree
+      setFiles(originalTree);
       toast.error('Failed to delete item');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleRenameItem = async (itemPath, newName) => {
+    // Store original tree for rollback
+    const originalTree = files;
+    
+    // Calculate new path
+    const pathParts = itemPath.split('/');
+    pathParts[pathParts.length - 1] = newName;
+    const newPath = pathParts.join('/');
+    
+    // Optimistic update - rename item in tree immediately
+    const updatedTree = updateNodeInTree(files, itemPath, {
+      name: newName,
+      path: newPath
+    });
+    setFiles(updatedTree);
+    
+    // If the renamed item was the currently selected file, update the selection
+    if (selectedFile === itemPath) {
+      setSelectedFile(newPath);
+    }
+    
     try {
-      setIsLoading(true);
+      // Make API call to persist on server
       const result = await renameItem(itemPath, newName);
-      await loadFiles(true); // Force refresh after renaming item
-      
-      // If the renamed item was the currently selected file, update the selection
-      if (selectedFile === itemPath) {
-        setSelectedFile(result.newPath);
-      }
-      
       toast.success('Item renamed successfully');
     } catch (error) {
+      // Rollback on error - restore original tree and selection
+      setFiles(originalTree);
+      if (selectedFile === newPath) {
+        setSelectedFile(itemPath);
+      }
       toast.error('Failed to rename item');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -400,16 +572,39 @@ function AppContent() {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  const handleEditorModeChange = useCallback((mode) => {
-    setDefaultEditorMode(mode);
-    localStorage.setItem('editorDefaultMode', mode);
-  }, []);
 
   const handleFileUpload = useCallback(async (filePath) => {
-    // Refresh file tree after upload
-    await loadFiles(true);
+    // Optimistic update - add uploaded file to tree immediately
+    const pathParts = filePath.split('/');
+    const fileName = pathParts[pathParts.length - 1];
+    const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
+    
+    // Detect file type from extension
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    let fileType = 'unknown';
+    if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].includes(`.${extension}`)) {
+      fileType = 'image';
+    } else if (extension === 'pdf') {
+      fileType = 'pdf';
+    } else if (['.txt', '.json', '.xml', '.csv', '.log', '.js', '.ts', '.css', '.html'].includes(`.${extension}`)) {
+      fileType = 'text';
+    } else if (['.md', '.markdown'].includes(`.${extension}`)) {
+      fileType = 'markdown';
+    }
+    
+    const newFile = {
+      name: fileName,
+      type: 'file',
+      path: filePath,
+      fileType: fileType
+    };
+    
+    // Update tree locally
+    const updatedTree = addNodeToTree(files, newFile, parentPath);
+    setFiles(updatedTree);
+    
     toast.success('File uploaded successfully');
-  }, []);
+  }, [files]);
 
   const handleFolderToggle = useCallback((folderPath, isExpanded) => {
     const newExpanded = new Set(expandedFolders);
@@ -437,6 +632,9 @@ function AppContent() {
     try {
       await createTemplate(templateData);
       await loadTemplates();
+      // Return to templates list view after creating
+      setCurrentView('templates');
+      setIsEditingTemplate(false);
     } catch (error) {
       throw error;
     }
@@ -446,6 +644,9 @@ function AppContent() {
     try {
       await updateTemplate(templateName, templateData);
       await loadTemplates();
+      // Return to templates list view after editing
+      setCurrentView('templates');
+      setIsEditingTemplate(false);
     } catch (error) {
       throw error;
     }
@@ -463,6 +664,8 @@ function AppContent() {
   const handleTemplateSelect = async (template, action = 'use') => {
     if (action === 'edit') {
       // Edit template in main editor
+      setCurrentView('files'); // Switch to files view to show the editor
+      setIsEditingTemplate(true);
       setSelectedFile(`templates/${template.name}`);
       setFileContent(template.content || '');
       setFileData({
@@ -471,6 +674,14 @@ function AppContent() {
         fileType: 'markdown',
         isTemplate: true
       });
+      setHasChanges(false);
+    } else if (action === 'view') {
+      // Show templates list view
+      setCurrentView('templates');
+      setIsEditingTemplate(false);
+      setSelectedFile(null);
+      setFileContent('');
+      setFileData(null);
       setHasChanges(false);
     } else {
       // Use template (existing functionality)
@@ -494,9 +705,6 @@ function AppContent() {
         setSearchSuggestions(fileSuggestions.slice(0, 5)); // Limit to 5 file suggestions
         setSearchResults(contentResults.slice(0, 10)); // Limit to 10 content results
         setShowSearchResults(true);
-        if (fileSuggestions.length > 0 || contentResults.length > 0) {
-          setCurrentView('search');
-        }
       } catch (error) {
         console.error('Error fetching search results:', error);
         setSearchSuggestions([]);
@@ -521,8 +729,8 @@ function AppContent() {
       
       setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
       setSearchResults(contentResults.slice(0, 20)); // More content results on submit
-      setShowSearchResults(true);
-      setCurrentView('search');
+      setShowSearchResults(false); // Hide dropdown
+      setCurrentView('search'); // Switch to search results view
     } catch (error) {
       console.error('Error searching:', error);
       toast.error('Search failed');
@@ -592,6 +800,14 @@ function AppContent() {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchSuggestions([]);
+    setSearchResults([]);
+    setShowSearchResults(false);
+    setCurrentView('files');
+  };
+
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -610,13 +826,12 @@ function AppContent() {
       <div className="app">
         <div className="d-flex justify-content-center align-items-center" style={{height: '100vh'}}>
           <div className="text-center">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
               <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
               <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
               <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
             </svg>
-            <div className="spinner-border text-primary mb-3" role="status"></div>
-            <h5 className="text-confluence-text">Architecture Artifacts Editor</h5>
+            <h4 className="text-confluence-text mb-2">Architecture Artifacts Editor</h4>
             <p className="text-muted">Loading application...</p>
           </div>
         </div>
@@ -709,14 +924,19 @@ function AppContent() {
                 <i className={`bi ${sidebarCollapsed ? 'bi-layout-sidebar' : 'bi-aspect-ratio'}`}></i>
               </button>
               
-              <a className="navbar-brand fw-medium me-3 d-flex align-items-center" href="#">
+              <button 
+                className="btn btn-link navbar-brand fw-medium me-3 d-flex align-items-center text-decoration-none border-0 bg-transparent p-0"
+                onClick={() => setCurrentView('home')}
+                style={{ cursor: 'pointer' }}
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="me-2">
                   <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
                   <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
                   <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
                 </svg>
                 Architecture Artifacts Editor
-              </a>
+              </button>
+              
               
               <div className="flex-grow-1 me-3">
                 <div className="position-relative">
@@ -738,10 +958,10 @@ function AppContent() {
                   </button>
                   
                   {showSearchResults && (searchSuggestions.length > 0 || searchResults.length > 0) && (
-                    <div className="position-absolute w-100 bg-white border rounded-bottom shadow-sm mt-1" style={{zIndex: 1050, maxHeight: '300px', overflowY: 'auto'}}>
+                    <div className="position-absolute w-100 border rounded-bottom shadow-sm mt-1 search-dropdown" style={{zIndex: 1050, maxHeight: '300px', overflowY: 'auto'}}>
                       {searchSuggestions.length > 0 && (
                         <div>
-                          <div className="px-3 py-2 bg-light border-bottom small text-muted">Files</div>
+                          <div className="px-3 py-2 border-bottom small text-muted search-section-header">Files</div>
                           {searchSuggestions.map((file, index) => (
                             <div
                               key={index}
@@ -760,7 +980,7 @@ function AppContent() {
                       
                       {searchResults.length > 0 && (
                         <div>
-                          <div className="px-3 py-2 bg-light border-bottom small text-muted">Content Results</div>
+                          <div className="px-3 py-2 border-bottom small text-muted search-section-header">Content Results</div>
                           {searchResults.map((result, index) => (
                             <div
                               key={index}
@@ -779,26 +999,12 @@ function AppContent() {
               </div>
 
               <div className="d-flex align-items-center gap-3">
-                <div className="d-flex align-items-center gap-2 editor-mode-toggle">
-                  
-                  <select
-                    id="editor-mode-select"
-                    value={defaultEditorMode}
-                    onChange={(e) => handleEditorModeChange(e.target.value)}
-                    className="form-select form-select-sm"
-                  >
-                    <option value="edit">Edit</option>
-                    <option value="preview">Preview</option>
-                    <option value="split">Split View</option>
-                  </select>
-                </div>
-                
                 <button
                   className="btn btn-outline-secondary btn-sm"
-                  onClick={toggleTheme}
-                  title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                  onClick={() => setCurrentView('home')}
+                  title="Home"
                 >
-                  <i className={`bi ${isDark ? 'bi-sun' : 'bi-moon'}`}></i>
+                  <i className="bi bi-house"></i>
                 </button>
                 
                 {isAuthenticated ? (
@@ -816,12 +1022,6 @@ function AppContent() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      className="btn btn-outline-secondary btn-sm"
-                      onClick={logout}
-                    >
-                      Logout
-                    </button>
                   </>
                 ) : (
                   <>
@@ -832,12 +1032,31 @@ function AppContent() {
                       Login
                     </button>
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-primary btn-sm me-2"
                       onClick={() => setShowRegisterModal(true)}
                     >
                       Register
                     </button>
                   </>
+                )}
+                
+                <button
+                  className="btn btn-outline-secondary btn-sm me-2"
+                  onClick={toggleTheme}
+                  title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                >
+                  <i className={`bi ${isDark ? 'bi-sun' : 'bi-moon'}`}></i>
+                </button>
+                
+                {isAuthenticated && (
+                  <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={logout}
+                    title="Logout"
+                  >
+                    <i className="bi bi-box-arrow-right me-1"></i>
+                    Logout
+                  </button>
                 )}
               </div>
             </div>
@@ -902,30 +1121,22 @@ function AppContent() {
         {!sidebarCollapsed && (
           <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
             <div className="sidebar-content">
-            <FileTree
-              files={files}
-              onFileSelect={handleFileSelect}
-              selectedFile={selectedFile}
-              isLoading={isLoading}
-              onCreateFolder={handleCreateFolder}
-              onCreateFile={handleCreateFile}
-              onDeleteItem={handleDeleteItem}
-              onRenameItem={handleRenameItem}
-              onFileUpload={handleFileUpload}
-              expandedFolders={expandedFolders}
-              onFolderToggle={handleFolderToggle}
-              onPublish={() => setShowPublishModal(true)}
-              hasChanges={hasChanges}
-            />
-            <TemplateManager
-              templates={templates}
-              onTemplateSelect={handleTemplateSelect}
-              onTemplateCreate={handleTemplateCreate}
-              onTemplateEdit={handleTemplateEdit}
-              onTemplateDelete={handleTemplateDelete}
-              isLoading={isTemplatesLoading}
-              selectedFile={selectedFile}
-            />
+              <FileTree
+                files={files}
+                onFileSelect={handleFileSelect}
+                selectedFile={selectedFile}
+                isLoading={isLoading}
+                onCreateFolder={handleCreateFolder}
+                onCreateFile={handleCreateFile}
+                onDeleteItem={handleDeleteItem}
+                onRenameItem={handleRenameItem}
+                onFileUpload={handleFileUpload}
+                expandedFolders={expandedFolders}
+                onFolderToggle={handleFolderToggle}
+                onPublish={() => setShowPublishModal(true)}
+                hasChanges={hasChanges}
+                onViewChange={handleViewChange}
+              />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
           </aside>
@@ -989,7 +1200,6 @@ function AppContent() {
               fileName={selectedFile}
               isLoading={isFileLoading}
               onRename={handleRenameItem}
-              defaultMode={defaultEditorMode}
               fileData={fileData}
               onSave={handleSave}
               hasChanges={hasChanges}
