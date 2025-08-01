@@ -4,12 +4,12 @@
 
 The Enterprise Architecture Data Platform is a comprehensive solution designed to aggregate, correlate, and present enterprise architecture data from multiple sources. By integrating data from ARIS (business process modeling) and Jira (project management), the platform creates a unified view of applications, technologies, integrations, business capabilities, and strategic initiatives.
 
-**Key Value Proposition:** Transform disparate enterprise data into actionable insights for better architectural decision-making and strategic planning.
+**Key Value Proposition:** Bring together sources (Architecture, Business, code) of information and make them available to people to make better products and decisions.
 
 ## Product Overview
 
 ### Vision Statementa
-To provide enterprise architects and business stakeholders with a single source of truth for enterprise architecture data, enabling better strategic decisions through comprehensive visibility into technology landscapes, business capabilities, and project initiatives.
+To provide people with a single source of truth for enterprise knowledge, enabling better  decisions through comprehensive visibility into technology landscapes, business capabilities, and project initiatives.
 
 ### Success Metrics
 - **Data Integration Accuracy:** 99.5% successful data sync rate from source systems
@@ -24,6 +24,8 @@ To provide enterprise architects and business stakeholders with a single source 
 - **Solution Architects:** Require detailed application and integration mapping
 - **Business Analysts:** Need visibility into business capability coverage and gaps
 - **IT Leadership:** Require strategic oversight and portfolio management insights
+- **Engineers** Require information to build effective systems.
+
 
 ### Secondary Users
 - **Project Managers:** Need understanding of technology dependencies for project planning
@@ -120,12 +122,6 @@ To provide enterprise architects and business stakeholders with a single source 
 - **Rate Limiting:** Configurable rate limits per user/role
 - **Documentation:** OpenAPI 3.0 specification with interactive documentation
 
-#### 3.2 GraphQL Interface
-- **Requirement:** Flexible query interface for complex data relationships
-- **Capabilities:** 
-  - Single endpoint for complex queries
-  - Real-time subscriptions for data changes
-  - Automatic schema generation from data models
 
 ### 4. Search and Query Engine
 
