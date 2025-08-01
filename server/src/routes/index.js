@@ -642,7 +642,7 @@ router.delete('/files{/*path}', requireAuth, async (req, res) => {
 
 router.delete('/folders{/*path}', async (req, res) => {
   try {
-    const folderPath = req.params.path[0] || '';
+    const folderPath = req.params.path || '';
     const fullPath = path.join(contentDir, folderPath);
     if (!fullPath.startsWith(contentDir)) {
       return res.status(403).json({error: 'Access denied'});
@@ -658,7 +658,7 @@ router.delete('/folders{/*path}', async (req, res) => {
 
 router.put('/rename{/*path}', async (req, res) => {
   try {
-    const oldPath = req.params.path[0] || '';
+    const oldPath = req.params.path || '';
     const {newName} = req.body;
     
     if (!newName) {

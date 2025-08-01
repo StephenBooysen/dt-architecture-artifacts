@@ -35,6 +35,11 @@
 - Ms word to markdown - done
 - MS powerpoint to markdown - done
 
+### Phase 1: Bugs
+
+
+
+
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
 - Subscribe to changes and notify in notification popup
@@ -43,7 +48,7 @@
 - File manager for folders 
 - File manager for git
 - Show who is looking at the page (socket.io)
-- View:Have a knowledge view that has no editing
+- View: Have a knowledge view that has no editing
 
 #### Server
 - Security: Roles and permissions (read, write, backoffice) - done
