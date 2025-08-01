@@ -479,6 +479,25 @@ textarea.form-control {
   flex-direction: column;
 }
 
+/* Allow scrolling when displaying any dashboard-style views */
+.editor-section:has(.home-view),
+.editor-section:has(.recent-files-view),
+.editor-section:has(.starred-files-view),
+.editor-section:has(.search-results-view),
+.editor-section:has(.templates-list-view) {
+  overflow-y: auto;
+}
+
+/* Fallback for browsers that don't support :has() */
+.home-view,
+.recent-files-view,
+.starred-files-view,
+.search-results-view,
+.templates-list-view {
+  overflow-y: auto;
+  height: 100%;
+}
+
 .markdown-editor {
   height: 100%;
   display: flex;
@@ -700,6 +719,187 @@ mark {
 .text-confluence-subtle { color: var(--confluence-text-subtle) !important; }
 .bg-confluence-primary { background-color: var(--confluence-primary) !important; }
 .bg-confluence-bg { background-color: var(--confluence-bg) !important; }
+.confluence-bg { background-color: var(--confluence-bg) !important; }
 .bg-confluence-card { background-color: var(--confluence-bg-card) !important; }
 .border-confluence { border-color: var(--confluence-border) !important; }
 .border-confluence-subtle { border-color: var(--confluence-border-subtle) !important; }
+
+/* File Viewer Styles */
+.pdf-viewer,
+.image-viewer,
+.text-viewer,
+.file-downloader {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--confluence-bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 1.5rem;
+}
+
+.pdf-viewer-header,
+.image-viewer-header,
+.text-viewer-header,
+.file-downloader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--confluence-border);
+  flex-shrink: 0;
+}
+
+.pdf-viewer-header h3,
+.image-viewer-header h3,
+.text-viewer-header h3,
+.file-downloader-header h3 {
+  margin: 0;
+  color: var(--confluence-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.pdf-viewer-controls,
+.image-viewer-controls,
+.text-viewer-controls,
+.file-downloader-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pdf-viewer-content,
+.image-viewer-content,
+.text-viewer-content,
+.file-downloader-content {
+  flex: 1;
+  position: relative;
+  background-color: var(--confluence-bg);
+  border: 1px solid var(--confluence-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* File downloader specific styles */
+.download-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.file-icon-large {
+  opacity: 0.6;
+}
+
+/* Dark theme adjustments for viewers */
+[data-theme="dark"] .pdf-viewer,
+[data-theme="dark"] .image-viewer,
+[data-theme="dark"] .text-viewer,
+[data-theme="dark"] .file-downloader {
+  background-color: var(--confluence-bg-card);
+}
+
+[data-theme="dark"] .pdf-viewer-content,
+[data-theme="dark"] .image-viewer-content,
+[data-theme="dark"] .text-viewer-content,
+[data-theme="dark"] .file-downloader-content {
+  background-color: var(--confluence-bg);
+  border-color: var(--confluence-border);
+}
+
+/* Responsive adjustments for viewers */
+@media (max-width: 768px) {
+  .pdf-viewer,
+  .image-viewer,
+  .text-viewer,
+  .file-downloader {
+    padding: 1rem;
+  }
+  
+  .pdf-viewer-header,
+  .image-viewer-header,
+  .text-viewer-header,
+  .file-downloader-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .pdf-viewer-controls,
+  .image-viewer-controls,
+  .text-viewer-controls,
+  .file-downloader-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Home page section cards */
+.home-section-card {
+  background-color: var(--confluence-bg-card);
+  border: 1px solid var(--confluence-border-subtle);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.home-section-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.08);
+  border-color: var(--confluence-border);
+}
+
+.home-section-card .card-body {
+  background-color: var(--confluence-bg-card);
+}
+
+/* Dark theme adjustments for home cards */
+[data-theme="dark"] .home-section-card {
+  background-color: var(--confluence-bg-card);
+  border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .home-section-card:hover {
+  box-shadow: 0 4px 12px rgba(76, 154, 255, 0.15);
+  border-color: var(--confluence-border-subtle);
+}
+
+[data-theme="dark"] .home-section-card .card-body {
+  background-color: var(--confluence-bg-card);
+}
+
+/* Home dashboard blocks - like Settings block */
+.home-dashboard-block {
+  background-color: var(--confluence-bg);
+  border: 1px solid var(--confluence-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  min-height: 100px;
+}
+
+.home-dashboard-block:hover {
+  background-color: var(--confluence-border-subtle);
+  border-color: var(--confluence-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.badge-sm {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Dark theme adjustments for dashboard blocks */
+[data-theme="dark"] .home-dashboard-block {
+  background-color: var(--confluence-bg);
+  border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .home-dashboard-block:hover {
+  background-color: var(--confluence-border-subtle);
+  border-color: var(--confluence-primary);
+}

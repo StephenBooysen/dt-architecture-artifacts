@@ -106,94 +106,65 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible }) => {
   };
 
   const FileCard = ({ file, onClick, icon = "bi-file-earmark-text", iconColor = "text-primary" }) => (
-    <div
-      className="col-md-4 mb-3"
-      onClick={() => onClick(file.path)}
-      style={{ cursor: 'pointer' }}
-    >
+    <div className="col-lg-3 col-md-4 col-6 mb-3">
       <div
-        className="card h-100 border-0 shadow-sm"
-        style={{
-          background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} !important`,
-          transition: 'all 0.2s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.transform = 'translateY(-2px)';
-          e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.transform = 'translateY(0)';
-          e.target.style.boxShadow = '';
-        }}
+        className="home-dashboard-block p-3 h-100 cursor-pointer"
+        onClick={() => onClick(file.path)}
+        style={{ cursor: 'pointer' }}
       >
-        <div className="card-body p-3">
-          <div className="d-flex align-items-start mb-2">
-            <i className={`bi ${icon} ${iconColor} me-2 flex-shrink-0`} style={{ fontSize: '1.2rem' }}></i>
-            <div className="flex-grow-1 min-width-0">
-              <h6 className="card-title mb-1 text-confluence-text text-truncate" title={file.name}>
-                {file.name.replace('.md', '')}
-              </h6>
-              <p className="card-text small text-muted mb-1">
-                {file.path.includes('/') ? file.path.substring(0, file.path.lastIndexOf('/')) : 'Root'}
-              </p>
-              {file.lastEditDate && (
-                <p className="card-text small text-muted mb-0">
-                  {formatDate(file.lastEditDate)}
-                </p>
-              )}
-              {file.starredAt && (
-                <p className="card-text small text-muted mb-0">
-                  Starred {formatDate(file.starredAt)}
-                </p>
-              )}
-            </div>
+        <div className="d-flex align-items-start mb-2">
+          <i className={`bi ${icon} ${iconColor} me-2 flex-shrink-0`} style={{ fontSize: '1.2rem' }}></i>
+          <div className="flex-grow-1 min-width-0">
+            <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={file.name}>
+              {file.name.replace('.md', '')}
+            </h6>
           </div>
+        </div>
+        <div className="small text-muted">
+          <div className="mb-1 text-truncate">
+            <i className="bi bi-folder2 me-1"></i>
+            {file.path.includes('/') ? file.path.substring(0, file.path.lastIndexOf('/')) : 'Root'}
+          </div>
+          {file.lastEditDate && (
+            <div className="text-truncate">
+              <i className="bi bi-clock me-1"></i>
+              {formatDate(file.lastEditDate)}
+            </div>
+          )}
+          {file.starredAt && (
+            <div className="text-truncate">
+              <i className="bi bi-star me-1"></i>
+              Starred {formatDate(file.starredAt)}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 
   const TemplateCard = ({ template, onClick }) => (
-    <div
-      className="col-md-4 mb-3"
-      onClick={() => onClick(template)}
-      style={{ cursor: 'pointer' }}
-    >
+    <div className="col-lg-3 col-md-4 col-6 mb-3">
       <div
-        className="card h-100 border-0 shadow-sm"
-        style={{
-          background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} !important`,
-          transition: 'all 0.2s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.transform = 'translateY(-2px)';
-          e.target.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.transform = 'translateY(0)';
-          e.target.style.boxShadow = '';
-        }}
+        className="home-dashboard-block p-3 h-100 cursor-pointer"
+        onClick={() => onClick(template)}
+        style={{ cursor: 'pointer' }}
       >
-        <div className="card-body p-3">
-          <div className="d-flex align-items-start mb-2">
-            <i className="bi bi-file-earmark-code text-success me-2 flex-shrink-0" style={{ fontSize: '1.2rem' }}></i>
-            <div className="flex-grow-1 min-width-0">
-              <h6 className="card-title mb-1 text-confluence-text text-truncate" title={template.name}>
-                {template.name}
-              </h6>
-              {template.description && (
-                <p className="card-text small text-muted mb-1 text-truncate" title={template.description}>
-                  {template.description}
-                </p>
-              )}
-              <p className="card-text small text-muted mb-0">
-                Template
-              </p>
+        <div className="d-flex align-items-start mb-2">
+          <i className="bi bi-file-earmark-code text-success me-2 flex-shrink-0" style={{ fontSize: '1.2rem' }}></i>
+          <div className="flex-grow-1 min-width-0">
+            <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={template.name}>
+              {template.name}
+            </h6>
+          </div>
+        </div>
+        <div className="small text-muted">
+          {template.description && (
+            <div className="mb-1 text-truncate" style={{ minHeight: '1.2rem' }} title={template.description}>
+              {template.description}
             </div>
+          )}
+          <div className="d-flex align-items-center justify-content-between">
+            <span className="badge bg-success badge-sm">Template</span>
           </div>
         </div>
       </div>
@@ -211,7 +182,7 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible }) => {
 
   if (isLoading) {
     return (
-      <div className="home-view p-4">
+      <div className="home-view p-4 confluence-bg">
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
           <div className="spinner-border text-primary me-2" role="status"></div>
           <span className="text-muted">Loading dashboard...</span>
@@ -221,7 +192,7 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible }) => {
   }
 
   return (
-    <div className="home-view p-4">
+    <div className="home-view p-4 confluence-bg">
       {/* Header */}
       <div className="row mb-4">
         <div className="col-12">
@@ -247,91 +218,103 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible }) => {
       )}
 
       {/* Recent Files Section */}
-      <div className="row mb-5">
+      <div className="row mb-4">
         <div className="col-12">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h3 className="h4 text-confluence-text mb-0">
-              <i className="bi bi-clock-history me-2"></i>
-              Recent Files
-            </h3>
-            <button 
-              className="btn btn-outline-secondary btn-sm"
-              onClick={loadHomeData}
-              disabled={isLoading}
-            >
-              <i className="bi bi-arrow-clockwise me-1"></i>
-              Refresh
-            </button>
-          </div>
-          <div className="row">
-            {recentFiles.length > 0 ? (
-              recentFiles.map((file, index) => (
-                <FileCard 
-                  key={`recent-${index}`} 
-                  file={file} 
-                  onClick={handleFileClick}
-                />
-              ))
-            ) : (
-              <EmptySection 
-                icon="bi-clock-history" 
-                message="No recent markdown files found" 
-              />
-            )}
+          <div className="card shadow-sm border-0 home-section-card">
+            <div className="card-body p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h3 className="h4 text-confluence-text mb-0">
+                  <i className="bi bi-clock-history me-2"></i>
+                  Recent Files
+                </h3>
+                <button 
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={loadHomeData}
+                  disabled={isLoading}
+                >
+                  <i className="bi bi-arrow-clockwise me-1"></i>
+                  Refresh
+                </button>
+              </div>
+              <div className="row">
+                {recentFiles.length > 0 ? (
+                  recentFiles.map((file, index) => (
+                    <FileCard 
+                      key={`recent-${index}`} 
+                      file={file} 
+                      onClick={handleFileClick}
+                    />
+                  ))
+                ) : (
+                  <EmptySection 
+                    icon="bi-clock-history" 
+                    message="No recent markdown files found" 
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Starred Files Section */}
-      <div className="row mb-5">
+      <div className="row mb-4">
         <div className="col-12">
-          <h3 className="h4 text-confluence-text mb-3">
-            <i className="bi bi-star-fill me-2 text-warning"></i>
-            Starred Files
-          </h3>
-          <div className="row">
-            {starredFiles.length > 0 ? (
-              starredFiles.map((file, index) => (
-                <FileCard 
-                  key={`starred-${index}`} 
-                  file={file} 
-                  onClick={handleFileClick}
-                  icon="bi-star-fill"
-                  iconColor="text-warning"
-                />
-              ))
-            ) : (
-              <EmptySection 
-                icon="bi-star" 
-                message="No starred markdown files found" 
-              />
-            )}
+          <div className="card shadow-sm border-0 home-section-card">
+            <div className="card-body p-4">
+              <h3 className="h4 text-confluence-text mb-4">
+                <i className="bi bi-star-fill me-2 text-warning"></i>
+                Starred Files
+              </h3>
+              <div className="row">
+                {starredFiles.length > 0 ? (
+                  starredFiles.map((file, index) => (
+                    <FileCard 
+                      key={`starred-${index}`} 
+                      file={file} 
+                      onClick={handleFileClick}
+                      icon="bi-star-fill"
+                      iconColor="text-warning"
+                    />
+                  ))
+                ) : (
+                  <EmptySection 
+                    icon="bi-star" 
+                    message="No starred markdown files found" 
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Templates Section */}
-      <div className="row mb-5">
+      <div className="row mb-4">
         <div className="col-12">
-          <h3 className="h4 text-confluence-text mb-3">
-            <i className="bi bi-file-earmark-code me-2 text-success"></i>
-            Templates
-          </h3>
-          <div className="row">
-            {templates.length > 0 ? (
-              templates.map((template, index) => (
-                <TemplateCard 
-                  key={`template-${index}`} 
-                  template={template} 
-                  onClick={handleTemplateClick}
-                />
-              ))
-            ) : (
-              <EmptySection 
-                icon="bi-file-earmark-code" 
-                message="No templates found" 
-              />
-            )}
+          <div className="card shadow-sm border-0 home-section-card">
+            <div className="card-body p-4">
+              <h3 className="h4 text-confluence-text mb-4">
+                <i className="bi bi-file-earmark-code me-2 text-success"></i>
+                Templates
+              </h3>
+              <div className="row">
+                {templates.length > 0 ? (
+                  templates.map((template, index) => (
+                    <TemplateCard 
+                      key={`template-${index}`} 
+                      template={template} 
+                      onClick={handleTemplateClick}
+                    />
+                  ))
+                ) : (
+                  <EmptySection 
+                    icon="bi-file-earmark-code" 
+                    message="No templates found" 
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -81,7 +81,7 @@ const RecentFilesView = ({ onFileSelect, isVisible }) => {
 
   if (isLoading) {
     return (
-      <div className="recent-files-view p-4">
+      <div className="recent-files-view p-4 confluence-bg">
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
           <div className="spinner-border text-primary me-2" role="status"></div>
           <span className="text-muted">Loading recent files...</span>
@@ -91,7 +91,7 @@ const RecentFilesView = ({ onFileSelect, isVisible }) => {
   }
 
   return (
-    <div className="recent-files-view p-4">
+    <div className="recent-files-view p-4 confluence-bg">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="h4 text-confluence-text mb-1">Recent Files</h2>
@@ -133,78 +133,61 @@ const RecentFilesView = ({ onFileSelect, isVisible }) => {
       )}
 
       {recentFiles.length === 0 && !error ? (
-        <div className="text-center py-5">
-          <div className="mb-3">
-            <i className="bi bi-clock-history text-muted" style={{ fontSize: '3rem' }}></i>
+        <div className="card shadow-sm border-0 home-section-card">
+          <div className="card-body p-4 text-center py-5">
+            <div className="mb-3">
+              <i className="bi bi-clock-history text-muted" style={{ fontSize: '3rem' }}></i>
+            </div>
+            <h3 className="h5 text-muted mb-2">No recent files</h3>
+            <p className="text-muted mb-0">
+              No files have been edited in the last {selectedDays} {selectedDays === 1 ? 'day' : 'days'}.
+            </p>
           </div>
-          <h3 className="h5 text-muted mb-2">No recent files</h3>
-          <p className="text-muted mb-0">
-            No files have been edited in the last {selectedDays} {selectedDays === 1 ? 'day' : 'days'}.
-          </p>
         </div>
       ) : (
-        <div className="recent-files-list">
-          {recentFiles.map((file, index) => (
-            <div
-              key={file.path}
-              className="recent-file-item p-3 mb-2 border rounded cursor-pointer"
-              onClick={() => handleFileClick(file.path)}
-              style={{
-                cursor: 'pointer',
-                backgroundColor: 'var(--file-item-bg, #ffffff)',
-                border: '1px solid var(--file-item-border, #dee2e6)',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = 'var(--file-item-hover-bg, #f8f9fa)';
-                e.target.style.transform = 'translateY(-1px)';
-                e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'var(--file-item-bg, #ffffff)';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
-              }}
-            >
-              <div className="d-flex justify-content-between align-items-start">
-                <div className="flex-grow-1">
-                  <div className="d-flex align-items-center mb-2">
-                    <i className="bi bi-file-earmark-text text-primary me-2"></i>
-                    <h6 className="mb-0 text-confluence-text fw-medium">{file.name}</h6>
-                  </div>
-                  
-                  <div className="small text-muted mb-2">
-                    <span className="me-3">
-                      <i className="bi bi-folder2 me-1"></i>
-                      {file.path.includes('/') ? file.path.substring(0, file.path.lastIndexOf('/')) : 'Root'}
-                    </span>
-                  </div>
-                  
-                  <div className="d-flex align-items-center gap-3 small">
-                    <span className="text-muted">
-                      <i className="bi bi-person-circle me-1"></i>
-                      Last edited by <strong className="text-confluence-text">{file.lastEditBy}</strong>
-                    </span>
-                    <span className="text-muted">
-                      <i className="bi bi-clock me-1"></i>
-                      {formatDate(file.lastEditDate)} at {formatTime(file.lastEditDate)}
-                    </span>
-                  </div>
-                  
-                  {file.recentEdits && file.recentEdits.length > 1 && (
-                    <div className="mt-2 small text-muted">
-                      <i className="bi bi-pencil-square me-1"></i>
-                      {file.recentEdits.length} edit{file.recentEdits.length !== 1 ? 's' : ''} in the last {selectedDays} days
+        <div className="card shadow-sm border-0 home-section-card">
+          <div className="card-body p-4">
+            <div className="row">
+              {recentFiles.map((file, index) => (
+                <div key={file.path} className="col-lg-3 col-md-4 col-6 mb-3">
+                  <div
+                    className="home-dashboard-block p-3 h-100 cursor-pointer"
+                    onClick={() => handleFileClick(file.path)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="d-flex align-items-start mb-2">
+                      <i className="bi bi-file-earmark-text text-primary me-2 flex-shrink-0" style={{ fontSize: '1.2rem' }}></i>
+                      <div className="flex-grow-1 min-width-0">
+                        <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={file.name}>
+                          {file.name.replace('.md', '')}
+                        </h6>
+                      </div>
                     </div>
-                  )}
+                    <div className="small text-muted">
+                      <div className="mb-1 text-truncate">
+                        <i className="bi bi-folder2 me-1"></i>
+                        {file.path.includes('/') ? file.path.substring(0, file.path.lastIndexOf('/')) : 'Root'}
+                      </div>
+                      <div className="mb-1 text-truncate">
+                        <i className="bi bi-person-circle me-1"></i>
+                        {file.lastEditBy}
+                      </div>
+                      <div className="text-truncate">
+                        <i className="bi bi-clock me-1"></i>
+                        {formatDate(file.lastEditDate)}
+                      </div>
+                      {file.recentEdits && file.recentEdits.length > 1 && (
+                        <div className="mt-1 text-truncate">
+                          <i className="bi bi-pencil-square me-1"></i>
+                          {file.recentEdits.length} edit{file.recentEdits.length !== 1 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="text-end">
-                  <i className="bi bi-chevron-right text-muted"></i>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
       

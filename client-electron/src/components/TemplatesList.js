@@ -230,36 +230,36 @@ const TemplatesList = ({
   };
 
   return (
-    <div className="templates-list-container">
-      <div className="templates-header">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h2 className="h3 mb-1">Templates</h2>
-            <p className="text-muted mb-0">
-              Displaying {templates.length} template{templates.length !== 1 ? 's' : ''}.
-            </p>
-          </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowCreateModal(true)}
-            disabled={isLoading}
-          >
-            <i className="bi bi-plus-lg me-2"></i>
-            Create Template
-          </button>
+    <div className="templates-list-view p-4 confluence-bg">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 className="h4 text-confluence-text mb-1">Templates</h2>
+          <p className="text-muted mb-0">
+            Displaying {templates.length} template{templates.length !== 1 ? 's' : ''}.
+          </p>
         </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowCreateModal(true)}
+          disabled={isLoading}
+        >
+          <i className="bi bi-plus-lg me-2"></i>
+          Create Template
+        </button>
       </div>
 
-      <div className="templates-content">
-        {isLoading ? (
-          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+      {isLoading ? (
+        <div className="home-section-card">
+          <div className="card-body d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
             <div className="text-center">
               <div className="spinner-border text-primary mb-3" role="status"></div>
               <p className="text-muted">Loading templates...</p>
             </div>
           </div>
-        ) : templates.length === 0 ? (
-          <div className="text-center" style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+        </div>
+      ) : templates.length === 0 ? (
+        <div className="home-section-card">
+          <div className="card-body text-center" style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
             <div className="mb-4">
               <i className="bi bi-file-earmark-plus display-1 text-muted"></i>
             </div>
@@ -273,67 +273,92 @@ const TemplatesList = ({
               Create Your First Template
             </button>
           </div>
-        ) : (
-          <div className="row g-4">
-            {templates.map((template) => (
-              <div key={template.name} className="col-12 col-md-6 col-lg-4">
-                <div className="card template-card h-100">
-                  <div className="card-body d-flex flex-column">
-                    <div className="d-flex align-items-start mb-3">
-                      <div className="template-icon me-3">
-                        <i className={`bi ${getTemplateIcon(template).icon} fs-2 ${getTemplateIcon(template).color}`}></i>
+        </div>
+      ) : (
+        <div className="home-section-card">
+          <div className="card-body">
+            <div className="row">
+              {templates.map((template) => (
+                <div key={template.name} className="col-lg-3 col-md-4 col-6 mb-3">
+                  <div className="home-dashboard-block p-3 h-100 position-relative">
+                    <div 
+                      className="h-100 cursor-pointer"
+                      onClick={() => handleTemplateClick(template)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="d-flex align-items-start mb-2">
+                        <i className={`bi ${getTemplateIcon(template).icon} ${getTemplateIcon(template).color} me-2 flex-shrink-0`} style={{ fontSize: '1.2rem' }}></i>
+                        <div className="flex-grow-1 min-width-0">
+                          <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={template.name}>
+                            {template.name.replace('.md', '')}
+                          </h6>
+                        </div>
                       </div>
-                      <div className="flex-grow-1">
-                        <h5 className="card-title mb-1">{template.name}</h5>
-                        <span className="badge bg-secondary small">{getTemplateCategory(template)}</span>
+                      <div className="small text-muted">
+                        <div className="mb-1">
+                          <span className="badge bg-secondary badge-sm">{getTemplateCategory(template)}</span>
+                        </div>
+                        {template.description && (
+                          <div className="mb-2 text-truncate" title={template.description} style={{ fontSize: '0.7rem', opacity: '0.8' }}>
+                            {template.description}
+                          </div>
+                        )}
+                        <div className="d-flex gap-1 mt-2">
+                          <button
+                            className="btn btn-success btn-sm flex-fill"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUseTemplate(template);
+                            }}
+                            title="Use Template"
+                          >
+                            <i className="bi bi-plus-circle me-1"></i>
+                            Use
+                          </button>
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTemplateClick(template);
+                            }}
+                            title="Edit Template"
+                          >
+                            <i className="bi bi-pencil"></i>
+                          </button>
+                        </div>
                       </div>
+                    </div>
+                    <div className="position-absolute" style={{ top: '0.5rem', right: '0.5rem', zIndex: 10 }}>
                       <div className="btn-group">
                         <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() => openEditModal(template)}
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(template);
+                          }}
                           title="Edit Settings"
                         >
                           <i className="bi bi-gear"></i>
                         </button>
                         <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDeleteTemplate(template.name)}
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTemplate(template.name);
+                          }}
                           title="Delete Template"
                         >
                           <i className="bi bi-trash"></i>
                         </button>
                       </div>
                     </div>
-                    
-                    {template.description && (
-                      <p className="card-text text-muted small mb-3">{template.description}</p>
-                    )}
-                    
-                    <div className="mt-auto">
-                      <div className="d-grid gap-2">
-                        <button
-                          className="btn btn-success"
-                          onClick={() => handleUseTemplate(template)}
-                        >
-                          <i className="bi bi-plus-circle me-2"></i>
-                          Use Template
-                        </button>
-                        <button
-                          className="btn btn-outline-primary"
-                          onClick={() => handleTemplateClick(template)}
-                        >
-                          <i className="bi bi-pencil me-2"></i>
-                          Edit Template
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Create Template Modal */}
       {showCreateModal && (

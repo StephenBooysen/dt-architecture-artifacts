@@ -43,30 +43,31 @@ const FileDownloader = ({ filePath, fileName, fileSize }) => {
     <div className="file-downloader">
       <div className="file-downloader-header">
         <h3>{fileName}</h3>
-        <p className="file-info">Size: {formatFileSize(fileSize)}</p>
+        <div className="file-downloader-controls">
+          <button
+            className="btn btn-primary"
+            onClick={handleDownload}
+            title="Download file"
+          >
+            <i className="bi bi-download me-1"></i>
+            Download
+          </button>
+        </div>
       </div>
       
       <div className="file-downloader-content">
-        <div className="download-info">
-          <div className="file-icon">
-            📄
-          </div>
-          <div className="file-details">
-            <p className="file-name">{fileName}</p>
-            <p className="file-size">{formatFileSize(fileSize)}</p>
-            <p className="file-description">
-              This file type is not supported for preview. Click download to save it to your computer.
+        <div className="download-placeholder">
+          <div className="text-center p-5">
+            <div className="file-icon-large mb-3">
+              <i className="bi bi-file-earmark text-muted" style={{ fontSize: '4rem' }}></i>
+            </div>
+            <h5 className="text-confluence-text mb-2">{fileName}</h5>
+            <p className="text-muted mb-3">Size: {formatFileSize(fileSize)}</p>
+            <p className="text-muted">
+              This file type is not supported for preview.<br />
+              Click the download button above to save it to your computer.
             </p>
           </div>
-        </div>
-        
-        <div className="download-actions">
-          <button
-            className="btn btn-primary download-btn"
-            onClick={handleDownload}
-          >
-            Download File
-          </button>
         </div>
       </div>
     </div>
