@@ -42,7 +42,6 @@
 - Bug Files greater than 10mb failing
 - File manager for folders 
 - File manager for git
-- Chat
 - Show who is looking at the page (socket.io)
 - View:Have a knowledge view that has no editing
 

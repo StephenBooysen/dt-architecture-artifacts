@@ -16,7 +16,7 @@
     "test:client": "cd client && npm test",
     "test:server": "jest --config tests/jest.config.js --testPathPattern=server"
   },
-  "author": "",
+  "author": "Stephen Booysen",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.856.0",

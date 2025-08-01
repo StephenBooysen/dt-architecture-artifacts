@@ -31,6 +31,11 @@ import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
 import TemplateManager from './components/TemplateManager';
+import TemplatesList from './components/TemplatesList';
+import RecentFilesView from './components/RecentFilesView';
+import StarredFilesView from './components/StarredFilesView';
+import SearchResultsView from './components/SearchResultsView';
+import HomeView from './components/HomeView';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
 import {
@@ -66,7 +71,10 @@ function AppContent() {
   const [isFileLoading, setIsFileLoading] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('architecture-artifacts-sidebar-width');
+    return saved ? parseInt(saved, 10) : 300;
+  });
   const [isResizing, setIsResizing] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
@@ -83,6 +91,8 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
+  const [isEditingTemplate, setIsEditingTemplate] = useState(false);
 
   useEffect(() => {
     // Only load data if user is authenticated
@@ -188,6 +198,7 @@ function AppContent() {
       setFileData(data);
       setFileContent(data.content || '');
       setHasChanges(false);
+      setCurrentView('files');
       
       // Handle downloadable files
       if (data.downloadable) {
@@ -360,6 +371,7 @@ function AppContent() {
     
     if (newWidth >= minWidth && newWidth <= maxWidth) {
       setSidebarWidth(newWidth);
+      localStorage.setItem('architecture-artifacts-sidebar-width', newWidth.toString());
     }
   }, [isResizing]);
 
@@ -482,6 +494,9 @@ function AppContent() {
         setSearchSuggestions(fileSuggestions.slice(0, 5)); // Limit to 5 file suggestions
         setSearchResults(contentResults.slice(0, 10)); // Limit to 10 content results
         setShowSearchResults(true);
+        if (fileSuggestions.length > 0 || contentResults.length > 0) {
+          setCurrentView('search');
+        }
       } catch (error) {
         console.error('Error fetching search results:', error);
         setSearchSuggestions([]);
@@ -507,6 +522,7 @@ function AppContent() {
       setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
       setSearchResults(contentResults.slice(0, 20)); // More content results on submit
       setShowSearchResults(true);
+      setCurrentView('search');
     } catch (error) {
       console.error('Error searching:', error);
       toast.error('Search failed');
@@ -563,6 +579,17 @@ function AppContent() {
   const handleSwitchToLogin = () => {
     setShowRegisterModal(false);
     setShowLoginModal(true);
+  };
+
+  const handleViewChange = (view) => {
+    setCurrentView(view);
+    // Clear selected file when switching to special views
+    if (view === 'recent' || view === 'starred' || view === 'search' || view === 'home') {
+      setSelectedFile(null);
+      setFileContent('');
+      setFileData(null);
+      setHasChanges(false);
+    }
   };
 
   // Close search results when clicking outside
@@ -816,6 +843,59 @@ function AppContent() {
             </div>
           </div>
         </nav>
+        
+        {/* Navigation bar for view switching */}
+        <div className="view-navigation border-bottom bg-light py-2">
+          <div className="container-fluid">
+            <div className="d-flex align-items-center gap-2">
+              <button
+                className={`btn btn-sm ${currentView === 'home' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => handleViewChange('home')}
+              >
+                <i className="bi bi-house me-1"></i>
+                Home
+              </button>
+              <button
+                className={`btn btn-sm ${currentView === 'files' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => handleViewChange('files')}
+                disabled={!selectedFile}
+              >
+                <i className="bi bi-file-earmark-text me-1"></i>
+                Files
+              </button>
+              <button
+                className={`btn btn-sm ${currentView === 'recent' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => handleViewChange('recent')}
+              >
+                <i className="bi bi-clock-history me-1"></i>
+                Recent
+              </button>
+              <button
+                className={`btn btn-sm ${currentView === 'starred' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => handleViewChange('starred')}
+              >
+                <i className="bi bi-star me-1"></i>
+                Starred
+              </button>
+              <button
+                className={`btn btn-sm ${currentView === 'templates' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => handleViewChange('templates')}
+              >
+                <i className="bi bi-file-earmark-code me-1"></i>
+                Templates
+              </button>
+              {(searchResults.length > 0 || searchSuggestions.length > 0) && (
+                <button
+                  className={`btn btn-sm ${currentView === 'search' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  onClick={() => handleViewChange('search')}
+                >
+                  <i className="bi bi-search me-1"></i>
+                  Search Results ({searchResults.length + searchSuggestions.length})
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </header>
 
       <main className="app-main">
@@ -852,17 +932,69 @@ function AppContent() {
         )}
 
         <section className="editor-section">
-          <MarkdownEditor
-            content={fileContent}
-            onChange={handleContentChange}
-            fileName={selectedFile}
-            isLoading={isFileLoading}
-            onRename={handleRenameItem}
-            defaultMode={defaultEditorMode}
-            fileData={fileData}
-            onSave={handleSave}
-            hasChanges={hasChanges}
-          />
+          {currentView === 'home' && !selectedFile && (
+            <HomeView
+              onFileSelect={handleFileSelect}
+              onTemplateSelect={handleTemplateSelect}
+              isVisible={currentView === 'home'}
+            />
+          )}
+          
+          {currentView === 'recent' && (
+            <RecentFilesView
+              onFileSelect={handleFileSelect}
+              isVisible={currentView === 'recent'}
+            />
+          )}
+          
+          {currentView === 'starred' && (
+            <StarredFilesView
+              onFileSelect={handleFileSelect}
+              isVisible={currentView === 'starred'}
+            />
+          )}
+          
+          {currentView === 'templates' && (
+            <TemplatesList
+              templates={templates}
+              onTemplateEdit={handleTemplateEdit}
+              onTemplateCreate={handleTemplateCreate}
+              onTemplateDelete={handleTemplateDelete}
+              onTemplateSelect={handleTemplateSelect}
+              isLoading={isTemplatesLoading}
+            />
+          )}
+          
+          {currentView === 'search' && (
+            <SearchResultsView
+              onFileSelect={handleFileSelect}
+              searchResults={searchResults}
+              fileSuggestions={searchSuggestions}
+              searchQuery={searchQuery}
+              isLoading={false}
+              onClearSearch={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+                setSearchSuggestions([]);
+                setShowSearchResults(false);
+                setCurrentView('home');
+              }}
+            />
+          )}
+          
+          {(selectedFile || currentView === 'files') && (
+            <MarkdownEditor
+              content={fileContent}
+              onChange={handleContentChange}
+              fileName={selectedFile}
+              isLoading={isFileLoading}
+              onRename={handleRenameItem}
+              defaultMode={defaultEditorMode}
+              fileData={fileData}
+              onSave={handleSave}
+              hasChanges={hasChanges}
+            />
+          )}
         </section>
       </main>
 
