@@ -17,7 +17,12 @@
         </svg>
         <h1>Architecture Artifacts - Edge</h1>
       </div>
-      <div class="settings-btn" id="settingsBtn" title="Settings">⚙️</div>
+      <div class="header-actions">
+        <div class="user-status" id="userStatus" title="Click to sign in">
+          <span class="status-text" id="statusText">Sign In</span>
+        </div>
+        <div class="settings-btn" id="settingsBtn" title="Settings">⚙️</div>
+      </div>
     </header>
 
     <div class="search-section">
@@ -73,6 +78,36 @@
         <h3 id="previewTitle" class="preview-title"></h3>
       </div>
       <div class="preview-content" id="previewContent"></div>
+    </div>
+
+    <div class="login-panel" id="loginPanel" style="display: none;">
+      <div class="login-header">
+        <h3>Sign In</h3>
+        <button id="closeLoginBtn" class="close-button">×</button>
+      </div>
+      <div class="login-content">
+        <div class="setting-group">
+          <label for="username">Username:</label>
+          <input 
+            type="text" 
+            id="username" 
+            placeholder="Enter your username"
+          >
+        </div>
+        <div class="setting-group">
+          <label for="password">Password:</label>
+          <input 
+            type="password" 
+            id="password" 
+            placeholder="Enter your password"
+          >
+        </div>
+        <div class="login-actions">
+          <button id="loginBtn" class="login-button">Sign In</button>
+          <button id="logoutBtn" class="logout-button" style="display: none;">Sign Out</button>
+        </div>
+        <div class="auth-status" id="authStatus"></div>
+      </div>
     </div>
 
     <div class="settings-panel" id="settingsPanel" style="display: none;">

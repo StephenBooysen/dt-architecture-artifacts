@@ -3,10 +3,13 @@ class ArchitectureArtifactsExtension {
     this.serverUrl = 'http://localhost:5000';
     this.currentView = 'search'; // 'search' or 'preview'
     this.debounceTimer = null;
+    this.currentUser = null;
+    this.isAuthenticated = false;
     
     this.initializeElements();
     this.loadSettings();
     this.bindEvents();
+    this.checkAuthStatus();
   }
 
   initializeElements() {
@@ -24,7 +27,18 @@ class ArchitectureArtifactsExtension {
     this.previewContent = document.getElementById('previewContent');
     this.backBtn = document.getElementById('backBtn');
     
-    // Settings elementsnpm audit fix --force
+    // Auth elements
+    this.userStatus = document.getElementById('userStatus');
+    this.statusText = document.getElementById('statusText');
+    this.loginPanel = document.getElementById('loginPanel');
+    this.closeLoginBtn = document.getElementById('closeLoginBtn');
+    this.usernameInput = document.getElementById('username');
+    this.passwordInput = document.getElementById('password');
+    this.loginBtn = document.getElementById('loginBtn');
+    this.logoutBtn = document.getElementById('logoutBtn');
+    this.authStatus = document.getElementById('authStatus');
+    
+    // Settings elements
     this.settingsBtn = document.getElementById('settingsBtn');
     this.settingsPanel = document.getElementById('settingsPanel');
     this.closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -93,6 +107,34 @@ class ArchitectureArtifactsExtension {
       this.showSearchView();
     });
 
+    // Auth events
+    this.userStatus.addEventListener('click', () => {
+      if (this.isAuthenticated) {
+        this.performLogout();
+      } else {
+        this.showLogin();
+      }
+    });
+
+    this.closeLoginBtn.addEventListener('click', () => {
+      this.hideLogin();
+    });
+
+    this.loginBtn.addEventListener('click', () => {
+      this.performLogin();
+    });
+
+    this.logoutBtn.addEventListener('click', () => {
+      this.performLogout();
+    });
+
+    this.passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.performLogin();
+      }
+    });
+
     // Settings events
     this.settingsBtn.addEventListener('click', () => {
       this.showSettings();
@@ -157,13 +199,45 @@ class ArchitectureArtifactsExtension {
       return;
     }
 
-    results.forEach(result => {
-      const resultElement = this.createResultElement(result, query);
-      this.resultsList.appendChild(resultElement);
-    });
+    // Separate results by type
+    const fileResults = results.filter(r => r.type === 'file' || r.fileName);
+    const contentResults = results.filter(r => r.type === 'content' || r.preview);
+
+    // Show results count
+    const totalCount = results.length;
+    const countElement = document.createElement('div');
+    countElement.className = 'results-count';
+    countElement.innerHTML = `<small>${totalCount} result${totalCount !== 1 ? 's' : ''} found</small>`;
+    this.resultsList.appendChild(countElement);
+
+    // Display file results if any
+    if (fileResults.length > 0) {
+      const fileHeader = document.createElement('div');
+      fileHeader.className = 'results-section-header';
+      fileHeader.innerHTML = `<strong>File Names (${fileResults.length})</strong>`;
+      this.resultsList.appendChild(fileHeader);
+
+      fileResults.forEach(result => {
+        const resultElement = this.createResultElement(result, query, 'file');
+        this.resultsList.appendChild(resultElement);
+      });
+    }
+
+    // Display content results if any
+    if (contentResults.length > 0) {
+      const contentHeader = document.createElement('div');
+      contentHeader.className = 'results-section-header';
+      contentHeader.innerHTML = `<strong>Content Matches (${contentResults.length})</strong>`;
+      this.resultsList.appendChild(contentHeader);
+
+      contentResults.forEach(result => {
+        const resultElement = this.createResultElement(result, query, 'content');
+        this.resultsList.appendChild(resultElement);
+      });
+    }
   }
 
-  createResultElement(result, query) {
+  createResultElement(result, query, type) {
     const div = document.createElement('div');
     div.className = 'result-item';
     
@@ -171,13 +245,22 @@ class ArchitectureArtifactsExtension {
     const path = result.filePath || result.fileName || '';
     const snippet = result.preview || '';
     
+    // Add file type icon
+    const fileIcon = this.getFileIcon(title);
+    
     // Highlight search terms
     const highlightedSnippet = this.highlightSearchTerms(snippet, query);
+    const highlightedTitle = this.highlightSearchTerms(title, query);
     
     div.innerHTML = `
-      <div class="result-title">${this.escapeHtml(title)}</div>
-      <div class="result-path">${this.escapeHtml(path)}</div>
-      <div class="result-snippet">${highlightedSnippet}</div>
+      <div class="result-header">
+        <div class="result-icon">${fileIcon}</div>
+        <div class="result-info">
+          <div class="result-title">${highlightedTitle}</div>
+          <div class="result-path">${this.escapeHtml(path)}</div>
+        </div>
+      </div>
+      ${snippet ? `<div class="result-snippet">${highlightedSnippet}</div>` : ''}
     `;
 
     div.addEventListener('click', () => {
@@ -185,6 +268,34 @@ class ArchitectureArtifactsExtension {
     });
 
     return div;
+  }
+
+  getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    switch (ext) {
+      case 'md':
+        return '📄';
+      case 'pdf':
+        return '📕';
+      case 'txt':
+        return '📝';
+      case 'json':
+        return '🔧';
+      case 'js':
+      case 'ts':
+        return '⚡';
+      case 'html':
+        return '🌐';
+      case 'css':
+        return '🎨';
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+      case 'gif':
+        return '🖼️';
+      default:
+        return '📄';
+    }
   }
 
   highlightSearchTerms(text, query) {
@@ -289,6 +400,121 @@ class ArchitectureArtifactsExtension {
     this.settingsPanel.style.display = 'none';
   }
 
+  async checkAuthStatus() {
+    try {
+      const response = await fetch(`${this.serverUrl}/api/auth/me`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        this.currentUser = userData;
+        this.isAuthenticated = true;
+        this.updateAuthUI();
+      } else {
+        this.currentUser = null;
+        this.isAuthenticated = false;
+        this.updateAuthUI();
+      }
+    } catch (error) {
+      console.log('Auth check failed:', error);
+      this.currentUser = null;
+      this.isAuthenticated = false;
+      this.updateAuthUI();
+    }
+  }
+
+  async performLogin() {
+    const username = this.usernameInput.value.trim();
+    const password = this.passwordInput.value.trim();
+    
+    if (!username || !password) {
+      this.showAuthMessage('Please enter both username and password', 'error');
+      return;
+    }
+
+    this.loginBtn.disabled = true;
+    this.loginBtn.textContent = 'Signing in...';
+    
+    try {
+      const response = await fetch(`${this.serverUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        this.currentUser = userData;
+        this.isAuthenticated = true;
+        this.updateAuthUI();
+        this.hideLogin();
+        this.showMessage('Successfully signed in', 'success');
+        this.usernameInput.value = '';
+        this.passwordInput.value = '';
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+        this.showAuthMessage(errorData.message || 'Invalid credentials', 'error');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      this.showAuthMessage('Network error. Please check your connection.', 'error');
+    } finally {
+      this.loginBtn.disabled = false;
+      this.loginBtn.textContent = 'Sign In';
+    }
+  }
+
+  async performLogout() {
+    try {
+      await fetch(`${this.serverUrl}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.log('Logout request failed:', error);
+    }
+    
+    this.currentUser = null;
+    this.isAuthenticated = false;
+    this.updateAuthUI();
+    this.showMessage('Successfully signed out', 'success');
+  }
+
+  updateAuthUI() {
+    if (this.isAuthenticated && this.currentUser) {
+      this.statusText.textContent = this.currentUser.username || 'Signed In';
+      this.userStatus.title = 'Click to sign out';
+      this.userStatus.classList.add('authenticated');
+    } else {
+      this.statusText.textContent = 'Sign In';
+      this.userStatus.title = 'Click to sign in';
+      this.userStatus.classList.remove('authenticated');
+    }
+  }
+
+  showLogin() {
+    this.loginPanel.style.display = 'block';
+    this.usernameInput.focus();
+  }
+
+  hideLogin() {
+    this.loginPanel.style.display = 'none';
+    this.authStatus.innerHTML = '';
+  }
+
+  showAuthMessage(message, type = 'info') {
+    const color = type === 'error' ? '#de350b' : type === 'success' ? '#36b37e' : '#6b778c';
+    this.authStatus.innerHTML = `
+      <div style="padding: 8px; margin-top: 8px; color: ${color}; font-size: 12px; text-align: center;">
+        ${message}
+      </div>
+    `;
+  }
+
   showLoading() {
     this.loadingIndicator.style.display = 'flex';
     this.resultsList.style.display = 'none';
@@ -373,6 +599,6 @@ style.textContent = `
       transform: translateX(0);
       opacity: 1;
     }
-  }npm audit fix --force
+  }
 `;
 document.head.appendChild(style);
