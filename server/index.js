@@ -980,7 +980,6 @@ function getSidebarToggleScript() {
     let sidebarCollapsed = false;
     
     function toggleSidebar() {
-      console.log('Toggle sidebar clicked'); // Debug log
       const sidebar = document.getElementById('sidebar');
       const icon = document.getElementById('sidebar-toggle-icon');
       
@@ -995,7 +994,6 @@ function getSidebarToggleScript() {
       }
       
       sidebarCollapsed = !sidebarCollapsed;
-      console.log('Sidebar collapsed:', sidebarCollapsed); // Debug log
       
       if (sidebarCollapsed) {
         sidebar.classList.add('collapsed');
@@ -1098,7 +1096,6 @@ function getThemeToggleScript() {
     }
     
     function toggleTheme() {
-      console.log('Toggle theme clicked'); // Debug log
       const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       
@@ -1389,6 +1386,7 @@ app.get('/services/working', requireServerAuth, (req, res) => {
   });
   res.send(html);
 });
+
 // Workflow Service Page
 app.get('/services/workflow', requireServerAuth, (req, res) => {
   const html = renderComponent('workflow', {

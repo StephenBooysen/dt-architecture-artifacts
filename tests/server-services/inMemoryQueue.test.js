@@ -2,7 +2,7 @@
  * @fileoverview Unit tests for the in-memory queue.
  */
 
-const createQueue = require('../../../../server/src/services/queueing');
+const createQueue = require('../../server/src/services/queueing');
 const EventEmitter = require('events');
 
 describe('InMemoryQueue', () => {

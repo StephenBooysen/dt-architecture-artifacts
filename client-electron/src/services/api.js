@@ -3,11 +3,10 @@
  * 
  * This module provides a comprehensive API client for communicating with the
  * Architecture Artifacts backend. It includes functions for file management,
- * Git operations, and content manipulation with proper error handling.
+ * and content manipulation with proper error handling.
  * 
  * Key features:
  * - File CRUD operations (create, read, update, delete)
- * - Git integration (commit, push, pull, clone, status)
  * - File upload and download functionality
  * - Folder management operations
  * - Centralized axios configuration
@@ -115,48 +114,6 @@ export const saveFile = async (filePath, content) => {
   }
 };
 
-/**
- * Commits changes to git with a message.
- * @param {string} message - The commit message.
- * @return {Promise<Object>} The commit response.
- */
-export const commitChanges = async (message) => {
-  try {
-    const response = await api.post('/commit', {message});
-    return response.data;
-  } catch (error) {
-    console.error('Error committing changes:', error);
-    throw error;
-  }
-};
-
-/**
- * Pushes committed changes to the remote repository.
- * @return {Promise<Object>} The push response.
- */
-export const pushChanges = async () => {
-  try {
-    const response = await api.post('/push');
-    return response.data;
-  } catch (error) {
-    console.error('Error pushing changes:', error);
-    throw error;
-  }
-};
-
-/**
- * Gets the current git status.
- * @return {Promise<Object>} The git status.
- */
-export const getGitStatus = async () => {
-  try {
-    const response = await api.get('/status');
-    return response.data;
-  } catch (error) {
-    console.error('Error getting git status:', error);
-    throw error;
-  }
-};
 
 /**
  * Creates a new folder.
@@ -189,36 +146,6 @@ export const createFile = async (filePath, content = '') => {
   }
 };
 
-/**
- * Clones a git repository into the content directory.
- * @param {string} repoUrl - The repository URL to clone.
- * @param {string} branch - The branch to clone (default: 'main').
- * @return {Promise<Object>} The clone response.
- */
-export const cloneRepository = async (repoUrl, branch = 'main') => {
-  try {
-    const response = await api.post('/clone', {repoUrl, branch});
-    return response.data;
-  } catch (error) {
-    console.error('Error cloning repository:', error);
-    throw error;
-  }
-};
-
-/**
- * Pulls the latest changes from the remote repository.
- * @param {string} branch - The branch to pull (default: 'main').
- * @return {Promise<Object>} The pull response.
- */
-export const pullRepository = async (branch = 'main') => {
-  try {
-    const response = await api.post('/pull', {branch});
-    return response.data;
-  } catch (error) {
-    console.error('Error pulling repository:', error);
-    throw error;
-  }
-};
 
 /**
  * Deletes a file or folder.

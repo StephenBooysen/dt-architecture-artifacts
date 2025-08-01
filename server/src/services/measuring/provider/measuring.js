@@ -32,8 +32,7 @@ class MeasuringService {
    * @returns {Array<{value: number, timestamp: Date}>} - An array of measures within the period.
    */
    _filterMeasuresByPeriod(metricName, startDate, endDate) {
-    console.log(startDate);
-    console.log(endDate);   
+   
     const measures = this.metrics.get(metricName);
     if (!measures) {
       return [];

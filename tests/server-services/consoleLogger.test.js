@@ -3,7 +3,7 @@
  */
 
 const EventEmitter = require('events');
-const createLogger = require('../../../../server/src/services/logging');
+const createLogger = require('../../server/src/services/logging');
 
 describe('ConsoleLogger', () => {
   let logger;

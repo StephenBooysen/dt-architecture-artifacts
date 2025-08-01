@@ -3,14 +3,13 @@
  * 
  * This is the root component that orchestrates the entire Architecture Artifacts
  * editing application. It manages the overall application state including file
- * selection, content editing, Git integration, and user interface layout. The
+ * selection, content editing, and user interface layout. The
  * component provides a complete content management system with file tree navigation,
- * markdown editing capabilities, and integrated version control.
+ * and markdown editing capabilities.
  * 
  * Key features:
  * - File tree navigation with CRUD operations
  * - Multi-format file editing and preview
- * - Integrated Git operations (commit, push, pull, clone)
  * - Resizable sidebar with collapse functionality
  * - Real-time content synchronization
  * - Toast notifications for user feedback
@@ -384,13 +383,13 @@ function AppContent() {
     loadFiles(true); // Force refresh after publishing
   };
 
-  const handleRepositoryUpdate = () => {
-    loadFiles(true); // Force refresh after git operations
+  const handlePublishUpdate = () => {
+    loadFiles(true); // Force refresh after publishing
     setSelectedFile(null);
     setFileContent('');
     setFileData(null);
     setHasChanges(false);
-    setExpandedFolders(new Set()); // Reset expanded folders after git operations
+    setExpandedFolders(new Set()); // Reset expanded folders after publishing
   };
 
   const handleCreateFolder = async (folderPath) => {

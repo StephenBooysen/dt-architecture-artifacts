@@ -1,4 +1,4 @@
-const createMeasuringService = require('../../../../server/src/services/measuring');
+const createMeasuringService = require('../../server/src/services/measuring');
 const EventEmitter = require('events');
 
 describe('MeasuringService', () => {

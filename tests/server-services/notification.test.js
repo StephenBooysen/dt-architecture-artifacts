@@ -1,4 +1,4 @@
-const createNotificationService = require('../../../../server/src/services/notifying');
+const createNotificationService = require('../../server/src/services/notifying');
 const EventEmitter = require('events');
 
 describe('NotificationService', () => {

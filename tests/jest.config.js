@@ -14,8 +14,8 @@ module.exports = {
   
   // Test file patterns
   testMatch: [
-    '**/__tests__/**/*.(js|jsx|ts|tsx)',
-    '**/*.(test|spec).(js|jsx|ts|tsx)'
+    '<rootDir>/**/__tests__/**/*.(js|jsx|ts|tsx)',
+    '<rootDir>/**/*.(test|spec).(js|jsx|ts|tsx)'
   ],
   
   // Module file extensions
@@ -53,8 +53,8 @@ module.exports = {
   // Coverage configuration
   collectCoverage: false,
   collectCoverageFrom: [
-    '../server/**/*.{js,jsx,ts,tsx}',
-    '../client/src/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/../server/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/../client/src/**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/build/**',

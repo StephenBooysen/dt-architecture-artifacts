@@ -1,4 +1,4 @@
-const createSearchService = require('../../../../server/src/services/searching');
+const createSearchService = require('../../server/src/services/searching');
 const EventEmitter = require('events');
 
 describe('SearchService', () => {

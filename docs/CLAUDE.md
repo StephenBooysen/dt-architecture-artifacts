@@ -180,7 +180,6 @@ npm run build
 ### Microservices Architecture
 - **Service Discovery**: Each service registers with the main server
 - **Health Monitoring**: Real-time status checking for all services
-- **Tabbed UI**: Each service has a dedicated management interface
 - **Event-Driven**: Services use EventEmitter for communication
 - **Modular Design**: Services can be independently developed and deployed
 

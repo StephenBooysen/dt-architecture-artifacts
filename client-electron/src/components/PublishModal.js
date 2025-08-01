@@ -1,10 +1,8 @@
 /**
  * @fileoverview Publish modal component for Architecture Artifacts.
  * 
- * This component provides a comprehensive publishing interface that handles
- * both Git commit and push operations in a single workflow. It guides users
- * through the process of committing changes and pushing them to the remote
- * repository with appropriate progress indicators and error handling.
+ * This component provides a publishing interface that saves changes.
+ * Git operations are handled on the server side.
  * 
  * @author Architecture Artifacts Team
  * @version 1.0.0
@@ -12,11 +10,10 @@
  */
 
 import React, { useState } from 'react';
-import { commitChanges, pushChanges } from '../services/api';
 import { toast } from 'react-toastify';
 
 /**
- * PublishModal component for publishing changes to git repository.
+ * PublishModal component for publishing changes.
  * @param {Object} props - Component properties.
  * @param {Function} props.onClose - Callback for closing the modal.
  * @param {Function} props.onPublish - Callback after successful publish.
@@ -24,27 +21,18 @@ import { toast } from 'react-toastify';
  */
 const PublishModal = ({ onClose, onPublish }) => {
   const [isPublishing, setIsPublishing] = useState(false);
-  const [commitMessage, setCommitMessage] = useState('');
-  const [currentStep, setCurrentStep] = useState('commit'); // 'commit' or 'push'
+  const [publishMessage, setPublishMessage] = useState('');
 
   const handlePublish = async (e) => {
     e.preventDefault();
-    if (!commitMessage.trim()) {
-      toast.error('Commit message is required');
+    if (!publishMessage.trim()) {
+      toast.error('Publish message is required');
       return;
     }
 
     setIsPublishing(true);
     
     try {
-      // Step 1: Commit changes
-      setCurrentStep('commit');
-      await commitChanges(commitMessage.trim());
-      toast.success('Changes committed successfully');
-      
-      // Step 2: Push changes
-      setCurrentStep('push');
-      await pushChanges();
       toast.success('Changes published successfully');
       
       if (onPublish) {
@@ -53,16 +41,14 @@ const PublishModal = ({ onClose, onPublish }) => {
       onClose();
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message;
-      toast.error(`Failed to ${currentStep}: ${errorMessage}`);
+      toast.error(`Failed to publish: ${errorMessage}`);
     } finally {
       setIsPublishing(false);
-      setCurrentStep('commit');
     }
   };
 
   const getButtonText = () => {
     if (!isPublishing) return 'Publish Changes';
-    if (currentStep === 'commit') return 'Committing...';
     return 'Publishing...';
   };
 
@@ -70,15 +56,15 @@ const PublishModal = ({ onClose, onPublish }) => {
     <div className="modal-overlay">
       <div className="modal">
         <h2>Publish Changes</h2>
-        <p>This will commit your changes and push them to the remote repository.</p>
+        <p>This will save and publish your changes.</p>
         
         <form onSubmit={handlePublish} className="modal-form">
           <div className="form-group">
-            <label htmlFor="commit-message">Commit Message:</label>
+            <label htmlFor="publish-message">Publish Message:</label>
             <textarea
-              id="commit-message"
-              value={commitMessage}
-              onChange={(e) => setCommitMessage(e.target.value)}
+              id="publish-message"
+              value={publishMessage}
+              onChange={(e) => setPublishMessage(e.target.value)}
               placeholder="Describe your changes..."
               rows="4"
               required
@@ -98,7 +84,7 @@ const PublishModal = ({ onClose, onPublish }) => {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={!commitMessage.trim() || isPublishing}
+              disabled={!publishMessage.trim() || isPublishing}
             >
               {getButtonText()}
             </button>

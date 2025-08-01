@@ -1192,7 +1192,7 @@ class SearchWebview {
         }
 
         function escapeRegex(string) {
-            return string.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
         // Enter key search
