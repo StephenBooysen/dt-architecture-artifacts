@@ -56,6 +56,13 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
   const loadComments = async () => {
     if (!fileName) return;
     
+    // Only load comments for markdown files
+    if (!fileName.endsWith('.md') && !fileName.endsWith('.markdown')) {
+      setComments([]);
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     
@@ -76,6 +83,11 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
    */
   const handleAddComment = async () => {
     if (!newCommentContent.trim() || !isAuthenticated) {
+      return;
+    }
+    
+    // Only allow comments on markdown files
+    if (!fileName.endsWith('.md') && !fileName.endsWith('.markdown')) {
       return;
     }
 
@@ -163,7 +175,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
   };
 
   // Don't render if not visible or not a markdown file
-  if (!isVisible || !fileName || !fileName.endsWith('.md')) {
+  if (!isVisible || !fileName || (!fileName.endsWith('.md') && !fileName.endsWith('.markdown'))) {
     return null;
   }
 

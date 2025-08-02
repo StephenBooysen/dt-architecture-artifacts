@@ -7,7 +7,23 @@ const USERS_FILE = path.join(__dirname, '../../../server-data/users.json');
 class UserStorage {
   constructor() {
     this.users = [];
-    this.loadUsers();
+    this.loadUsersSync();
+  }
+
+  loadUsersSync() {
+    try {
+      const data = require('fs').readFileSync(USERS_FILE, 'utf8');
+      this.users = JSON.parse(data);
+      console.log('Users loaded synchronously:', this.users.length);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        this.users = [];
+        console.log('Users file not found, starting with empty array');
+      } else {
+        console.error('Error loading users:', error);
+        this.users = [];
+      }
+    }
   }
 
   async loadUsers() {
@@ -59,7 +75,10 @@ class UserStorage {
   }
 
   findUserById(id) {
-    return this.users.find(user => user.id === id);
+    console.log('Finding user by ID:', id, 'Users loaded:', this.users.length);
+    const user = this.users.find(user => user.id === id);
+    console.log('Found user:', user ? user.username : 'Not found');
+    return user;
   }
 
   async validatePassword(username, password) {

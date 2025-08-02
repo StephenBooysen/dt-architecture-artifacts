@@ -20,7 +20,8 @@ class FilingGitProvider {
     // Initialize git instance after ensuring the repo exists
     this._initializeRepo().catch(console.error);
 
-    this.fetchIntervalId = setInterval(() => this._periodicFetch(), this.options.fetchInterval);
+    // Temporarily disabled to reduce error noise
+    // this.fetchIntervalId = setInterval(() => this._periodicFetch(), this.options.fetchInterval);
     if (this.eventEmitter_) {
       this.eventEmitter_.emit('FilingGitProvider:Initialized', { localPath: this.options.localPath });
     }

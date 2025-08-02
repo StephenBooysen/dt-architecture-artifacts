@@ -88,7 +88,7 @@ async function getFilingProviderForSpace(spaceName) {
     }
 
     // Validate the provider before caching
-    if (!provider || typeof provider.readFile !== 'function') {
+    if (!provider || typeof provider.read !== 'function') {
       throw new Error(`Failed to create valid filing provider for space: ${spaceName}`);
     }
 
@@ -312,7 +312,7 @@ router.post('/:space/templates', loadFilingProvider, checkSpaceAccess('write'), 
     }
     
     const templatePath = `templates/${name}.json`;
-    await filing.writeFile(templatePath, JSON.stringify(content, null, 2));
+    await filing.create(templatePath, JSON.stringify(content, null, 2));
     res.json({ message: 'Template created successfully', name });
   } catch (error) {
     console.error('Error creating template for space:', error);

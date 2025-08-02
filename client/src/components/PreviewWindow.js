@@ -30,9 +30,10 @@ const PreviewWindow = () => {
 
   useEffect(() => {
     const loadFile = async () => {
-      // Get filename from URL parameters
+      // Get filename and space from URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const fileParam = urlParams.get('file');
+      const spaceParam = urlParams.get('space');
 
       if (fileParam) {
         const decodedFileName = decodeURIComponent(fileParam);
@@ -45,7 +46,7 @@ const PreviewWindow = () => {
         try {
           setIsLoading(true);
           setError('');
-          const fileData = await fetchFile(decodedFileName);
+          const fileData = await fetchFile(decodedFileName, spaceParam);
           setContent(fileData.content || '');
         } catch (err) {
           console.error('Error fetching file:', err);

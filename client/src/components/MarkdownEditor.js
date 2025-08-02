@@ -20,10 +20,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
-import {tomorrow, darcula} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
@@ -34,10 +30,9 @@ import FileDownloader from './FileDownloader';
 import CommentsSection from './CommentsSection';
 import { detectFileType, FILE_TYPES } from '../utils/fileTypeDetector';
 import { getCleanMarkdownContent, injectComments, extractComments } from '../utils/commentParser';
-import { extractMetadata, getCleanMarkdownContentWithoutMetadata, injectMetadata } from '../utils/metadataParser';
-import { getFileMetadata, toggleStarredFile } from '../services/api';
+import { extractMetadata } from '../utils/metadataParser';
+import { toggleStarredFile } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
 /**
@@ -52,11 +47,11 @@ import { toast } from 'react-toastify';
  * @param {Object} props.fileData - Complete file data including type and encoding.
  * @param {Function} props.onSave - Callback for saving the file.
  * @param {boolean} props.hasChanges - Whether the file has unsaved changes.
+ * @param {string} props.currentSpace - The current space name.
  * @return {JSX.Element} The MarkdownEditor component.
  */
-const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileData, onSave, hasChanges}) => {
+const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileData, onSave, hasChanges, currentSpace}) => {
   const { isDark } = useTheme();
-  const { user } = useAuth();
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [cleanContent, setCleanContent] = useState('');
@@ -71,7 +66,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
   const [isResizingComments, setIsResizingComments] = useState(false);
   const [containerRect, setContainerRect] = useState(null);
 
-  const fileType = fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN;
+  const fileType = fileData?.fileType || (fileName ? detectFileType(fileName) : FILE_TYPES.UNKNOWN);
   const isMarkdown = fileType === FILE_TYPES.MARKDOWN;
 
   // Handle comments section resizing
@@ -189,11 +184,14 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
   const handleOpenPreviewWindow = () => {
     if (!fileName) return;
     
-    // Only pass the file path as reference
+    // Pass both file path and space as reference
     const encodedFileName = encodeURIComponent(fileName);
+    const encodedSpace = currentSpace ? encodeURIComponent(currentSpace) : '';
     
     // Open preview in new window
-    const previewUrl = `/preview?file=${encodedFileName}`;
+    const previewUrl = currentSpace 
+      ? `/preview?file=${encodedFileName}&space=${encodedSpace}`
+      : `/preview?file=${encodedFileName}`;
     window.open(previewUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
   };
 

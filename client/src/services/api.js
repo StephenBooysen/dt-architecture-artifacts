@@ -111,7 +111,7 @@ export const downloadFile = async (filePath) => {
 export const saveFile = async (filePath, content, space = null) => {
   try {
     const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
-    const response = await api.post(url, {content});
+    const response = await api.put(url, {content});
     return response.data;
   } catch (error) {
     console.error('Error saving file:', error);
@@ -475,7 +475,7 @@ export const deleteComment = async (filePath, commentId) => {
  */
 export const getRecentFiles = async (days = 7) => {
   try {
-    const response = await api.get(`/recent?days=${days}`);
+    const response = await api.get(`/metadata/recent?days=${days}`);
     return response.data;
   } catch (error) {
     console.error('Error getting recent files:', error);
@@ -489,7 +489,7 @@ export const getRecentFiles = async (days = 7) => {
  */
 export const getStarredFiles = async () => {
   try {
-    const response = await api.get('/starred');
+    const response = await api.get('/metadata/starred');
     return response.data;
   } catch (error) {
     console.error('Error getting starred files:', error);

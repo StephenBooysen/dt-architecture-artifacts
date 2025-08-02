@@ -70,11 +70,63 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
     const filePath = req.params[0] || '';
     const markdownFilePath = `markdown/${filePath}`;
     
-    console.log(`Reading file for space: ${spaceName}, filing type: ${filing.type || 'unknown'}, has readFile: ${typeof filing.readFile}`);
-    console.log(`Available methods: ${Object.getOwnPropertyNames(filing).filter(prop => typeof filing[prop] === 'function')}`);
+    const fileName = path.basename(filePath);
     
-    const content = await filing.readFile(markdownFilePath);
-    res.json({ content, path: filePath });
+    // Simple file type detection
+    const detectFileType = (fileName) => {
+      const extension = path.extname(fileName).toLowerCase();
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+      const textExtensions = ['.txt', '.json', '.xml', '.csv', '.log', '.js', '.ts', '.css', '.html'];
+      const pdfExtensions = ['.pdf'];
+      const markdownExtensions = ['.md', '.markdown'];
+      
+      if (markdownExtensions.includes(extension)) return 'markdown';
+      if (pdfExtensions.includes(extension)) return 'pdf';
+      if (imageExtensions.includes(extension)) return 'image';
+      if (textExtensions.includes(extension)) return 'text';
+      return 'unknown';
+    };
+    
+    const fileType = detectFileType(fileName);
+
+    // Handle different file types
+    if (fileType === 'markdown' || fileType === 'text') {
+      // Read as text
+      const content = await filing.read(markdownFilePath, 'utf8');
+      
+      // For markdown files, return both full content and clean content
+      if (fileType === 'markdown') {
+        const { getCleanMarkdownContent, extractComments } = require('../utils/commentParser');
+        const cleanContent = getCleanMarkdownContent(content);
+        const comments = extractComments(content);
+        
+        res.json({
+          content, // Full content with comments for saving
+          cleanContent, // Clean content for editing
+          comments, // Extracted comments
+          path: filePath, 
+          fileType,
+          hasComments: comments.length > 0
+        });
+      } else {
+        res.json({content, path: filePath, fileType});
+      }
+    } else if (fileType === 'image' || fileType === 'pdf') {
+      // Read as binary and convert to base64
+      const buffer = await filing.read(markdownFilePath);
+      const base64Content = buffer.toString('base64');
+      res.json({content: base64Content, path: filePath, fileType, encoding: 'base64'});
+    } else {
+      // Unknown file type - return file info for download
+      const stats = await filing.stat(markdownFilePath);
+      res.json({
+        path: filePath,
+        fileType,
+        downloadable: true,
+        size: stats.size,
+        lastModified: stats.mtime
+      });
+    }
   } catch (error) {
     console.error('Error reading file for space:', error);
     if (error.message.includes('ENOENT') || error.message.includes('not found')) {
@@ -93,7 +145,7 @@ router.post('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), as
     const { content } = req.body;
     const markdownFilePath = `markdown/${filePath}`;
     
-    await filing.writeFile(markdownFilePath, content || '');
+    await filing.create(markdownFilePath, content || '');
     res.json({ message: 'File created successfully', path: filePath });
   } catch (error) {
     console.error('Error creating file for space:', error);
@@ -109,7 +161,7 @@ router.put('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), asy
     const { content } = req.body;
     const markdownFilePath = `markdown/${filePath}`;
     
-    await filing.writeFile(markdownFilePath, content);
+    await filing.update(markdownFilePath, content);
     res.json({ message: 'File updated successfully', path: filePath });
   } catch (error) {
     console.error('Error updating file for space:', error);
@@ -143,7 +195,7 @@ router.post('/:space/folders', loadFilingProvider, checkSpaceAccess('write'), as
     }
     
     const markdownFolderPath = `markdown/${folderPath}`;
-    await filing.createDirectory(markdownFolderPath);
+    await filing.mkdir(markdownFolderPath, { recursive: true });
     res.json({ message: 'Folder created successfully', path: folderPath });
   } catch (error) {
     console.error('Error creating folder for space:', error);
@@ -216,8 +268,6 @@ router.use('/templates', templateRoutes);
 router.use('/comments', commentRoutes);
 
 // Metadata routes (recent/starred files)
-router.use('/recent', metadataRoutes);
-router.use('/starred', metadataRoutes);
 router.use('/metadata', metadataRoutes);
 
 // Download routes

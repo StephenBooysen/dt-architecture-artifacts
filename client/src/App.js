@@ -72,7 +72,7 @@ function AppContent() {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [draftFiles, setDraftFiles] = useState([]);
-  const [providerInfo, setProviderInfo] = useState({ provider: 'git', supportsDrafts: true });
+  const [providerInfo, setProviderInfo] = useState({ provider: 'local', supportsDrafts: false });
   const [lastSyncCheck, setLastSyncCheck] = useState(null);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('architecture-artifacts-sidebar-width');
@@ -98,9 +98,24 @@ function AppContent() {
   });
   const [isCurrentSpaceReadonly, setIsCurrentSpaceReadonly] = useState(false);
 
+  // Initialize default space when authenticated
   useEffect(() => {
-    // Only load data if user is authenticated
-    if (isAuthenticated) {
+    if (isAuthenticated && !currentSpace) {
+      fetchUserSpaces().then(spaces => {
+        if (spaces && spaces.length > 0) {
+          const defaultSpace = spaces[0].space;
+          setCurrentSpace(defaultSpace);
+          localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+        }
+      }).catch(error => {
+        console.error('Failed to load user spaces:', error);
+      });
+    }
+  }, [isAuthenticated, currentSpace]);
+
+  useEffect(() => {
+    // Only load data if user is authenticated and has a space selected
+    if (isAuthenticated && currentSpace) {
       loadFiles();
       loadTemplates();
     }
@@ -114,7 +129,7 @@ function AppContent() {
     
     window.addEventListener('authRequired', handleAuthRequired);
     return () => window.removeEventListener('authRequired', handleAuthRequired);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentSpace]);
 
   // Show landing page for 5 seconds, then show login modal if not authenticated
   useEffect(() => {
@@ -154,26 +169,12 @@ function AppContent() {
     checkSpaceAccess();
   }, [isAuthenticated, currentSpace]);
 
-  // Function to fetch provider info
-  const fetchProviderInfo = useCallback(async () => {
-    try {
-      const response = await fetch('/api/provider-info', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProviderInfo(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch provider info:', error);
-    }
-  }, []);
+  // Provider info is set to default values - no API call needed
 
     // Periodic sync with server to catch external changes
   const syncFiles = async () => {
     try {
-      const fileTree = await fetchFiles();
+      const fileTree = await fetchFiles(currentSpace);
       const updatedTree = diffAndUpdateTree(files, fileTree);
       
       // Only update if tree actually changed (silent sync)
@@ -234,29 +235,26 @@ function AppContent() {
   // Set up periodic sync to catch external changes and check for drafts
   useEffect(() => {
     if (isAuthenticated && files.length > 0) {
-      const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
-      const syncStatusInterval = setInterval(checkSyncStatus, 5000); // Check for remote changes every 5 seconds
+      // Temporarily disabled to reduce error noise
+      // const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
+      // const syncStatusInterval = setInterval(checkSyncStatus, 5000); // Check for remote changes every 5 seconds
       
       // Only set up draft polling if provider supports drafts
       let draftInterval;
       if (providerInfo.supportsDrafts) {
-        draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
+        // draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
       }
       
       return () => {
-        clearInterval(syncInterval);
-        clearInterval(syncStatusInterval);
-        if (draftInterval) clearInterval(draftInterval);
+        // clearInterval(syncInterval);
+        // clearInterval(syncStatusInterval);
+        // if (draftInterval) clearInterval(draftInterval);
       };
     }
   }, [isAuthenticated, files.length, providerInfo.supportsDrafts, checkForDrafts, checkSyncStatus]);
 
-  // Fetch provider info when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchProviderInfo();
-    }
-  }, [isAuthenticated, fetchProviderInfo]);
+  // Provider info is set to default values above
+  // TODO: Implement fetchProviderInfo if dynamic provider detection is needed
 
   // Initial draft check when authenticated and provider info is loaded
   useEffect(() => {
@@ -1406,6 +1404,7 @@ function AppContent() {
               fileData={fileData}
               onSave={handleSave}
               hasChanges={hasChanges}
+              currentSpace={currentSpace}
             />
           )}
         </section>
