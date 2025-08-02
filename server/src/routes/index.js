@@ -30,7 +30,9 @@ const filingProviders = new Map();
 function getFilingProviderForSpace(spaceName) {
   // Check if we already have a cached provider for this space
   if (filingProviders.has(spaceName)) {
-    return filingProviders.get(spaceName);
+    const cachedProvider = filingProviders.get(spaceName);
+    console.log(`Using cached filing provider for space: ${spaceName}, type: ${cachedProvider.type || 'unknown'}`);
+    return cachedProvider;
   }
 
   try {
@@ -69,11 +71,26 @@ function getFilingProviderForSpace(spaceName) {
     }
 
     // Cache the provider
+    console.log(`Created and cached filing provider for space: ${spaceName}, type: ${filingConfig.type}`);
     filingProviders.set(spaceName, provider);
     return provider;
   } catch (error) {
     console.error(`Error creating filing provider for space '${spaceName}':`, error);
     throw error;
+  }
+}
+
+/**
+ * Clear the filing provider cache for a specific space or all spaces
+ * @param {string} [spaceName] - Optional space name to clear, if not provided clears all
+ */
+function clearFilingProviderCache(spaceName = null) {
+  if (spaceName) {
+    filingProviders.delete(spaceName);
+    console.log(`Cleared filing provider cache for space: ${spaceName}`);
+  } else {
+    filingProviders.clear();
+    console.log('Cleared all filing provider cache');
   }
 }
 
@@ -88,7 +105,23 @@ function loadFilingProvider(req, res, next) {
   }
 
   try {
-    req.filing = getFilingProviderForSpace(spaceName);
+    const filing = getFilingProviderForSpace(spaceName);
+    
+    // Validate that the filing provider has the required methods
+    if (!filing || typeof filing.readFile !== 'function') {
+      console.error(`Invalid filing provider for space ${spaceName}. Clearing cache and retrying.`);
+      clearFilingProviderCache(spaceName);
+      
+      // Retry getting the provider
+      const retryFiling = getFilingProviderForSpace(spaceName);
+      if (!retryFiling || typeof retryFiling.readFile !== 'function') {
+        throw new Error(`Failed to create valid filing provider for space: ${spaceName}`);
+      }
+      req.filing = retryFiling;
+    } else {
+      req.filing = filing;
+    }
+    
     req.spaceName = spaceName;
     
     // Also get space configuration for access control
@@ -607,6 +640,16 @@ router.get('/auth/users', requireAuth, (req, res) => {
   }
 });
 
+// Debug endpoint to clear filing provider cache
+router.post('/debug/clear-cache/:space?', (req, res) => {
+  const spaceName = req.params.space;
+  clearFilingProviderCache(spaceName);
+  res.json({ 
+    message: spaceName ? `Cleared cache for space: ${spaceName}` : 'Cleared all filing provider cache',
+    remainingCacheKeys: Array.from(filingProviders.keys())
+  });
+});
+
 // ========================================
 // SPACE-AWARE ROUTES
 // ========================================
@@ -627,8 +670,12 @@ router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), async 
 router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceName = req.params.space;
     const filePath = req.params[0] || '';
     const markdownFilePath = `markdown/${filePath}`;
+    
+    console.log(`Reading file for space: ${spaceName}, filing type: ${filing.type || 'unknown'}, has readFile: ${typeof filing.readFile}`);
+    console.log(`Available methods: ${Object.getOwnPropertyNames(filing).filter(prop => typeof filing[prop] === 'function')}`);
     
     const content = await filing.readFile(markdownFilePath);
     res.json({ content, path: filePath });

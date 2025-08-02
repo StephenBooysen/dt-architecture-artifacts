@@ -26,7 +26,7 @@ import { useTheme } from '../contexts/ThemeContext';
  * @param {boolean} props.isVisible - Whether the component is currently visible.
  * @return {JSX.Element} The HomeView component.
  */
-const HomeView = ({ onFileSelect, onTemplateSelect, isVisible }) => {
+const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = false }) => {
   const { isDark } = useTheme();
   const [recentFiles, setRecentFiles] = useState([]);
   const [starredFiles, setStarredFiles] = useState([]);
@@ -290,34 +290,36 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible }) => {
       </div>
 
       {/* Templates Section */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card shadow-sm border-0 home-section-card">
-            <div className="card-body p-4">
-              <h3 className="h4 text-confluence-text mb-4">
-                <i className="bi bi-file-earmark-code me-2 text-success"></i>
-                Templates
-              </h3>
-              <div className="row">
-                {templates.length > 0 ? (
-                  templates.map((template, index) => (
-                    <TemplateCard 
-                      key={`template-${index}`} 
-                      template={template} 
-                      onClick={handleTemplateClick}
+      {!isReadonly && (
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="card shadow-sm border-0 home-section-card">
+              <div className="card-body p-4">
+                <h3 className="h4 text-confluence-text mb-4">
+                  <i className="bi bi-file-earmark-code me-2 text-success"></i>
+                  Templates
+                </h3>
+                <div className="row">
+                  {templates.length > 0 ? (
+                    templates.map((template, index) => (
+                      <TemplateCard 
+                        key={`template-${index}`} 
+                        template={template} 
+                        onClick={handleTemplateClick}
+                      />
+                    ))
+                  ) : (
+                    <EmptySection 
+                      icon="bi-file-earmark-code" 
+                      message="No templates found" 
                     />
-                  ))
-                ) : (
-                  <EmptySection 
-                    icon="bi-file-earmark-code" 
-                    message="No templates found" 
-                  />
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

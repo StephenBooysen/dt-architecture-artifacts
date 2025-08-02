@@ -62,6 +62,7 @@ const FileTree = ({
   currentSpace,
   onSpaceChange,
   isAuthenticated,
+  isReadonly = false,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
@@ -562,19 +563,21 @@ const FileTree = ({
             <i className="bi bi-chevron-right text-muted"></i>
           </div>
           
-          <div 
-            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
-            onClick={() => onViewChange && onViewChange('templates')}
-            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
-            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
-          >
-            <div className="d-flex align-items-center">
-              <i className="bi bi-file-earmark-code me-2 text-muted"></i>
-              <span className="text-confluence-text">Templates</span>
+          {!isReadonly && (
+            <div 
+              className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
+              onClick={() => onViewChange && onViewChange('templates')}
+              style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
+              onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+            >
+              <div className="d-flex align-items-center">
+                <i className="bi bi-file-earmark-code me-2 text-muted"></i>
+                <span className="text-confluence-text">Templates</span>
+              </div>
+              <i className="bi bi-chevron-right text-muted"></i>
             </div>
-            <i className="bi bi-chevron-right text-muted"></i>
-          </div>
+          )}
         </div>
         
         {/* Files section header */}
@@ -582,51 +585,55 @@ const FileTree = ({
           <h3 className="h5 mb-0 fw-semibold text-confluence-text">
             Files {isUploading && <small className="text-primary">Uploading...</small>}
           </h3>
-          <button
-            className={`btn btn-sm ${hasChanges && providerInfo.supportsDrafts ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={onPublish}
-            disabled={!hasChanges || isLoading || !providerInfo.supportsDrafts}
-            title={
-              !providerInfo.supportsDrafts 
-                ? "Publishing not available (local provider)" 
-                : hasChanges 
-                  ? "Publish changes" 
-                  : "No changes to publish"
-            }>
-            <i className={`bi ${providerInfo.supportsDrafts ? 'bi-cloud-upload' : 'bi-check-circle'} me-1`}></i>
-            {providerInfo.supportsDrafts ? 'Publish' : 'Committed'}
-          </button>
+          {!isReadonly && (
+            <button
+              className={`btn btn-sm ${hasChanges && providerInfo.supportsDrafts ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={onPublish}
+              disabled={!hasChanges || isLoading || !providerInfo.supportsDrafts}
+              title={
+                !providerInfo.supportsDrafts 
+                  ? "Publishing not available (local provider)" 
+                  : hasChanges 
+                    ? "Publish changes" 
+                    : "No changes to publish"
+              }>
+              <i className={`bi ${providerInfo.supportsDrafts ? 'bi-cloud-upload' : 'bi-check-circle'} me-1`}></i>
+              {providerInfo.supportsDrafts ? 'Publish' : 'Committed'}
+            </button>
+          )}
         </div>
         
-        <div className="d-flex gap-2 file-tree-toolbar">
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => handleCreateClick('folder')}
-            disabled={isLoading}
-            title="Create new folder">
-            <i className="bi bi-folder-plus"></i>
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => handleCreateClick('file')}
-            disabled={isLoading}
-            title="Create new file">
-            <i className="bi bi-file-earmark-plus"></i>
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => handleUploadClick('')}
-            disabled={isLoading || isUploading}
-            title={isUploading ? "Uploading file..." : "Upload file"}>
-            {isUploading ? (
-              <div className="spinner-border spinner-border-sm" role="status" style={{ width: '14px', height: '14px' }}>
-                <span className="visually-hidden">Uploading...</span>
-              </div>
-            ) : (
-              <i className="bi bi-upload"></i>
-            )}
-          </button>
-        </div>
+        {!isReadonly && (
+          <div className="d-flex gap-2 file-tree-toolbar">
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => handleCreateClick('folder')}
+              disabled={isLoading}
+              title="Create new folder">
+              <i className="bi bi-folder-plus"></i>
+            </button>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => handleCreateClick('file')}
+              disabled={isLoading}
+              title="Create new file">
+              <i className="bi bi-file-earmark-plus"></i>
+            </button>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => handleUploadClick('')}
+              disabled={isLoading || isUploading}
+              title={isUploading ? "Uploading file..." : "Upload file"}>
+              {isUploading ? (
+                <div className="spinner-border spinner-border-sm" role="status" style={{ width: '14px', height: '14px' }}>
+                  <span className="visually-hidden">Uploading...</span>
+                </div>
+              ) : (
+                <i className="bi bi-upload"></i>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       <div 
@@ -779,7 +786,7 @@ const FileTree = ({
             top: contextMenu.y,
           }}>
           {/* Show create options for empty space and directories */}
-          {(contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
+          {!isReadonly && (contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
             <div
               className="context-menu-item"
               onClick={() => handleCreateClick('folder', contextMenu.path)}>
@@ -789,7 +796,7 @@ const FileTree = ({
               New Folder
             </div>
           )}
-          {(contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
+          {!isReadonly && (contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
             <div
               className="context-menu-item"
               onClick={() => handleCreateClick('file', contextMenu.path)}>
@@ -799,7 +806,7 @@ const FileTree = ({
               New File
             </div>
           )}
-          {(contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
+          {!isReadonly && (contextMenu.itemType === 'empty' || contextMenu.itemType === 'directory') && (
             <div
               className="context-menu-item"
               onClick={() => handleUploadClick(contextMenu.path)}>
@@ -811,7 +818,7 @@ const FileTree = ({
           )}
           
           {/* Show rename and delete options for files and directories */}
-          {(contextMenu.itemType === 'file' || contextMenu.itemType === 'directory') && (
+          {!isReadonly && (contextMenu.itemType === 'file' || contextMenu.itemType === 'directory') && (
             <>
               {contextMenu.itemType === 'directory' && (
                 <div className="context-menu-divider"></div>

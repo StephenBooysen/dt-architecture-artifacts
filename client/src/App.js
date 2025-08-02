@@ -52,6 +52,7 @@ import {
   deleteTemplate,
   searchFiles,
   searchContent,
+  fetchUserSpaces,
 } from './services/api';
 import './App.css';
 
@@ -95,6 +96,7 @@ function AppContent() {
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
   });
+  const [isCurrentSpaceReadonly, setIsCurrentSpaceReadonly] = useState(false);
 
   useEffect(() => {
     // Only load data if user is authenticated
@@ -131,6 +133,26 @@ function AppContent() {
       }
     }
   }, [loading, isAuthenticated]);
+
+  // Check if current space is readonly
+  useEffect(() => {
+    const checkSpaceAccess = async () => {
+      if (isAuthenticated && currentSpace) {
+        try {
+          const spaces = await fetchUserSpaces();
+          const spaceInfo = spaces.find(space => space.space === currentSpace);
+          setIsCurrentSpaceReadonly(spaceInfo?.access === 'readonly');
+        } catch (error) {
+          console.error('Failed to check space access:', error);
+          setIsCurrentSpaceReadonly(false);
+        }
+      } else {
+        setIsCurrentSpaceReadonly(false);
+      }
+    };
+
+    checkSpaceAccess();
+  }, [isAuthenticated, currentSpace]);
 
   // Function to fetch provider info
   const fetchProviderInfo = useCallback(async () => {
@@ -1347,6 +1369,7 @@ function AppContent() {
                 currentSpace={currentSpace}
                 onSpaceChange={handleSpaceChange}
                 isAuthenticated={isAuthenticated}
+                isReadonly={isCurrentSpaceReadonly}
               />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
@@ -1359,6 +1382,7 @@ function AppContent() {
               onFileSelect={handleFileSelect}
               onTemplateSelect={handleTemplateSelect}
               isVisible={currentView === 'home'}
+              isReadonly={isCurrentSpaceReadonly}
             />
           ) : currentView === 'templates' ? (
             <TemplatesList
