@@ -8,8 +8,12 @@ class AuthManager {
         this.isAuthenticated = false;
         this.currentUser = null;
         this.serverUrl = 'http://localhost:5000';
+        this.spaces = [];
+        this.currentSpace = null;
         this.authStatusChangedEmitter = new vscode.EventEmitter();
         this.onAuthStatusChanged = this.authStatusChangedEmitter.event;
+        this.spacesChangedEmitter = new vscode.EventEmitter();
+        this.onSpacesChanged = this.spacesChangedEmitter.event;
         
         this.loadSettings();
         this.loadStoredAuth();
@@ -22,6 +26,16 @@ class AuthManager {
 
     async loadStoredAuth() {
         const storedAuth = await this.context.secrets.get('architectureArtifacts.auth');
+        const storedSpace = await this.context.secrets.get('architectureArtifacts.currentSpace');
+        
+        if (storedSpace) {
+            try {
+                this.currentSpace = storedSpace;
+            } catch (error) {
+                console.error('Failed to load stored space:', error);
+            }
+        }
+        
         if (storedAuth) {
             try {
                 const authData = JSON.parse(storedAuth);
@@ -45,6 +59,10 @@ class AuthManager {
 
     async clearStoredAuth() {
         await this.context.secrets.delete('architectureArtifacts.auth');
+        await this.context.secrets.delete('architectureArtifacts.currentSpace');
+        this.currentSpace = null;
+        this.spaces = [];
+        this.spacesChangedEmitter.fire([]);
     }
 
     async login() {
@@ -85,6 +103,9 @@ class AuthManager {
                 
                 await this.storeAuth(this.currentUser);
                 this.authStatusChangedEmitter.fire(true);
+                
+                // Load spaces after successful login
+                await this.loadSpaces();
 
                 vscode.window.showInformationMessage(`Successfully signed in as ${this.currentUser.username}`);
                 return true;
@@ -121,8 +142,11 @@ class AuthManager {
         // Clear local state regardless of server response
         this.currentUser = null;
         this.isAuthenticated = false;
+        this.spaces = [];
+        this.currentSpace = null;
         await this.clearStoredAuth();
         this.authStatusChangedEmitter.fire(false);
+        this.spacesChangedEmitter.fire([]);
 
         vscode.window.showInformationMessage('Successfully signed out');
     }
@@ -142,6 +166,10 @@ class AuthManager {
                     await this.storeAuth(this.currentUser);
                 }
                 this.authStatusChangedEmitter.fire(true);
+                
+                // Load spaces after auth check
+                await this.loadSpaces();
+                
                 return true;
             }
         } catch (error) {
@@ -154,7 +182,10 @@ class AuthManager {
 
         this.currentUser = null;
         this.isAuthenticated = false;
+        this.spaces = [];
+        this.currentSpace = null;
         this.authStatusChangedEmitter.fire(false);
+        this.spacesChangedEmitter.fire([]);
         return false;
     }
 
@@ -174,6 +205,58 @@ class AuthManager {
         this.serverUrl = url;
         // Clear auth when server URL changes
         this.logout();
+    }
+    
+    async loadSpaces() {
+        if (!this.isAuthenticated) {
+            this.spaces = [];
+            this.currentSpace = null;
+            this.spacesChangedEmitter.fire([]);
+            return;
+        }
+
+        try {
+            const response = await this.makeAuthenticatedRequest('/api/auth/user-spaces');
+            this.spaces = response.data;
+            
+            // Set current space if not already set
+            if (this.spaces.length > 0 && (!this.currentSpace || !this.spaces.find(s => s.space === this.currentSpace))) {
+                // Default to Personal space if available, otherwise first space
+                const personalSpace = this.spaces.find(s => s.space === 'Personal');
+                this.currentSpace = personalSpace ? personalSpace.space : this.spaces[0].space;
+                await this.saveCurrentSpace();
+            }
+            
+            this.spacesChangedEmitter.fire(this.spaces);
+        } catch (error) {
+            console.error('Failed to load spaces:', error);
+            this.spaces = [];
+            this.spacesChangedEmitter.fire([]);
+        }
+    }
+    
+    async setCurrentSpace(spaceName) {
+        this.currentSpace = spaceName;
+        await this.saveCurrentSpace();
+        this.spacesChangedEmitter.fire(this.spaces);
+    }
+    
+    async saveCurrentSpace() {
+        try {
+            if (this.currentSpace) {
+                await this.context.secrets.store('architectureArtifacts.currentSpace', this.currentSpace);
+            }
+        } catch (error) {
+            console.error('Failed to save current space:', error);
+        }
+    }
+    
+    getSpaces() {
+        return this.spaces;
+    }
+    
+    getCurrentSpace() {
+        return this.currentSpace;
     }
 
     async makeAuthenticatedRequest(url, options = {}) {
@@ -350,6 +433,12 @@ class SearchWebview {
                     case 'checkAuth':
                         await this.handleCheckAuth();
                         break;
+                    case 'loadSpaces':
+                        await this.handleLoadSpaces();
+                        break;
+                    case 'setSpace':
+                        await this.handleSetSpace(message.space);
+                        break;
                     case 'login':
                         await this.handleLogin();
                         break;
@@ -366,8 +455,9 @@ class SearchWebview {
             this.panel = undefined;
         });
 
-        // Send initial auth status
+        // Send initial auth status and spaces
         this.sendAuthStatus();
+        this.sendSpaces();
     }
 
     async handleSearch(query, searchType) {
@@ -381,9 +471,15 @@ class SearchWebview {
 
         try {
             const endpoint = searchType === 'files' ? '/api/search/files' : '/api/search/content';
-            const response = await this.authManager.makeAuthenticatedRequest(
-                `${endpoint}?q=${encodeURIComponent(query)}`
-            );
+            let url = `${endpoint}?q=${encodeURIComponent(query)}`;
+            
+            // Add space parameter if a space is selected
+            const currentSpace = this.authManager.getCurrentSpace();
+            if (currentSpace) {
+                url += `&space=${encodeURIComponent(currentSpace)}`;
+            }
+            
+            const response = await this.authManager.makeAuthenticatedRequest(url);
 
             this.panel?.webview.postMessage({
                 command: 'searchResults',
@@ -408,9 +504,15 @@ class SearchWebview {
         }
 
         try {
-            const response = await this.authManager.makeAuthenticatedRequest(
-                `/api/files/${encodeURIComponent(filePath)}`
-            );
+            let url = `/api/files/${encodeURIComponent(filePath)}`;
+            
+            // Add space parameter if a space is selected
+            const currentSpace = this.authManager.getCurrentSpace();
+            if (currentSpace) {
+                url = `/api/${encodeURIComponent(currentSpace)}/files/${encodeURIComponent(filePath)}`;
+            }
+            
+            const response = await this.authManager.makeAuthenticatedRequest(url);
 
             this.panel?.webview.postMessage({
                 command: 'fileContent',
@@ -428,18 +530,31 @@ class SearchWebview {
     async handleCheckAuth() {
         await this.authManager.checkAuthStatus();
         this.sendAuthStatus();
+        this.sendSpaces();
+    }
+    
+    async handleLoadSpaces() {
+        await this.authManager.loadSpaces();
+        this.sendSpaces();
+    }
+    
+    async handleSetSpace(space) {
+        await this.authManager.setCurrentSpace(space);
+        this.sendSpaces();
     }
 
     async handleLogin() {
         const success = await this.authManager.login();
         if (success) {
             this.sendAuthStatus();
+            this.sendSpaces();
         }
     }
 
     async handleLogout() {
         await this.authManager.logout();
         this.sendAuthStatus();
+        this.sendSpaces();
     }
 
     sendAuthStatus() {
@@ -448,6 +563,16 @@ class SearchWebview {
             command: 'authStatus',
             isAuthenticated: this.authManager.getIsAuthenticated(),
             user: user
+        });
+    }
+    
+    sendSpaces() {
+        const spaces = this.authManager.getSpaces();
+        const currentSpace = this.authManager.getCurrentSpace();
+        this.panel?.webview.postMessage({
+            command: 'spacesData',
+            spaces: spaces,
+            currentSpace: currentSpace
         });
     }
 
@@ -790,6 +915,44 @@ class SearchWebview {
         .auth-button:hover {
             background-color: var(--vscode-button-hoverBackground);
         }
+        
+        .spaces-section {
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 6px;
+            background-color: var(--vscode-editor-background);
+        }
+        
+        .spaces-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .spaces-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--vscode-descriptionForeground);
+            white-space: nowrap;
+            margin: 0;
+        }
+        
+        .spaces-select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 4px;
+            font-size: 12px;
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            cursor: pointer;
+        }
+        
+        .spaces-select:focus {
+            outline: none;
+            border-color: var(--vscode-focusBorder);
+        }
     </style>
 </head>
 <body>
@@ -805,6 +968,15 @@ class SearchWebview {
     </div>
 
     <div id="mainContent" style="display: none;">
+        <div class="spaces-section" id="spacesSection" style="display: none;">
+            <div class="spaces-container">
+                <label for="spaceSelect" class="spaces-label">Space:</label>
+                <select id="spaceSelect" class="spaces-select">
+                    <option value="">Loading spaces...</option>
+                </select>
+            </div>
+        </div>
+        
         <div class="search-section">
             <div class="search-container">
                 <input 
@@ -860,9 +1032,12 @@ class SearchWebview {
         const vscode = acquireVsCodeApi();
         let isAuthenticated = false;
         let currentUser = null;
+        let spaces = [];
+        let currentSpace = null;
 
-        // Check auth status on load
+        // Check auth status and load spaces on load
         vscode.postMessage({ command: 'checkAuth' });
+        vscode.postMessage({ command: 'loadSpaces' });
 
         // Handle messages from extension
         window.addEventListener('message', event => {
@@ -884,6 +1059,9 @@ class SearchWebview {
                 case 'fileError':
                     handleFileError(message.error);
                     break;
+                case 'spacesData':
+                    handleSpacesData(message.spaces, message.currentSpace);
+                    break;
             }
         });
 
@@ -902,12 +1080,18 @@ class SearchWebview {
                 authButton.textContent = 'Sign Out';
                 mainContent.style.display = 'block';
                 authRequired.style.display = 'none';
+                
+                // Load spaces when authenticated
+                vscode.postMessage({ command: 'loadSpaces' });
             } else {
                 authStatus.textContent = 'Not Signed In';
                 authStatus.classList.remove('authenticated');
                 authButton.textContent = 'Sign In';
                 mainContent.style.display = 'none';
                 authRequired.style.display = 'block';
+                
+                // Hide spaces when not authenticated
+                document.getElementById('spacesSection').style.display = 'none';
             }
         }
 
@@ -919,6 +1103,50 @@ class SearchWebview {
             }
         }
 
+        function handleSpacesData(spacesData, selectedSpace) {
+            spaces = spacesData;
+            currentSpace = selectedSpace;
+            updateSpacesUI();
+        }
+        
+        function updateSpacesUI() {
+            const spacesSection = document.getElementById('spacesSection');
+            const spaceSelect = document.getElementById('spaceSelect');
+            
+            if (!isAuthenticated || spaces.length === 0) {
+                spacesSection.style.display = 'none';
+                return;
+            }
+            
+            spacesSection.style.display = 'block';
+            spaceSelect.innerHTML = '';
+            
+            // Add spaces as options
+            spaces.forEach(space => {
+                const option = document.createElement('option');
+                option.value = space.space;
+                option.textContent = `${space.space} (${space.access})`;
+                spaceSelect.appendChild(option);
+            });
+            
+            // Set current space
+            if (currentSpace) {
+                spaceSelect.value = currentSpace;
+            }
+        }
+        
+        function handleSpaceChange() {
+            const selectedSpace = document.getElementById('spaceSelect').value;
+            if (selectedSpace !== currentSpace) {
+                currentSpace = selectedSpace;
+                vscode.postMessage({ command: 'setSpace', space: selectedSpace });
+                
+                // Clear search results when switching spaces
+                document.getElementById('resultsList').innerHTML = '';
+                document.getElementById('searchInput').value = '';
+            }
+        }
+        
         function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
@@ -1212,6 +1440,9 @@ class SearchWebview {
                 }
             });
         });
+        
+        // Space selection change
+        document.getElementById('spaceSelect').addEventListener('change', handleSpaceChange);
     </script>
 </body>
 </html>`;
@@ -1490,6 +1721,13 @@ function activate(context) {
     authManager.onAuthStatusChanged((isAuthenticated) => {
         vscode.commands.executeCommand('setContext', 'architectureArtifacts.authenticated', isAuthenticated);
         provider.refresh();
+    });
+    
+    // Update when spaces change
+    authManager.onSpacesChanged((spaces) => {
+        if (searchWebview.panel) {
+            searchWebview.sendSpaces();
+        }
     });
 
     vscode.window.showInformationMessage('Architecture Artifacts extension loaded successfully!');

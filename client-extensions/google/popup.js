@@ -5,6 +5,8 @@ class ArchitectureArtifactsExtension {
     this.debounceTimer = null;
     this.currentUser = null;
     this.isAuthenticated = false;
+    this.spaces = [];
+    this.currentSpace = null;
     
     this.initializeElements();
     this.loadSettings();
@@ -44,14 +46,21 @@ class ArchitectureArtifactsExtension {
     this.closeSettingsBtn = document.getElementById('closeSettingsBtn');
     this.serverUrlInput = document.getElementById('serverUrl');
     this.saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    
+    // Spaces elements
+    this.spacesSection = document.getElementById('spacesSection');
+    this.spaceSelect = document.getElementById('spaceSelect');
   }
 
   async loadSettings() {
     try {
-      const result = await chrome.storage.sync.get(['serverUrl']);
+      const result = await chrome.storage.sync.get(['serverUrl', 'currentSpace']);
       if (result.serverUrl) {
         this.serverUrl = result.serverUrl;
         this.serverUrlInput.value = result.serverUrl;
+      }
+      if (result.currentSpace) {
+        this.currentSpace = result.currentSpace;
       }
     } catch (error) {
       console.log('Failed to load settings:', error);
@@ -148,6 +157,11 @@ class ArchitectureArtifactsExtension {
       this.saveSettings();
     });
 
+    // Spaces events
+    this.spaceSelect.addEventListener('change', () => {
+      this.handleSpaceChange();
+    });
+
     // Focus search input on load
     this.searchInput.focus();
   }
@@ -165,7 +179,12 @@ class ArchitectureArtifactsExtension {
     
     try {
       const endpoint = searchType === 'files' ? '/api/search/files' : '/api/search/content';
-      const url = `${this.serverUrl}${endpoint}?q=${encodeURIComponent(query)}`;
+      let url = `${this.serverUrl}${endpoint}?q=${encodeURIComponent(query)}`;
+      
+      // Add space parameter if a space is selected
+      if (this.currentSpace) {
+        url += `&space=${encodeURIComponent(this.currentSpace)}`;
+      }
       
       const response = await fetch(url, {
         credentials: 'include' // Include cookies for authentication
@@ -321,7 +340,14 @@ class ArchitectureArtifactsExtension {
     
     try {
       // Fetch full file content
-      const response = await fetch(`${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`, {
+      let url = `${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`;
+      
+      // Add space parameter if a space is selected
+      if (this.currentSpace) {
+        url = `${this.serverUrl}/api/${encodeURIComponent(this.currentSpace)}/files/${encodeURIComponent(filePath)}`;
+      }
+      
+      const response = await fetch(url, {
         credentials: 'include' // Include cookies for authentication
       });
       
@@ -424,6 +450,75 @@ class ArchitectureArtifactsExtension {
     }
   }
 
+  async loadSpaces() {
+    if (!this.isAuthenticated) {
+      this.spacesSection.style.display = 'none';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.serverUrl}/api/auth/user-spaces`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        this.spaces = await response.json();
+        this.updateSpacesUI();
+        this.spacesSection.style.display = 'block';
+      } else {
+        this.spacesSection.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Failed to load spaces:', error);
+      this.spacesSection.style.display = 'none';
+    }
+  }
+
+  updateSpacesUI() {
+    this.spaceSelect.innerHTML = '';
+    
+    if (this.spaces.length === 0) {
+      this.spaceSelect.innerHTML = '<option value="">No spaces available</option>';
+      return;
+    }
+
+    // Add spaces as options
+    this.spaces.forEach(space => {
+      const option = document.createElement('option');
+      option.value = space.space;
+      option.textContent = `${space.space} (${space.access})`;
+      this.spaceSelect.appendChild(option);
+    });
+
+    // Set current space or default to first space
+    if (this.currentSpace && this.spaces.find(s => s.space === this.currentSpace)) {
+      this.spaceSelect.value = this.currentSpace;
+    } else if (this.spaces.length > 0) {
+      // Default to Personal space if available, otherwise first space
+      const personalSpace = this.spaces.find(s => s.space === 'Personal');
+      this.currentSpace = personalSpace ? personalSpace.space : this.spaces[0].space;
+      this.spaceSelect.value = this.currentSpace;
+      this.saveCurrentSpace();
+    }
+  }
+
+  async handleSpaceChange() {
+    this.currentSpace = this.spaceSelect.value;
+    await this.saveCurrentSpace();
+    
+    // Clear search results when switching spaces
+    this.clearResults();
+    this.searchInput.value = '';
+  }
+
+  async saveCurrentSpace() {
+    try {
+      await chrome.storage.sync.set({ currentSpace: this.currentSpace });
+    } catch (error) {
+      console.error('Failed to save current space:', error);
+    }
+  }
+
   async performLogin() {
     const username = this.usernameInput.value.trim();
     const password = this.passwordInput.value.trim();
@@ -489,10 +584,12 @@ class ArchitectureArtifactsExtension {
       this.statusText.textContent = this.currentUser.username || 'Signed In';
       this.userStatus.title = 'Click to sign out';
       this.userStatus.classList.add('authenticated');
+      this.loadSpaces();
     } else {
       this.statusText.textContent = 'Sign In';
       this.userStatus.title = 'Click to sign in';
       this.userStatus.classList.remove('authenticated');
+      this.spacesSection.style.display = 'none';
     }
   }
 

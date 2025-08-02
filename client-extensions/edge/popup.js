@@ -5,6 +5,8 @@ class ArchitectureArtifactsExtension {
     this.debounceTimer = null;
     this.currentUser = null;
     this.isAuthenticated = false;
+    this.spaces = [];
+    this.currentSpace = null;
     
     this.initializeElements();
     this.loadSettings();
@@ -44,14 +46,21 @@ class ArchitectureArtifactsExtension {
     this.closeSettingsBtn = document.getElementById('closeSettingsBtn');
     this.serverUrlInput = document.getElementById('serverUrl');
     this.saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    
+    // Spaces elements
+    this.spacesSection = document.getElementById('spacesSection');
+    this.spaceSelect = document.getElementById('spaceSelect');
   }
 
   async loadSettings() {
     try {
-      const result = await chrome.storage.sync.get(['serverUrl']);
+      const result = await chrome.storage.sync.get(['serverUrl', 'currentSpace']);
       if (result.serverUrl) {
         this.serverUrl = result.serverUrl;
         this.serverUrlInput.value = result.serverUrl;
+      }
+      if (result.currentSpace) {
+        this.currentSpace = result.currentSpace;
       }
     } catch (error) {
       console.log('Failed to load settings:', error);
@@ -148,6 +157,11 @@ class ArchitectureArtifactsExtension {
       this.saveSettings();
     });
 
+    // Spaces events
+    this.spaceSelect.addEventListener('change', () => {
+      this.handleSpaceChange();
+    });
+
     // Focus search input on load
     this.searchInput.focus();
   }
@@ -165,7 +179,12 @@ class ArchitectureArtifactsExtension {
     
     try {
       const endpoint = searchType === 'files' ? '/api/search/files' : '/api/search/content';
-      const url = `${this.serverUrl}${endpoint}?q=${encodeURIComponent(query)}`;
+      let url = `${this.serverUrl}${endpoint}?q=${encodeURIComponent(query)}`;
+      
+      // Add space parameter if a space is selected
+      if (this.currentSpace) {
+        url += `&space=${encodeURIComponent(this.currentSpace)}`;
+      }
       
       const response = await fetch(url, {
         credentials: 'include' // Include cookies for authentication
@@ -321,7 +340,14 @@ class ArchitectureArtifactsExtension {
     
     try {
       // Fetch full file content
-      const response = await fetch(`${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`, {
+      let url = `${this.serverUrl}/api/files/${encodeURIComponent(filePath)}`;
+      
+      // Add space parameter if a space is selected
+      if (this.currentSpace) {
+        url = `${this.serverUrl}/api/${encodeURIComponent(this.currentSpace)}/files/${encodeURIComponent(filePath)}`;
+      }
+      
+      const response = await fetch(url, {
         credentials: 'include' // Include cookies for authentication
       });
       
@@ -357,84 +383,27 @@ class ArchitectureArtifactsExtension {
     }
   }
 
-  // Enhanced markdown to HTML converter
+  // Simple markdown to HTML converter
   markdownToHtml(markdown) {
-    if (!markdown) return '';
-    
-    let html = markdown;
-    
-    // Code blocks (must be done first)
-    html = html.replace(/```(\w+)?\n([\s\S]*?)```/gim, (match, lang, code) => {
-      const language = lang ? ` class="language-${lang}"` : '';
-      return `<pre${language}><code>${this.escapeHtml(code.trim())}</code></pre>`;
-    });
-    
-    // Headers (with anchor support)
-    html = html.replace(/^#{6}\s+(.*)$/gim, '<h6>$1</h6>');
-    html = html.replace(/^#{5}\s+(.*)$/gim, '<h5>$1</h5>');
-    html = html.replace(/^#{4}\s+(.*)$/gim, '<h4>$1</h4>');
-    html = html.replace(/^#{3}\s+(.*)$/gim, '<h3>$1</h3>');
-    html = html.replace(/^#{2}\s+(.*)$/gim, '<h2>$1</h2>');
-    html = html.replace(/^#{1}\s+(.*)$/gim, '<h1>$1</h1>');
-    
-    // Horizontal rules
-    html = html.replace(/^---$/gim, '<hr>');
-    html = html.replace(/^\*\*\*$/gim, '<hr>');
-    
-    // Blockquotes
-    html = html.replace(/^>\s+(.*)$/gim, '<blockquote>$1</blockquote>');
-    
-    // Lists
-    html = html.replace(/^\s*\*\s+(.*)$/gim, '<li>$1</li>');
-    html = html.replace(/^\s*-\s+(.*)$/gim, '<li>$1</li>');
-    html = html.replace(/^\s*\+\s+(.*)$/gim, '<li>$1</li>');
-    html = html.replace(/^\s*\d+\.\s+(.*)$/gim, '<li>$1</li>');
-    
-    // Wrap consecutive list items
-    html = html.replace(/(<li>.*<\/li>)/gims, '<ul>$1</ul>');
-    html = html.replace(/<\/ul>\s*<ul>/gim, '');
-    
-    // Bold and italic (non-greedy matching)
-    html = html.replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>');
-    html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
-    html = html.replace(/__(.*?)__/gim, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
-    html = html.replace(/_(.*?)_/gim, '<em>$1</em>');
-    
-    // Strikethrough
-    html = html.replace(/~~(.*?)~~/gim, '<s>$1</s>');
-    
-    // Inline code (after bold/italic to avoid conflicts)
-    html = html.replace(/`([^`\n]+)`/gim, '<code>$1</code>');
-    
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href=\"$2\" target=\"_blank\" rel=\"noopener noreferrer\">$1</a>');
-    
-    // Images
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/gim, '<img src=\"$2\" alt=\"$1\" style=\"max-width: 100%; height: auto;\">');
-    
-    // Tables (basic support)
-    html = html.replace(/\|(.+)\|/gim, (match, content) => {
-      const cells = content.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
-      return `<tr>${cells}</tr>`;
-    });
-    html = html.replace(/(<tr>.*<\/tr>)/gims, '<table>$1</table>');
-    html = html.replace(/<\/table>\s*<table>/gim, '');
-    
-    // Line breaks (convert double newlines to paragraphs)
-    html = html.replace(/\n\n/gim, '</p><p>');
-    html = html.replace(/\n/gim, '<br>');
-    
-    // Wrap in paragraphs
-    if (!html.startsWith('<')) {
-      html = '<p>' + html + '</p>';
-    }
-    
-    // Clean up empty paragraphs
-    html = html.replace(/<p><\/p>/gim, '');
-    html = html.replace(/<p>\s*<\/p>/gim, '');
-    
-    return html;
+    return markdown
+      // Headers
+      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      // Bold
+      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+      .replace(/__(.*?)__/gim, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.*)\*/gim, '<em>$1</em>')
+      .replace(/_(.*?)_/gim, '<em>$1</em>')
+      // Code blocks
+      .replace(/```([\\s\\S]*?)```/gim, '<pre><code>$1</code></pre>')
+      // Inline code
+      .replace(/`([^`]*)`/gim, '<code>$1</code>')
+      // Links
+      //.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/gim, '<a href="$2" target="_blank">$1</a>')
+      // Line breaks
+      .replace(/\\n/gim, '<br>');
   }
 
   showSearchView() {
@@ -478,6 +447,75 @@ class ArchitectureArtifactsExtension {
       this.currentUser = null;
       this.isAuthenticated = false;
       this.updateAuthUI();
+    }
+  }
+
+  async loadSpaces() {
+    if (!this.isAuthenticated) {
+      this.spacesSection.style.display = 'none';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.serverUrl}/api/auth/user-spaces`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        this.spaces = await response.json();
+        this.updateSpacesUI();
+        this.spacesSection.style.display = 'block';
+      } else {
+        this.spacesSection.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Failed to load spaces:', error);
+      this.spacesSection.style.display = 'none';
+    }
+  }
+
+  updateSpacesUI() {
+    this.spaceSelect.innerHTML = '';
+    
+    if (this.spaces.length === 0) {
+      this.spaceSelect.innerHTML = '<option value="">No spaces available</option>';
+      return;
+    }
+
+    // Add spaces as options
+    this.spaces.forEach(space => {
+      const option = document.createElement('option');
+      option.value = space.space;
+      option.textContent = `${space.space} (${space.access})`;
+      this.spaceSelect.appendChild(option);
+    });
+
+    // Set current space or default to first space
+    if (this.currentSpace && this.spaces.find(s => s.space === this.currentSpace)) {
+      this.spaceSelect.value = this.currentSpace;
+    } else if (this.spaces.length > 0) {
+      // Default to Personal space if available, otherwise first space
+      const personalSpace = this.spaces.find(s => s.space === 'Personal');
+      this.currentSpace = personalSpace ? personalSpace.space : this.spaces[0].space;
+      this.spaceSelect.value = this.currentSpace;
+      this.saveCurrentSpace();
+    }
+  }
+
+  async handleSpaceChange() {
+    this.currentSpace = this.spaceSelect.value;
+    await this.saveCurrentSpace();
+    
+    // Clear search results when switching spaces
+    this.clearResults();
+    this.searchInput.value = '';
+  }
+
+  async saveCurrentSpace() {
+    try {
+      await chrome.storage.sync.set({ currentSpace: this.currentSpace });
+    } catch (error) {
+      console.error('Failed to save current space:', error);
     }
   }
 
@@ -546,10 +584,12 @@ class ArchitectureArtifactsExtension {
       this.statusText.textContent = this.currentUser.username || 'Signed In';
       this.userStatus.title = 'Click to sign out';
       this.userStatus.classList.add('authenticated');
+      this.loadSpaces();
     } else {
       this.statusText.textContent = 'Sign In';
       this.userStatus.title = 'Click to sign in';
       this.userStatus.classList.remove('authenticated');
+      this.spacesSection.style.display = 'none';
     }
   }
 

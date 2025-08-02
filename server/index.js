@@ -1295,7 +1295,7 @@ function getMonitoringScript() {
   </script>`;
 }
 
-// Settings page with Git integration
+// Settings page (simplified, no Git integration)
 app.get('/settings', requireServerAuth, (req, res) => {
   const html = renderComponent('settings', {
     activeSection: 'settings',

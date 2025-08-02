@@ -26,13 +26,6 @@ const Sidebar = ({ activeSection }) => {
           <div className="nav-section">
             <div className="nav-section-title">Settings</div>
             <a 
-              href="/settings" 
-              className={`nav-item ${activeSection === 'settings' ? 'active' : ''}`}
-            >
-              <i className="bi bi-git me-2"></i>
-              Git Repository
-            </a>
-            <a 
               href="/users" 
               className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
             >
