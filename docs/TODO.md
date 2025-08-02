@@ -17,9 +17,16 @@
 - Readonly pages
 - View: Have a knowledge view that has no editing
 - Subscribe to changes and notify in notification popup
+- Shortcuts
+- Drafts list
+- Spaces page (r- Readonly pagesecent viewed, starred, changes, announcements)
+- Watch a file
+- Share a link to a file
 
 #### Server
-- View: Knowledge View
+- View: Knowledge Viewhttps://stephenbooysen.atlassian.net/wiki/x/HoEE
+- Move recent and starred to user account
+- Invitations so include email in users
 
 #### Extensions
 - View: Knowledge View

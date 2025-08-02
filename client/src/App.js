@@ -37,7 +37,6 @@ import SearchResultsView from './components/SearchResultsView';
 import HomeView from './components/HomeView';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
-import SpaceSelector from './components/SpaceSelector';
 import {
   fetchFiles,
   fetchFile,

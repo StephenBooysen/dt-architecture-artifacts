@@ -316,6 +316,22 @@ const FileTree = ({
     };
   }, [focusedItem, showCreateDialog, showRenameDialog, contextMenu, handleDeleteClick]);
 
+  // Load spaces when component mounts and user is authenticated
+  useEffect(() => {
+    const loadSpaces = async () => {
+      if (isAuthenticated) {
+        try {
+          const userSpaces = await fetchUserSpaces();
+          setSpaces(userSpaces);
+        } catch (error) {
+          console.error('Failed to load spaces:', error);
+        }
+      }
+    };
+    
+    loadSpaces();
+  }, [isAuthenticated]);
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
@@ -476,6 +492,20 @@ const FileTree = ({
     );
   }
 
+  // Helper function to get appropriate icon for each space
+  const getSpaceIcon = (space) => {
+    switch (space.space) {
+      case 'Personal':
+        return 'bi-person-circle';
+      case 'Shared':
+        return 'bi-people';
+      case 'Enterprise':
+        return 'bi-building';
+      default:
+        return 'bi-collection';
+    }
+  };
+
   return (
     <div ref={fileTreeRef} className="file-tree d-flex flex-column h-100">
       {/* Hidden file input for upload */}
@@ -616,6 +646,51 @@ const FileTree = ({
           files.map((file) => renderFileItem(file))
         )}
       </div>
+
+      {/* Spaces Navigation Section */}
+      {isAuthenticated && spaces.length > 0 && (
+        <div className="mt-4 pt-3 border-top">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h3 className="h5 mb-0 fw-semibold text-confluence-text">Spaces</h3>
+          </div>
+          <div className="spaces-nav">
+            {spaces.map((space) => (
+              <div 
+                key={space.space}
+                className={`nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1 ${currentSpace === space.space ? 'active' : ''}`}
+                onClick={() => onSpaceChange && onSpaceChange(space.space)}
+                style={{
+                  cursor: 'pointer', 
+                  backgroundColor: currentSpace === space.space 
+                    ? 'var(--confluence-primary-light, rgba(0, 82, 204, 0.1))' 
+                    : 'var(--nav-option-bg, transparent)'
+                }}
+                onMouseEnter={(e) => {
+                  if (currentSpace !== space.space) {
+                    e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentSpace !== space.space) {
+                    e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)';
+                  }
+                }}
+              >
+                <div className="d-flex align-items-center">
+                  <i className={`bi ${getSpaceIcon(space)} me-2 text-muted`}></i>
+                  <span className={`text-confluence-text ${currentSpace === space.space ? 'fw-medium' : ''}`}>
+                    {space.space}
+                  </span>
+                  <small className="ms-2 text-muted">({space.access})</small>
+                </div>
+                {currentSpace === space.space && (
+                  <i className="bi bi-check-circle text-primary"></i>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showCreateDialog && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
