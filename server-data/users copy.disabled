@@ -9,11 +9,11 @@
       "write",
       "admin"
     ],
-    "spaces": "Personal"
+    "spaces": "Personal,Shared,Enterprise"
   },
   {
     "id": "1753752776557",
-    "username": " Stephen Booysen",
+    "username": " StephenB ooysen",
     "password": "$2b$10$d75bBGMgRdpfMWHRXza90uMcmSVGaAmhFKl68fplgyxMFG0ONwODi",
     "createdAt": "2025-07-29T01:32:56.557Z",
     "roles": [
@@ -21,7 +21,7 @@
       "write",
       "admin"
     ],
-    "spaces": "Personal"
+    "spaces": "Personal,Shared"
   },
   {
     "id": "1753870118270",
