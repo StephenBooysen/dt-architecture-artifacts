@@ -45,11 +45,13 @@ api.interceptors.response.use(
 
 /**
  * Fetches the file tree structure from the API.
+ * @param {string} [space] - Optional space name for space-aware requests.
  * @return {Promise<Array>} The file tree data.
  */
-export const fetchFiles = async () => {
+export const fetchFiles = async (space = null) => {
   try {
-    const response = await api.get('/files');
+    const url = space ? `/${space}/files` : '/files';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching files:', error);
@@ -60,11 +62,13 @@ export const fetchFiles = async () => {
 /**
  * Fetches a specific file's content from the API.
  * @param {string} filePath - The path to the file.
+ * @param {string} [space] - Optional space name for space-aware requests.
  * @return {Promise<Object>} The file data.
  */
-export const fetchFile = async (filePath) => {
+export const fetchFile = async (filePath, space = null) => {
   try {
-    const response = await api.get(`/files/${filePath}`);
+    const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching file:', error);
@@ -104,9 +108,10 @@ export const downloadFile = async (filePath) => {
  * @param {string} content - The file content to save.
  * @return {Promise<Object>} The save response.
  */
-export const saveFile = async (filePath, content) => {
+export const saveFile = async (filePath, content, space = null) => {
   try {
-    const response = await api.post(`/files/${filePath}`, {content});
+    const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
+    const response = await api.post(url, {content});
     return response.data;
   } catch (error) {
     console.error('Error saving file:', error);
@@ -120,9 +125,10 @@ export const saveFile = async (filePath, content) => {
  * @param {string} folderPath - The path for the new folder.
  * @return {Promise<Object>} The create folder response.
  */
-export const createFolder = async (folderPath) => {
+export const createFolder = async (folderPath, space = null) => {
   try {
-    const response = await api.post('/folders', {folderPath});
+    const url = space ? `/${space}/folders` : '/folders';
+    const response = await api.post(url, {folderPath});
     return response.data;
   } catch (error) {
     console.error('Error creating folder:', error);
@@ -136,9 +142,10 @@ export const createFolder = async (folderPath) => {
  * @param {string} content - The initial content for the file.
  * @return {Promise<Object>} The create file response.
  */
-export const createFile = async (filePath, content = '') => {
+export const createFile = async (filePath, content = '', space = null) => {
   try {
-    const response = await api.post('/files', {filePath, content});
+    const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
+    const response = await api.post(url, {content});
     return response.data;
   } catch (error) {
     console.error('Error creating file:', error);
@@ -152,9 +159,10 @@ export const createFile = async (filePath, content = '') => {
  * @param {string} itemPath - The path of the file or folder to delete.
  * @return {Promise<Object>} The delete response.
  */
-export const deleteItem = async (itemPath) => {
+export const deleteItem = async (itemPath, space = null) => {
   try {
-    const response = await api.delete(`/files/${itemPath}`);
+    const url = space ? `/${space}/files/${itemPath}` : `/files/${itemPath}`;
+    const response = await api.delete(url);
     return response.data;
   } catch (error) {
     console.error('Error deleting item:', error);
@@ -168,9 +176,10 @@ export const deleteItem = async (itemPath) => {
  * @param {string} newName - The new name for the item.
  * @return {Promise<Object>} The rename response.
  */
-export const renameItem = async (itemPath, newName) => {
+export const renameItem = async (itemPath, newName, space = null) => {
   try {
-    const response = await api.put(`/rename/${itemPath}`, {newName});
+    const url = space ? `/${space}/rename/${itemPath}` : `/rename/${itemPath}`;
+    const response = await api.put(url, {newName});
     return response.data;
   } catch (error) {
     console.error('Error renaming item:', error);
@@ -182,9 +191,10 @@ export const renameItem = async (itemPath, newName) => {
  * Fetches all available templates.
  * @return {Promise<Array>} The templates array.
  */
-export const fetchTemplates = async () => {
+export const fetchTemplates = async (space = null) => {
   try {
-    const response = await api.get('/templates');
+    const url = space ? `/${space}/templates` : '/templates';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching templates:', error);
@@ -515,6 +525,20 @@ export const getFileMetadata = async (filePath) => {
     return response.data;
   } catch (error) {
     console.error('Error getting file metadata:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches the user's allowed spaces.
+ * @return {Promise<Array>} The user's allowed spaces data.
+ */
+export const fetchUserSpaces = async () => {
+  try {
+    const response = await api.get('/user/spaces');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user spaces:', error);
     throw error;
   }
 };

@@ -7,10 +7,10 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
-- Spaces concept that can user different storage solutions (Private, Public, Enterprise)
+- Spaces concept that can user different storage solutions (Private, Shared, Enterprise) - dome
 
 #### Server
-- Security: Roles and permissions (read, write, backoffice, spaces)
+- Security: Roles and permissions (read, write, backoffice, spaces) - done
 
 ### Phase 3: Shoprite enterprise integration
 #### Client

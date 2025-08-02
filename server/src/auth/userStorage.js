@@ -2,7 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const USERS_FILE = path.join(__dirname, 'users.json');
+const USERS_FILE = path.join(__dirname, '../../../server-data/users.json');
 
 class UserStorage {
   constructor() {
@@ -51,7 +51,7 @@ class UserStorage {
     this.users.push(user);
     await this.saveUsers();
     
-    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [] };
+    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [], spaces: user.spaces };
   }
 
   findUserByUsername(username) {
@@ -82,7 +82,7 @@ class UserStorage {
       return null;
     }
 
-    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [] };
+    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [], spaces: user.spaces };
   }
 
   getAllUsers() {

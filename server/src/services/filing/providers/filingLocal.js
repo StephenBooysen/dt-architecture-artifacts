@@ -21,8 +21,9 @@ class LocalFilingProvider {
     }
     
     // Prevent path traversal attacks
-    const resolvedPath = path.join(this.options.localPath, filePath);
-    if (!resolvedPath.startsWith(this.options.localPath)) {
+    const resolvedPath = path.resolve(path.join(this.options.localPath, filePath));
+    const basePath = path.resolve(this.options.localPath);
+    if (!resolvedPath.startsWith(basePath)) {
         throw new Error('Access denied: Path traversal detected.');
     }
     return resolvedPath;

@@ -44,6 +44,11 @@ const Users = () => {
                 </label>
               </div>
             </div>
+            <div className="form-group">
+              <label htmlFor="editSpaces">Allowed Spaces (comma-separated):</label>
+              <input type="text" id="editSpaces" placeholder="e.g., Personal,Shared,Enterprise" />
+              <small>Enter space names separated by commas. User will only have access to these spaces.</small>
+            </div>
             <div className="modal-actions">
               <button type="button" className="btn btn-secondary" id="cancelEdit">Cancel</button>
               <button type="submit" className="btn btn-primary">Save Changes</button>
@@ -89,6 +94,7 @@ const Users = () => {
                     <th>Username</th>
                     <th>Date Created</th>
                     <th>Roles</th>
+                    <th>Spaces</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -98,6 +104,7 @@ const Users = () => {
                       <td>\${user.username}</td>
                       <td>\${new Date(user.createdAt).toLocaleDateString()}</td>
                       <td>\${user.roles ? user.roles.join(', ') : 'None'}</td>
+                      <td>\${user.spaces || 'None'}</td>
                       <td>
                         <button class="btn btn-sm btn-primary" data-user-id="\${user.id}">
                           Edit
@@ -137,6 +144,7 @@ const Users = () => {
 
           // Populate form
           document.getElementById('editUsername').value = currentEditingUser.username;
+          document.getElementById('editSpaces').value = currentEditingUser.spaces || '';
           
           // Clear checkboxes
           document.getElementById('roleRead').checked = false;
@@ -165,6 +173,7 @@ const Users = () => {
           if (!currentEditingUser) return;
 
           const username = document.getElementById('editUsername').value;
+          const spaces = document.getElementById('editSpaces').value;
           const roles = [];
           
           if (document.getElementById('roleRead').checked) roles.push('read');
@@ -175,7 +184,7 @@ const Users = () => {
             const response = await fetch(\`/api/users/\${currentEditingUser.id}\`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, roles })
+              body: JSON.stringify({ username, roles, spaces })
             });
 
             if (response.ok) {
@@ -433,6 +442,14 @@ const Users = () => {
           gap: 1rem;
           justify-content: flex-end;
           margin-top: 2rem;
+        }
+
+        .form-group small {
+          display: block;
+          margin-top: 0.5rem;
+          font-size: 0.75rem;
+          color: #5e6c84;
+          font-weight: 400;
         }
       `}} />
     </>

@@ -1799,13 +1799,14 @@ app.get('/users', requireServerAuth, (req, res) => {
 // User management API endpoints
 app.get('/api/users', requireServerAuth, (req, res) => {
   try {
-    const users = require('./src/auth/users.json');
+    const users = require('../server-data/users.json');
     // Return users without password field
     const safeUsers = users.map(user => ({
       id: user.id,
       username: user.username,
       createdAt: user.createdAt,
-      roles: user.roles || []
+      roles: user.roles || [],
+      spaces: user.spaces || ''
     }));
     res.json(safeUsers);
   } catch (error) {
@@ -1817,11 +1818,11 @@ app.put('/api/users/:id', requireServerAuth, (req, res) => {
   try {
     const fs = require('fs');
     const path = require('path');
-    const { username, roles } = req.body;
+    const { username, roles, spaces } = req.body;
     const userId = req.params.id;
     
     // Use the correct path to users.json
-    const usersFilePath = path.join(__dirname, 'src', 'auth', 'users.json');
+    const usersFilePath = path.join(__dirname, '..', 'server-data', 'users.json');
     
     // Read the current users data
     const usersData = fs.readFileSync(usersFilePath, 'utf8');
@@ -1836,6 +1837,7 @@ app.put('/api/users/:id', requireServerAuth, (req, res) => {
     // Update user data
     users[userIndex].username = username;
     users[userIndex].roles = roles;
+    users[userIndex].spaces = spaces;
     
     // Write back to file
     fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
@@ -1845,13 +1847,149 @@ app.put('/api/users/:id', requireServerAuth, (req, res) => {
       id: users[userIndex].id,
       username: users[userIndex].username,
       createdAt: users[userIndex].createdAt,
-      roles: users[userIndex].roles
+      roles: users[userIndex].roles,
+      spaces: users[userIndex].spaces
     };
     
     res.json(updatedUser);
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+
+// Spaces management page
+app.get('/spaces', requireServerAuth, (req, res) => {
+  const html = renderComponent('spaces', {
+    activeSection: 'spaces',
+    title: 'Spaces Management - Architecture Artifacts'
+  });
+  res.send(html);
+});
+
+// Spaces management API endpoints
+app.get('/api/spaces', requireServerAuth, (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const spacesFilePath = path.join(__dirname, '..', 'server-data', 'spaces.json');
+    
+    if (!fs.existsSync(spacesFilePath)) {
+      return res.json([]);
+    }
+    
+    const spacesData = fs.readFileSync(spacesFilePath, 'utf8');
+    const spaces = JSON.parse(spacesData);
+    res.json(spaces);
+  } catch (error) {
+    console.error('Error loading spaces:', error);
+    res.status(500).json({ error: 'Failed to load spaces' });
+  }
+});
+
+app.post('/api/spaces', requireServerAuth, (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const { space, access, filing } = req.body;
+    
+    if (!space || !access || !filing) {
+      return res.status(400).json({ error: 'Missing required fields: space, access, filing' });
+    }
+    
+    const spacesFilePath = path.join(__dirname, '..', 'server-data', 'spaces.json');
+    
+    let spaces = [];
+    if (fs.existsSync(spacesFilePath)) {
+      const spacesData = fs.readFileSync(spacesFilePath, 'utf8');
+      spaces = JSON.parse(spacesData);
+    }
+    
+    // Check if space name already exists
+    if (spaces.some(s => s.space === space)) {
+      return res.status(400).json({ error: 'Space name already exists' });
+    }
+    
+    const newSpace = { space, access, filing };
+    spaces.push(newSpace);
+    
+    fs.writeFileSync(spacesFilePath, JSON.stringify(spaces, null, 2));
+    
+    res.json(newSpace);
+  } catch (error) {
+    console.error('Error creating space:', error);
+    res.status(500).json({ error: 'Failed to create space' });
+  }
+});
+
+app.put('/api/spaces/:index', requireServerAuth, (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const { space, access, filing } = req.body;
+    const spaceIndex = parseInt(req.params.index);
+    
+    if (!space || !access || !filing) {
+      return res.status(400).json({ error: 'Missing required fields: space, access, filing' });
+    }
+    
+    const spacesFilePath = path.join(__dirname, '..', 'server-data', 'spaces.json');
+    
+    if (!fs.existsSync(spacesFilePath)) {
+      return res.status(404).json({ error: 'Spaces file not found' });
+    }
+    
+    const spacesData = fs.readFileSync(spacesFilePath, 'utf8');
+    const spaces = JSON.parse(spacesData);
+    
+    if (spaceIndex < 0 || spaceIndex >= spaces.length) {
+      return res.status(404).json({ error: 'Space not found' });
+    }
+    
+    // Check if space name already exists (excluding current space)
+    if (spaces.some((s, idx) => s.space === space && idx !== spaceIndex)) {
+      return res.status(400).json({ error: 'Space name already exists' });
+    }
+    
+    spaces[spaceIndex] = { space, access, filing };
+    
+    fs.writeFileSync(spacesFilePath, JSON.stringify(spaces, null, 2));
+    
+    res.json(spaces[spaceIndex]);
+  } catch (error) {
+    console.error('Error updating space:', error);
+    res.status(500).json({ error: 'Failed to update space' });
+  }
+});
+
+app.delete('/api/spaces/:index', requireServerAuth, (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const spaceIndex = parseInt(req.params.index);
+    
+    const spacesFilePath = path.join(__dirname, '..', 'server-data', 'spaces.json');
+    
+    if (!fs.existsSync(spacesFilePath)) {
+      return res.status(404).json({ error: 'Spaces file not found' });
+    }
+    
+    const spacesData = fs.readFileSync(spacesFilePath, 'utf8');
+    const spaces = JSON.parse(spacesData);
+    
+    if (spaceIndex < 0 || spaceIndex >= spaces.length) {
+      return res.status(404).json({ error: 'Space not found' });
+    }
+    
+    const deletedSpace = spaces.splice(spaceIndex, 1)[0];
+    
+    fs.writeFileSync(spacesFilePath, JSON.stringify(spaces, null, 2));
+    
+    res.json({ message: 'Space deleted successfully', deletedSpace });
+  } catch (error) {
+    console.error('Error deleting space:', error);
+    res.status(500).json({ error: 'Failed to delete space' });
   }
 });
 

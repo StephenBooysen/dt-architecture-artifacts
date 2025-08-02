@@ -21,7 +21,7 @@
  */
 
 import React, {useState, useEffect, useRef} from 'react';
-import { fetchTemplates } from '../services/api';
+import { fetchTemplates, fetchUserSpaces } from '../services/api';
 
 /**
  * FileTree component for displaying and managing file/folder structure.
@@ -59,6 +59,9 @@ const FileTree = ({
   draftFiles = [],
   providerInfo = { provider: 'git', supportsDrafts: true },
   onViewChange,
+  currentSpace,
+  onSpaceChange,
+  isAuthenticated,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
@@ -66,6 +69,7 @@ const FileTree = ({
   const [inputValue, setInputValue] = useState('');
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [spaces, setSpaces] = useState([]);
   // Function to collect all folder paths recursively
   const collectAllFolderPaths = (items) => {
     const folderPaths = new Set();

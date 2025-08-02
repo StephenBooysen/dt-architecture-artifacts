@@ -37,6 +37,7 @@ import SearchResultsView from './components/SearchResultsView';
 import HomeView from './components/HomeView';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
+import SpaceSelector from './components/SpaceSelector';
 import {
   fetchFiles,
   fetchFile,
@@ -92,6 +93,9 @@ function AppContent() {
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
+  const [currentSpace, setCurrentSpace] = useState(() => {
+    return localStorage.getItem('architecture-artifacts-current-space') || null;
+  });
 
   useEffect(() => {
     // Only load data if user is authenticated
@@ -340,10 +344,11 @@ function AppContent() {
     });
   };
 
-  const loadFiles = async (force = false) => {
+  const loadFiles = async (force = false, spaceOverride = null) => {
     try {
       setIsLoading(true);
-      const fileTree = await fetchFiles();
+      const space = spaceOverride || currentSpace;
+      const fileTree = await fetchFiles(space);
       const updatedTree = diffAndUpdateTree(files, fileTree);
       
       // Only update if tree actually changed or force is true
@@ -528,7 +533,7 @@ function AppContent() {
     
     try {
       setIsFileLoading(true);
-      const data = await fetchFile(filePath);
+      const data = await fetchFile(filePath, currentSpace);
       setSelectedFile(filePath);
       setFileData(data);
       setFileContent(data.content || '');
@@ -580,7 +585,7 @@ function AppContent() {
         toast.success('Template saved successfully');
       } else {
         // Regular file save
-        await saveFile(selectedFile, fileContent);
+        await saveFile(selectedFile, fileContent, currentSpace);
         setHasChanges(false);
         toast.success('File saved successfully');
       }
@@ -641,7 +646,7 @@ function AppContent() {
     
     try {
       // Make API call to persist on server
-      await createFolder(folderPath);
+      await createFolder(folderPath, currentSpace);
       toast.success('Folder created successfully');
     } catch (error) {
       // Rollback on error - remove the folder from tree
@@ -677,7 +682,7 @@ function AppContent() {
     
     try {
       // Make API call to persist on server
-      await createFile(filePath, templateContent);
+      await createFile(filePath, templateContent, currentSpace);
       toast.success('File created successfully');
       // Automatically open the newly created file
       await handleFileSelect(filePath);
@@ -711,7 +716,7 @@ function AppContent() {
     
     try {
       // Make API call to persist on server
-      await deleteItem(itemPath);
+      await deleteItem(itemPath, currentSpace);
       toast.success('Item deleted successfully');
       
       // Check for drafts after deleting item
@@ -748,7 +753,7 @@ function AppContent() {
     
     try {
       // Make API call to persist on server
-      const result = await renameItem(itemPath, newName);
+      const result = await renameItem(itemPath, newName, currentSpace);
       toast.success('Item renamed successfully');
     } catch (error) {
       // Rollback on error - restore original tree and selection
@@ -852,10 +857,11 @@ function AppContent() {
     setExpandedFolders(newExpanded);
   }, [expandedFolders]);
 
-  const loadTemplates = async () => {
+  const loadTemplates = async (spaceOverride = null) => {
     try {
       setIsTemplatesLoading(true);
-      const templatesData = await fetchTemplates();
+      const space = spaceOverride || currentSpace;
+      const templatesData = await fetchTemplates(space);
       setTemplates(templatesData);
     } catch (error) {
       console.error('Failed to load templates:', error);
@@ -1042,6 +1048,24 @@ function AppContent() {
     setSearchResults([]);
     setShowSearchResults(false);
     setCurrentView('files');
+  };
+
+  const handleSpaceChange = (newSpace) => {
+    setCurrentSpace(newSpace);
+    localStorage.setItem('architecture-artifacts-current-space', newSpace);
+    
+    // Clear current file selection and content when switching spaces
+    setSelectedFile(null);
+    setFileContent('');
+    setFileData(null);
+    setHasChanges(false);
+    
+    // Reload files and templates for the new space
+    loadFiles(false, newSpace);
+    loadTemplates(newSpace);
+    
+    // Show success message
+    toast.success(`Switched to ${newSpace} space`);
   };
 
   // Close search results when clicking outside
@@ -1321,6 +1345,9 @@ function AppContent() {
                 draftFiles={draftFiles}
                 providerInfo={providerInfo}
                 onViewChange={handleViewChange}
+                currentSpace={currentSpace}
+                onSpaceChange={handleSpaceChange}
+                isAuthenticated={isAuthenticated}
               />
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>

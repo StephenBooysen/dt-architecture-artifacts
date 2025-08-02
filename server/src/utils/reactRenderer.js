@@ -31,6 +31,7 @@ const Workflow = require('../components/pages/Workflow.jsx').default;
 const Working = require('../components/pages/Working.jsx').default;
 const SwaggerUI = require('../components/pages/SwaggerUI.jsx').default;
 const Users = require('../components/pages/Users.jsx').default;
+const Spaces = require('../components/pages/Spaces.jsx').default;
 
 /**
  * Render a React component to HTML string
@@ -87,6 +88,9 @@ function renderComponent(component, props = {}) {
       break;
     case 'users':
       pageComponent = React.createElement(Users);
+      break;
+    case 'spaces':
+      pageComponent = React.createElement(Spaces);
       break;
     default:
       pageComponent = React.createElement('div', null, 'Page not found');
