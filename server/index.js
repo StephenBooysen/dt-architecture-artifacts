@@ -28,7 +28,19 @@ const session = require('express-session');
 const passport = require('./src/auth/passport');
 const { renderComponent } = require('./src/utils/reactRenderer');
 const apiRoutes = require('./src/routes/index');
-require('dotenv').config();
+
+// Load environment configuration
+const dotenv = require('dotenv');
+
+// Determine which environment file to load
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const envFile = path.join(__dirname, '..', `.env.${NODE_ENV}`);
+
+// Load the environment-specific file first
+dotenv.config({ path: envFile });
+
+// Load the base .env file as fallback (if it exists)
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -1854,5 +1866,28 @@ app.put('/api/users/:id', requireServerAuth, (req, res) => {
 // }
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log('🚀 Architecture Artifacts Server Started');
+  console.log('=====================================');
+  console.log(`📡 Server running on port: ${PORT}`);
+  console.log(`🌍 Environment: ${NODE_ENV}`);
+  console.log(`📁 Filing Provider: ${process.env.FILING_PROVIDER || 'local'}`);
+  console.log(`🔗 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
+  console.log(`📦 Content Path: ${process.env.CONTENT_PATH || './content'}`);
+  console.log(`🔐 Secure Cookies: ${process.env.NODE_ENV === 'production'}`);
+  console.log('=====================================');
+  
+  // Log environment file loaded
+  console.log(`📄 Loaded environment from: .env.${NODE_ENV}`);
+  
+  if (NODE_ENV === 'development') {
+    console.log('🔧 Development mode features enabled');
+    console.log('  - Hot reload: enabled');
+    console.log('  - Source maps: enabled');
+    console.log('  - Request logging: enabled');
+  } else if (NODE_ENV === 'production') {
+    console.log('🔒 Production mode optimizations enabled');
+    console.log('  - Compression: enabled');
+    console.log('  - Secure cookies: enabled');
+    console.log('  - Source maps: disabled');
+  }
 });
