@@ -7,13 +7,9 @@
 
 ### Phase 2: Fully functioning wiki for more than me (multiple users)
 #### Client
-
-- File manager for git - todo
 - Spaces concept that can user different storage solutions (Private, Public, Enterprise)
 
 #### Server
-- Settings: Git and files
-- API Monitor for services
 - Security: Roles and permissions (read, write, backoffice, spaces)
 
 ### Phase 3: Shoprite enterprise integration
