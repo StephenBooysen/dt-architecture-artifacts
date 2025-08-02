@@ -2,7 +2,7 @@
  * @fileoverview Local file system filing provider.
  */
 
-const fs = require('fs').promises;
+const fs = require('fs-extra');
 const path = require('path');
 
 class LocalFilingProvider {
@@ -45,7 +45,7 @@ class LocalFilingProvider {
 
   async delete(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    await fs.unlink(absolutePath);
+    await fs.remove(absolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:delete', { filePath, isDraft: false });
   }
@@ -79,16 +79,10 @@ class LocalFilingProvider {
 
   async exists(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    try {
-      await fs.access(absolutePath);
-      if (this.eventEmitter_)
-        this.eventEmitter_.emit('filing:exists', { filePath, exists: true, isDraft: false });
-      return true;
-    } catch (error) {
-      if (this.eventEmitter_)
-        this.eventEmitter_.emit('filing:exists', { filePath, exists: false, isDraft: false });
-      return false;
-    }
+    const exists = await fs.pathExists(absolutePath);
+    if (this.eventEmitter_)
+      this.eventEmitter_.emit('filing:exists', { filePath, exists, isDraft: false });
+    return exists;
   }
 
   async mkdir(dirPath, options = { recursive: true }) {
@@ -101,7 +95,7 @@ class LocalFilingProvider {
   async copy(sourcePath, destPath) {
     const sourceAbsolutePath = this._resolvePath(sourcePath);
     const destAbsolutePath = this._resolvePath(destPath);
-    await fs.copyFile(sourceAbsolutePath, destAbsolutePath);
+    await fs.copy(sourceAbsolutePath, destAbsolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:copy', { sourcePath, destPath, isDraft: false });
   }
@@ -157,15 +151,9 @@ class LocalFilingProvider {
 
   async ensureDir(dirPath) {
     const absolutePath = this._resolvePath(dirPath);
-    try {
-      await fs.mkdir(absolutePath, { recursive: true });
-      if (this.eventEmitter_)
-        this.eventEmitter_.emit('filing:ensureDir', { dirPath });
-    } catch (error) {
-      if (error.code !== 'EEXIST') {
-        throw error;
-      }
-    }
+    await fs.ensureDir(absolutePath);
+    if (this.eventEmitter_)
+      this.eventEmitter_.emit('filing:ensureDir', { dirPath });
   }
 
   async rename(sourcePath, destPath) {

@@ -18,27 +18,31 @@ const passport = require('../auth/passport');
 const EventEmitter = require('events');
 const createFilingService = require('../services/filing/index.js');
 
-// Create an instance of the filing service
-/*
-const filing = createFilingService('local', {
-  localPath: path.join(__dirname, '../../../content'), "ED":"TED"
-}, new EventEmitter());
-*/
-
-// Create an instance of the Git filing service
-const filing = createFilingService('git', {
-  repo: 'https://github.com/StephenBooysen/dt-architecture-artifacts-testing.git',
-  localPath: path.join(__dirname, '../../../temp-content'),
-  branch: 'main',
-  fetchInterval: 5000 // 5 seconds
+// Instantiate the filing provider
+var filing = createFilingService('local', {
+  localPath: path.join(__dirname, '../../../content')
 }, new EventEmitter());
 
+
+if (process.env.FILING_PROVIDER === 'git') {
+  var filing = createFilingService('git', {
+    repo: 'https://github.com/StephenBooysen/dt-architecture-artifacts-testing.git',
+    localPath: path.join(__dirname, '../../../temp-content'),
+    branch: 'main',
+    fetchInterval: 5000 // 5 seconds
+  }, new EventEmitter());
+  console.log('Using Git filing provider');
+}
 
 const router = express.Router();
 const git = simpleGit();
 
-/** @const {string} Path to the content directory where files are stored */
-const contentDir = path.join(__dirname, '../../../temp-content');
+/** @const {string} Path to the base content directory */
+const baseContentDir = path.join(__dirname, '../../../content');
+
+/** @const {string} Path to the markdown files directory */
+const contentDir = path.join(baseContentDir, 'markdown');
+
 
 /**
  * Authentication middleware to protect routes
@@ -113,9 +117,9 @@ const upload = multer({
 });
 
 /**
- * Ensures the content directory exists, creating it if necessary.
+ * Ensures the markdown directory exists, creating it if necessary.
  * 
- * This function checks if the content directory exists and creates it
+ * This function checks if the markdown directory exists and creates it
  * recursively if it doesn't exist. It's used to ensure the storage
  * location is available before performing file operations.
  * 
@@ -124,18 +128,18 @@ const upload = multer({
  */
 async function ensureContentDir() {
   try {
-    const exists = await filing.exists(contentDir);
+    const exists = await filing.exists('markdown');
     if (!exists) {
-      await filing.mkdir(contentDir, {recursive: true});
+      await filing.mkdir('markdown', {recursive: true});
     }
   } catch (error) {
-    await filing.mkdir(contentDir, {recursive: true});
+    await filing.mkdir('markdown', {recursive: true});
   }
 }
 
 /**
  * Initializes the required directory structure for the application.
- * Creates content and content-templates directories and commits them if needed.
+ * Creates markdown and templates directories and commits them if needed.
  * 
  * @return {Promise<void>} Promise that resolves when directories are set up
  */
@@ -143,29 +147,28 @@ async function initializeDirectoryStructure() {
   try {
     let needsCommit = false;
     
-    // Ensure main content directory exists
-    const contentExists = await filing.exists(contentDir);
-    if (!contentExists) {
-      await filing.mkdir(contentDir, {recursive: true});
+    // Ensure markdown directory exists
+    const markdownExists = await filing.exists('markdown');
+    if (!markdownExists) {
+      await filing.mkdir('markdown', {recursive: true});
       needsCommit = true;
-      console.log('📁 Created content directory');
+      console.log('📁 Created markdown directory');
     }
     
-    // Ensure content-templates directory exists
-    const templatesDir = path.join(contentDir, 'content-templates');
-    const templatesExists = await filing.exists(templatesDir);
+    // Ensure templates directory exists
+    const templatesExists = await filing.exists('templates');
     if (!templatesExists) {
-      await filing.mkdir(templatesDir, {recursive: true});
+      await filing.mkdir('templates', {recursive: true});
       needsCommit = true;
-      console.log('📁 Created content-templates directory');
+      console.log('📁 Created templates directory');
     }
     
-    // Create initial README if content directory is empty
-    const contentFiles = await filing.list(contentDir);
-    const hasContent = contentFiles.some(file => file !== '.git' && file !== 'content-templates');
+    // Create initial README if markdown directory is empty
+    const contentFiles = await filing.list('markdown');
+    const hasContent = contentFiles.some(file => file !== '.git');
     
     if (!hasContent) {
-      const readmePath = path.join(contentDir, 'README.md');
+      const readmePath = 'markdown/README.md';
       const readmeExists = await filing.exists(readmePath);
       
       if (!readmeExists) {
@@ -177,8 +180,8 @@ This repository contains your architectural documentation and templates.
 
 ## Structure
 
-- \`content/\` - Your markdown documentation files
-- \`content-templates/\` - Reusable document templates
+- \`markdown/\` - Your markdown documentation files
+- \`templates/\` - Reusable document templates
 
 ## Getting Started
 
@@ -293,12 +296,13 @@ function replacePlaceholders(content, context = {}) {
 }
 
 /**
- * Recursively builds a directory tree structure for all files.
- * @param {string} relativePath - The relative path from the content root to scan.
+ * Recursively builds a directory tree structure for markdown files.
+ * @param {string} relativePath - The relative path from the markdown root to scan.
  * @return {Promise<Array>} The directory tree structure.
  */
 async function getDirectoryTree(relativePath = '') {
-  const items = await filing.listDetailed(relativePath || '.');
+  const markdownBasePath = relativePath ? `markdown/${relativePath}` : 'markdown';
+  const items = await filing.listDetailed(markdownBasePath);
   const tree = [];
 
   for (const item of items) {
@@ -489,18 +493,19 @@ router.post('/files', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    // Check if file already exists (use relative path)
-    const fileExists = await filing.exists(filePath);
+    // Check if file already exists (use relative path with markdown prefix)
+    const markdownFilePath = `markdown/${filePath}`;
+    const fileExists = await filing.exists(markdownFilePath);
     if (fileExists) {
       return res.status(409).json({error: 'File already exists'});
     }
 
-    // Ensure directory exists (use relative path)
-    const dirPath = path.dirname(filePath);
+    // Ensure directory exists (use relative path with markdown prefix)
+    const dirPath = path.dirname(markdownFilePath);
     if (dirPath && dirPath !== '.' && dirPath !== '/') {
       await filing.mkdir(dirPath, {recursive: true});
     }
-    await filing.create(filePath, content);
+    await filing.create(markdownFilePath, content);
     
     res.json({message: 'File created successfully', path: filePath});
   } catch (error) {
@@ -533,8 +538,9 @@ router.get('/files/*', async (req, res) => {
 
     // Handle different file types
     if (fileType === 'markdown' || fileType === 'text') {
-      // Read as text using relative path for Git filing provider
-      const content = await filing.read(filePath, 'utf8');
+      // Read as text using relative path with markdown prefix
+      const markdownFilePath = `markdown/${filePath}`;
+      const content = await filing.read(markdownFilePath, 'utf8');
       
       // For markdown files, return both full content and clean content
       if (fileType === 'markdown') {
@@ -554,13 +560,15 @@ router.get('/files/*', async (req, res) => {
         res.json({content, path: filePath, fileType});
       }
     } else if (fileType === 'image' || fileType === 'pdf') {
-      // Read as binary and convert to base64 using relative path
-      const buffer = await filing.read(filePath);
+      // Read as binary and convert to base64 using relative path with markdown prefix
+      const markdownFilePath = `markdown/${filePath}`;
+      const buffer = await filing.read(markdownFilePath);
       const base64Content = buffer.toString('base64');
       res.json({content: base64Content, path: filePath, fileType, encoding: 'base64'});
     } else {
-      // Unknown file type - return file info for download using relative path
-      const stats = await filing.stat(filePath);
+      // Unknown file type - return file info for download using relative path with markdown prefix
+      const markdownFilePath = `markdown/${filePath}`;
+      const stats = await filing.stat(markdownFilePath);
       res.json({
         path: filePath,
         fileType,
@@ -584,7 +592,8 @@ router.get('/download/*', async (req, res) => {
     }
 
     const fileName = path.basename(filePath);
-    const stats = await filing.stat(filePath);
+    const markdownFilePath = `markdown/${filePath}`;
+    const stats = await filing.stat(markdownFilePath);
     
     // Set appropriate headers for download
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -617,8 +626,8 @@ router.get('/download/*', async (req, res) => {
     const contentType = mimeTypes[extension] || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     
-    // Stream the file using relative path
-    const fileBuffer = await filing.read(filePath);
+    // Stream the file using relative path with markdown prefix
+    const fileBuffer = await filing.read(markdownFilePath);
     res.send(fileBuffer);
   } catch (error) {
     console.error('Error downloading file:', error);
@@ -638,13 +647,17 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const finalFilePath = path.join(folderPath, req.file.filename);
     const finalFullPath = path.join(contentDir, finalFilePath);
     
+    // Final path should include markdown prefix
+    const finalMarkdownPath = `markdown/${finalFilePath}`;
+    
     // Convert absolute temp file path to relative path for filing provider
-    const tempFileRelativePath = path.relative(contentDir, tempFilePath);
+    const tempFileRelativePath = path.relative(baseContentDir, tempFilePath);
     
     console.log('Folder path from request:', folderPath);
     console.log('Temp file path (absolute):', tempFilePath);
     console.log('Temp file path (relative):', tempFileRelativePath);
     console.log('Final file path:', finalFilePath);
+    console.log('Final markdown path:', finalMarkdownPath);
     console.log('Final full path:', finalFullPath);
     
     // Validate that the final path is within the content directory
@@ -656,12 +669,13 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     // Create the target directory if it doesn't exist
     if (folderPath) {
-      await filing.mkdir(folderPath, { recursive: true });
+      const markdownFolderPath = `markdown/${folderPath}`;
+      await filing.mkdir(markdownFolderPath, { recursive: true });
     }
     
     // Move the file to the correct location using relative paths
-    if (tempFileRelativePath !== finalFilePath) {
-      await filing.move(tempFileRelativePath, finalFilePath);
+    if (tempFileRelativePath !== finalMarkdownPath) {
+      await filing.move(tempFileRelativePath, finalMarkdownPath);
     }
 
     res.json({
@@ -697,7 +711,8 @@ router.post('/files/*', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
     
-    await filing.mkdir(path.dirname(fullPath), {recursive: true});
+    const markdownFilePath = `markdown/${filePath}`;
+    await filing.mkdir(path.dirname(markdownFilePath), {recursive: true});
     
     // For markdown files, add metadata tracking
     let finalContent = content;
@@ -729,7 +744,7 @@ router.post('/files/*', requireAuth, async (req, res) => {
       }
     }
     
-    await filing.update(filePath, finalContent); // Use relative path for filing provider
+    await filing.update(markdownFilePath, finalContent); // Use relative path with markdown prefix
     res.json({message: 'File saved successfully', path: filePath});
   } catch (error) {
     console.error('Error saving file:', error);
@@ -745,12 +760,13 @@ router.delete('/files/*', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    const stats = await filing.stat(filePath); // Use relative path for filing provider
+    const markdownFilePath = `markdown/${filePath}`;
+    const stats = await filing.stat(markdownFilePath); // Use relative path with markdown prefix
     if (stats.isDirectory) {
-      await filing.delete(filePath); // Use relative path for filing provider
+      await filing.delete(markdownFilePath); // Use relative path with markdown prefix
       res.json({message: 'Folder deleted successfully', path: filePath});
     } else {
-      await filing.delete(filePath); // Use relative path for filing provider
+      await filing.delete(markdownFilePath); // Use relative path with markdown prefix
       res.json({message: 'File deleted successfully', path: filePath});
     }
   } catch (error) {
@@ -767,7 +783,8 @@ router.delete('/folders/*', async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    await filing.delete(folderPath); // Use relative path for filing provider
+    const markdownFolderPath = `markdown/${folderPath}`;
+    await filing.delete(markdownFolderPath); // Use relative path with markdown prefix
     res.json({message: 'Folder deleted successfully', path: folderPath});
   } catch (error) {
     console.error('Error deleting folder:', error);
@@ -797,14 +814,16 @@ router.put('/rename/*', async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    // Check if new path already exists
-    const newPathExists = await filing.exists(newFullPath);
+    // Check if new path already exists (using markdown prefix)
+    const oldMarkdownPath = `markdown/${oldPath}`;
+    const newMarkdownPath = `markdown/${path.relative(contentDir, newFullPath)}`;
+    const newPathExists = await filing.exists(newMarkdownPath);
     if (newPathExists) {
       return res.status(409).json({error: 'A file or folder with that name already exists'});
     }
 
     // Perform the rename
-    await filing.move(oldFullPath, newFullPath);
+    await filing.move(oldMarkdownPath, newMarkdownPath);
     
     const newPath = path.relative(contentDir, newFullPath);
     res.json({message: 'Item renamed successfully', oldPath, newPath});
@@ -1036,14 +1055,15 @@ router.get('/search/files', async (req, res) => {
 
     const searchResults = [];
     
-    // Recursive function to search through files
+    // Recursive function to search through files in markdown directory
     const searchInDirectory = async (dirPath) => {
       try {
-        const items = await filing.listDetailed(dirPath);
+        const markdownDirPath = dirPath ? `markdown/${dirPath}` : 'markdown';
+        const items = await filing.listDetailed(markdownDirPath);
         
         for (const item of items) {
-          const fullPath = path.join(dirPath, item.name);
-          const relativePath = path.relative(contentDir, fullPath);
+          const fullPath = path.join(dirPath || '', item.name);
+          const relativePath = fullPath;
           
           if (item.isDirectory) {
             await searchInDirectory(fullPath);
@@ -1064,7 +1084,7 @@ router.get('/search/files', async (req, res) => {
       }
     };
 
-    await searchInDirectory(contentDir);
+    await searchInDirectory('');
     
     res.json(searchResults.slice(0, 10)); // Limit results
   } catch (error) {
@@ -1084,20 +1104,22 @@ router.get('/search/content', async (req, res) => {
     const searchResults = [];
     const searchRegex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
     
-    // Recursive function to search through file contents
+    // Recursive function to search through file contents in markdown directory
     const searchInDirectory = async (dirPath) => {
       try {
-        const items = await filing.listDetailed(dirPath);
+        const markdownDirPath = dirPath ? `markdown/${dirPath}` : 'markdown';
+        const items = await filing.listDetailed(markdownDirPath);
         
         for (const item of items) {
-          const fullPath = path.join(dirPath, item.name);
-          const relativePath = path.relative(contentDir, fullPath);
+          const fullPath = path.join(dirPath || '', item.name);
+          const relativePath = fullPath;
           
           if (item.isDirectory) {
             await searchInDirectory(fullPath);
           } else if (item.isFile && item.name.endsWith('.md')) {
             try {
-              const content = await filing.read(fullPath, 'utf8');
+              const markdownFilePath = `markdown/${fullPath}`;
+              const content = await filing.read(markdownFilePath, 'utf8');
               const matches = [];
               let match;
               
@@ -1139,7 +1161,7 @@ router.get('/search/content', async (req, res) => {
       }
     };
 
-    await searchInDirectory(contentDir);
+    await searchInDirectory('');
     
     // Sort by relevance (files with more matches first)
     searchResults.sort((a, b) => {
@@ -1160,17 +1182,15 @@ router.get('/search/content', async (req, res) => {
 // Get all templates
 router.get('/templates', async (req, res) => {
   try {
-    const templatesDir = path.join(contentDir, 'content-templates');
-    
     // Create templates directory if it doesn't exist
-    await filing.ensureDir(templatesDir);
+    await filing.ensureDir('templates');
     
-    const files = await filing.list(templatesDir);
+    const files = await filing.list('templates');
     const templates = [];
     
     for (const file of files) {
       if (file.endsWith('.json')) {
-        const filePath = path.join(templatesDir, file);
+        const filePath = `templates/${file}`;
         const templateData = JSON.parse(await filing.read(filePath, 'utf8'));
         templates.push(templateData);
       }
@@ -1187,9 +1207,8 @@ router.get('/templates', async (req, res) => {
 router.get('/templates/:templateName', async (req, res) => {
   try {
     const templateName = req.params.templateName;
-    const templatesDir = path.join(contentDir, 'content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
-    const filePath = path.join(templatesDir, templateFile);
+    const filePath = `templates/${templateFile}`;
     
     const templateData = JSON.parse(await filing.read(filePath, 'utf8'));
     res.json(templateData);
@@ -1208,13 +1227,11 @@ router.post('/templates', async (req, res) => {
       return res.status(400).json({error: 'Template name is required'});
     }
     
-    const templatesDir = path.join(contentDir, 'content-templates');
-    
     // Create templates directory if it doesn't exist
-    await filing.ensureDir(templatesDir);
+    await filing.ensureDir('templates');
     
     const templateFile = `${name.replace('.md', '')}.json`;
-    const filePath = path.join(templatesDir, templateFile);
+    const filePath = `templates/${templateFile}`;
     
     // Check if template already exists
     const templateExists = await filing.exists(filePath);
@@ -1243,9 +1260,8 @@ router.put('/templates/:templateName', async (req, res) => {
     const templateName = req.params.templateName;
     const { name, content, description } = req.body;
     
-    const templatesDir = path.join(contentDir, 'content-templates');
     const oldTemplateFile = `${templateName.replace('.md', '')}.json`;
-    const oldFilePath = path.join(templatesDir, oldTemplateFile);
+    const oldFilePath = `templates/${oldTemplateFile}`;
     
     // Read existing template
     const existingTemplate = JSON.parse(await filing.read(oldFilePath, 'utf8'));
@@ -1262,7 +1278,7 @@ router.put('/templates/:templateName', async (req, res) => {
     // If name changed, create new file and delete old one
     if (name && name !== templateName) {
       const newTemplateFile = `${name.replace('.md', '')}.json`;
-      const newFilePath = path.join(templatesDir, newTemplateFile);
+      const newFilePath = `templates/${newTemplateFile}`;
       
       // Check if new name already exists
       const newNameExists = await filing.exists(newFilePath);
@@ -1287,9 +1303,8 @@ router.put('/templates/:templateName', async (req, res) => {
 router.delete('/templates/:templateName', async (req, res) => {
   try {
     const templateName = req.params.templateName;
-    const templatesDir = path.join(contentDir, 'content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
-    const filePath = path.join(templatesDir, templateFile);
+    const filePath = `templates/${templateFile}`;
     
     await filing.delete(filePath);
     res.json({message: 'Template deleted successfully'});
@@ -1314,9 +1329,8 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
     }
 
     // Load the template
-    const templatesDir = path.join(contentDir, 'content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
-    const templateFilePath = path.join(templatesDir, templateFile);
+    const templateFilePath = `templates/${templateFile}`;
     
     let templateData;
     try {
@@ -1360,14 +1374,15 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
     }
 
     // Check if file already exists
-    const fileExists = await filing.exists(filePath); // Use relative path for filing provider
+    const markdownFilePath = `markdown/${filePath}`;
+    const fileExists = await filing.exists(markdownFilePath); // Use relative path with markdown prefix
     if (fileExists) {
       return res.status(409).json({error: 'File already exists'});
     }
 
     // Ensure directory exists
-    await filing.ensureDir(path.dirname(filePath)); // Use relative path for filing provider
-    await filing.create(filePath, processedContent); // Use relative path for filing provider
+    await filing.ensureDir(path.dirname(markdownFilePath)); // Use relative path with markdown prefix
+    await filing.create(markdownFilePath, processedContent); // Use relative path with markdown prefix
     
     res.json({
       message: 'File created from template successfully', 
@@ -1430,7 +1445,8 @@ router.get('/comments/*', async (req, res) => {
       return res.status(400).json({error: 'Comments are only supported for markdown files'});
     }
 
-    const content = await filing.read(fullPath, 'utf8');
+    const markdownFilePath = `markdown/${filePath}`;
+    const content = await filing.read(markdownFilePath, 'utf8');
     const comments = extractComments(content);
     const sortedComments = sortCommentsByNewest(comments);
     
@@ -1468,7 +1484,8 @@ router.post('/comments/*', requireAuth, async (req, res) => {
     }
 
     // Read the current file content
-    const markdownContent = await filing.read(fullPath, 'utf8');
+    const markdownFilePathForRead = `markdown/${filePath}`;
+    const markdownContent = await filing.read(markdownFilePathForRead, 'utf8');
     
     // Extract existing comments and clean content
     const existingComments = extractComments(markdownContent);
@@ -1486,7 +1503,8 @@ router.post('/comments/*', requireAuth, async (req, res) => {
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
     // Save the updated content
-    await filing.update(filePath, updatedMarkdownContent); // Use relative path for filing provider
+    const markdownFilePathForUpdate = `markdown/${filePath}`;
+    await filing.update(markdownFilePathForUpdate, updatedMarkdownContent); // Use relative path with markdown prefix
     
     // Return the new comment and updated list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1528,7 +1546,8 @@ router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
     }
 
     // Read the current file content
-    const markdownContent = await filing.read(fullPath, 'utf8');
+    const markdownFilePathForRead = `markdown/${filePath}`;
+    const markdownContent = await filing.read(markdownFilePathForRead, 'utf8');
     
     // Extract existing comments and clean content
     const existingComments = extractComments(markdownContent);
@@ -1554,7 +1573,8 @@ router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
     // Save the updated content
-    await filing.update(filePath, updatedMarkdownContent); // Use relative path for filing provider
+    const markdownFilePathForUpdate = `markdown/${filePath}`;
+    await filing.update(markdownFilePathForUpdate, updatedMarkdownContent); // Use relative path with markdown prefix
     
     // Return the updated comment and list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1591,7 +1611,8 @@ router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
     }
 
     // Read the current file content
-    const markdownContent = await filing.read(fullPath, 'utf8');
+    const markdownFilePathForRead = `markdown/${filePath}`;
+    const markdownContent = await filing.read(markdownFilePathForRead, 'utf8');
     
     // Extract existing comments and clean content
     const existingComments = extractComments(markdownContent);
@@ -1617,7 +1638,8 @@ router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
       : cleanContent;
     
     // Save the updated content
-    await filing.update(filePath, updatedMarkdownContent); // Use relative path for filing provider
+    const markdownFilePathForUpdate = `markdown/${filePath}`;
+    await filing.update(markdownFilePathForUpdate, updatedMarkdownContent); // Use relative path with markdown prefix
     
     // Return the updated list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1647,18 +1669,19 @@ router.get('/recent', async (req, res) => {
     const days = parseInt(req.query.days) || 7;
     const recentFiles = [];
     
-    async function processDir(dirPath, relativePath = '') {
-      const entries = await filing.listDetailed(dirPath);
+    async function processDir(relativePath = '') {
+      const markdownDirPath = relativePath ? `markdown/${relativePath}` : 'markdown';
+      const entries = await filing.listDetailed(markdownDirPath);
       
       for (const entry of entries) {
-        const fullPath = path.join(dirPath, entry.name);
         const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
         
         if (entry.isDirectory) {
-          await processDir(fullPath, entryRelativePath);
+          await processDir(entryRelativePath);
         } else if (entry.isFile && entry.name.endsWith('.md')) {
           try {
-            const content = await filing.read(fullPath, 'utf8');
+            const markdownFilePath = `markdown/${entryRelativePath}`;
+            const content = await filing.read(markdownFilePath, 'utf8');
             const metadata = extractMetadata(content);
             
             if (hasRecentEdits(metadata, days)) {
@@ -1678,7 +1701,7 @@ router.get('/recent', async (req, res) => {
       }
     }
     
-    await processDir(contentDir);
+    await processDir();
     
     // Sort by most recent edit first
     recentFiles.sort((a, b) => {
@@ -1706,18 +1729,19 @@ router.get('/starred', async (req, res) => {
   try {
     const starredFiles = [];
     
-    async function processDir(dirPath, relativePath = '') {
-      const entries = await filing.listDetailed(dirPath);
+    async function processDir(relativePath = '') {
+      const markdownDirPath = relativePath ? `markdown/${relativePath}` : 'markdown';
+      const entries = await filing.listDetailed(markdownDirPath);
       
       for (const entry of entries) {
-        const fullPath = path.join(dirPath, entry.name);
         const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
         
         if (entry.isDirectory) {
-          await processDir(fullPath, entryRelativePath);
+          await processDir(entryRelativePath);
         } else if (entry.isFile && entry.name.endsWith('.md')) {
           try {
-            const content = await filing.read(fullPath, 'utf8');
+            const markdownFilePath = `markdown/${entryRelativePath}`;
+            const content = await filing.read(markdownFilePath, 'utf8');
             const metadata = extractMetadata(content);
             
             if (metadata.starred) {
@@ -1736,7 +1760,7 @@ router.get('/starred', async (req, res) => {
       }
     }
     
-    await processDir(contentDir);
+    await processDir();
     
     // Sort by most recently starred first
     starredFiles.sort((a, b) => {
@@ -1773,16 +1797,15 @@ router.post('/starred/*', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid file path' });
     }
     
-    const fullPath = path.join(contentDir, filePath);
-    
     // Check if file exists
-    const fileExists = await filing.exists(filePath); // Use relative path for filing provider
+    const markdownFilePath = `markdown/${filePath}`;
+    const fileExists = await filing.exists(markdownFilePath); // Use relative path with markdown prefix
     if (!fileExists) {
       return res.status(404).json({ error: 'File not found' });
     }
     
     // Read current content
-    const content = await filing.read(fullPath, 'utf8');
+    const content = await filing.read(markdownFilePath, 'utf8');
     const metadata = extractMetadata(content);
     const comments = extractComments(content);
     const cleanContent = getCleanMarkdownContent(content);
@@ -1802,7 +1825,7 @@ router.post('/starred/*', requireAuth, async (req, res) => {
     updatedContent = injectMetadata(updatedContent, updatedMetadata);
     
     // Write updated content
-    await filing.update(filePath, updatedContent); // Use relative path for filing provider
+    await filing.update(markdownFilePath, updatedContent); // Use relative path with markdown prefix
     
     res.json({
       message: `File ${updatedMetadata.starred ? 'starred' : 'unstarred'} successfully`,
@@ -1832,16 +1855,15 @@ router.get('/metadata/*', async (req, res) => {
       return res.status(400).json({ error: 'Invalid file path' });
     }
     
-    const fullPath = path.join(contentDir, filePath);
-    
     // Check if file exists
-    const fileExists = await filing.exists(filePath); // Use relative path for filing provider
+    const markdownFilePath = `markdown/${filePath}`;
+    const fileExists = await filing.exists(markdownFilePath); // Use relative path with markdown prefix
     if (!fileExists) {
       return res.status(404).json({ error: 'File not found' });
     }
     
     // Read and extract metadata
-    const content = await filing.read(fullPath, 'utf8');
+    const content = await filing.read(markdownFilePath, 'utf8');
     const metadata = extractMetadata(content);
     
     res.json({

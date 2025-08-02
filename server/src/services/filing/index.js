@@ -13,8 +13,7 @@ const FilingGitProvider = require('./providers/filingGit');
  * @return {!FilingService} A FilingService instance.
  */
 function createFilingService(type = 'local', options, eventEmitter) {
-  eventEmitter.emit('Filing Service Initiatiated', {});
-  console.log(options)
+  eventEmitter.emit('Filing Service Initiated', {});
   let provider;
   switch (type) {
     case 'local':
