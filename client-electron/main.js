@@ -18,8 +18,8 @@ function createWindow() {
       webSecurity: true
     },
     icon: isDev 
-      ? path.join(__dirname, 'public/favicon.svg')
-      : path.join(__dirname, 'build/favicon.svg'),
+      ? path.join(__dirname, 'public/favicon.png')
+      : path.join(__dirname, 'build/favicon.png'),
     titleBarStyle: 'default',
     show: false // Don't show until ready
   });

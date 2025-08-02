@@ -1107,11 +1107,7 @@ function AppContent() {
       <div className="app">
         <div className="d-flex justify-content-center align-items-center" style={{height: '100vh'}}>
           <div className="text-center">
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
-              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
-              <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
-            </svg>
+            <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-4" />
             <h4 className="text-confluence-text mb-2">Architecture Artifacts Editor</h4>
             <p className="text-muted">Loading application...</p>
           </div>
@@ -1129,11 +1125,7 @@ function AppContent() {
           <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
             <div className="text-center" style={{maxWidth: '400px', padding: '2rem'}}>
               <div className="mb-4">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
-                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
-                  <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
-                  <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
-                </svg>
+                <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" className="mb-4" />
               </div>
               <h1 className="text-confluence-text mb-3">Architecture Artifacts</h1>
               <p className="text-muted">Modern documentation workspace for architecture teams</p>
@@ -1149,11 +1141,7 @@ function AppContent() {
         <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
           <div className="text-center" style={{maxWidth: '400px', padding: '2rem'}}>
             <div className="mb-4">
-              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3">
-                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
-                <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
-                <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
-              </svg>
+              <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-3" />
             </div>
             <h2 className="text-confluence-text mb-3">Welcome to Architecture Artifacts</h2>
             <p className="text-muted mb-4">Please sign in to access your documentation workspace.</p>
@@ -1210,11 +1198,7 @@ function AppContent() {
                 onClick={() => setCurrentView('home')}
                 style={{ cursor: 'pointer' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="me-2">
-                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
-                  <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
-                  <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
-                </svg>
+                <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" className="me-2" />
                 Architecture Artifacts Editor
               </button>
               

@@ -4,9 +4,9 @@
   "description": "Desktop application for Architecture Artifacts Editor with comprehensive file management and Git integration",
   "icons": [
     {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],

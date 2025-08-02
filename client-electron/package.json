@@ -73,15 +73,15 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "public/favicon.svg"
+      "icon": "public/favicon.png"
     },
     "win": {
       "target": "nsis",
-      "icon": "public/favicon.svg"
+      "icon": "public/favicon.png"
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/favicon.svg",
+      "icon": "public/favicon.png",
       "category": "Office"
     }
   }

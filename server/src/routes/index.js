@@ -21,20 +21,50 @@ const fs = require('fs');
 
 // Cache for filing providers to avoid recreating them
 const filingProviders = new Map();
+// Track which providers are currently being created to prevent race conditions
+const creatingProviders = new Set();
 
 /**
  * Get the filing provider for a specific space
  * @param {string} spaceName - The name of the space
  * @returns {Object} The filing provider instance
  */
-function getFilingProviderForSpace(spaceName) {
+async function getFilingProviderForSpace(spaceName) {
   // Check if we already have a cached provider for this space
   if (filingProviders.has(spaceName)) {
     const cachedProvider = filingProviders.get(spaceName);
-    console.log(`Using cached filing provider for space: ${spaceName}, type: ${cachedProvider.type || 'unknown'}`);
-    return cachedProvider;
+    // Validate the cached provider before returning it
+    if (cachedProvider && typeof cachedProvider.readFile === 'function') {
+      console.log(`Using cached filing provider for space: ${spaceName}, type: ${cachedProvider.type || 'local'}`);
+      return cachedProvider;
+    } else {
+      // Remove invalid cached provider
+      console.warn(`Removing invalid cached provider for space: ${spaceName}`);
+      filingProviders.delete(spaceName);
+    }
   }
 
+  // Check if another request is already creating this provider
+  if (creatingProviders.has(spaceName)) {
+    // Wait for the other request to complete by polling
+    console.log(`Waiting for filing provider creation for space: ${spaceName}`);
+    let attempts = 0;
+    while (creatingProviders.has(spaceName) && attempts < 50) { // Max 5 seconds wait
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    // Check if the provider was created by the other request
+    if (filingProviders.has(spaceName)) {
+      const cachedProvider = filingProviders.get(spaceName);
+      console.log(`Using provider created by concurrent request for space: ${spaceName}`);
+      return cachedProvider;
+    }
+  }
+
+  // Mark that we're creating this provider
+  creatingProviders.add(spaceName);
+  
   try {
     // Load spaces configuration
     const spacesPath = path.join(__dirname, '../../../server-data/spaces.json');
@@ -70,6 +100,15 @@ function getFilingProviderForSpace(spaceName) {
       throw new Error(`Unsupported filing provider type: ${filingConfig.type}`);
     }
 
+    // Validate the provider before caching
+    if (!provider || typeof provider.readFile !== 'function') {
+      throw new Error(`Failed to create valid filing provider for space: ${spaceName}`);
+    }
+
+    // Add type information to the provider for debugging
+    provider.type = filingConfig.type;
+    provider.spaceName = spaceName;
+
     // Cache the provider
     console.log(`Created and cached filing provider for space: ${spaceName}, type: ${filingConfig.type}`);
     filingProviders.set(spaceName, provider);
@@ -77,6 +116,9 @@ function getFilingProviderForSpace(spaceName) {
   } catch (error) {
     console.error(`Error creating filing provider for space '${spaceName}':`, error);
     throw error;
+  } finally {
+    // Always remove from creating set when done
+    creatingProviders.delete(spaceName);
   }
 }
 
@@ -87,9 +129,11 @@ function getFilingProviderForSpace(spaceName) {
 function clearFilingProviderCache(spaceName = null) {
   if (spaceName) {
     filingProviders.delete(spaceName);
+    creatingProviders.delete(spaceName); // Also clean up creating set
     console.log(`Cleared filing provider cache for space: ${spaceName}`);
   } else {
     filingProviders.clear();
+    creatingProviders.clear(); // Also clean up creating set
     console.log('Cleared all filing provider cache');
   }
 }
@@ -97,7 +141,7 @@ function clearFilingProviderCache(spaceName = null) {
 /**
  * Middleware to load filing provider based on space parameter
  */
-function loadFilingProvider(req, res, next) {
+async function loadFilingProvider(req, res, next) {
   const spaceName = req.params.space;
   
   if (!spaceName) {
@@ -105,23 +149,11 @@ function loadFilingProvider(req, res, next) {
   }
 
   try {
-    const filing = getFilingProviderForSpace(spaceName);
+    // Get the filing provider (now async and race-condition safe)
+    const filing = await getFilingProviderForSpace(spaceName);
     
-    // Validate that the filing provider has the required methods
-    if (!filing || typeof filing.readFile !== 'function') {
-      console.error(`Invalid filing provider for space ${spaceName}. Clearing cache and retrying.`);
-      clearFilingProviderCache(spaceName);
-      
-      // Retry getting the provider
-      const retryFiling = getFilingProviderForSpace(spaceName);
-      if (!retryFiling || typeof retryFiling.readFile !== 'function') {
-        throw new Error(`Failed to create valid filing provider for space: ${spaceName}`);
-      }
-      req.filing = retryFiling;
-    } else {
-      req.filing = filing;
-    }
-    
+    // The provider is already validated in getFilingProviderForSpace
+    req.filing = filing;
     req.spaceName = spaceName;
     
     // Also get space configuration for access control
@@ -133,6 +165,7 @@ function loadFilingProvider(req, res, next) {
     
     next();
   } catch (error) {
+    console.error(`Error loading filing provider for space ${spaceName}:`, error);
     return res.status(404).json({ error: error.message });
   }
 }
@@ -2278,6 +2311,38 @@ router.get('/metadata/*', async (req, res) => {
   } catch (error) {
     console.error('Error fetching metadata:', error);
     res.status(500).json({ error: 'Failed to fetch metadata' });
+  }
+});
+
+/**
+ * Get user's allowed spaces (alternative auth endpoint for extensions)
+ */
+router.get('/auth/user-spaces', requireAuth, (req, res) => {
+  try {
+    // Get current user from session
+    if (!req.user) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+    
+    // Load spaces configuration
+    const spacesFilePath = path.join(__dirname, '../../../server-data/spaces.json');
+    if (!fs.existsSync(spacesFilePath)) {
+      return res.json([]);
+    }
+    
+    const spacesData = fs.readFileSync(spacesFilePath, 'utf8');
+    const allSpaces = JSON.parse(spacesData);
+    
+    // Get user's allowed spaces from their profile
+    const userSpaces = req.user.spaces ? req.user.spaces.split(',').map(s => s.trim()) : [];
+    
+    // Filter available spaces to only include those the user has access to
+    const allowedSpaces = allSpaces.filter(space => userSpaces.includes(space.space));
+    
+    res.json(allowedSpaces);
+  } catch (error) {
+    console.error('Error loading user spaces:', error);
+    res.status(500).json({ error: 'Failed to load user spaces' });
   }
 });
 

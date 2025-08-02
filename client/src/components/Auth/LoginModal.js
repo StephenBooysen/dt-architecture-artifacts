@@ -59,11 +59,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister }) => {
         
         <div className="auth-modal-content">
           <div className="text-center mb-4">
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3">
-              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M12 22V12" stroke="#0052cc" strokeWidth="2"/>
-              <path d="M2 7L12 12L22 7" stroke="#0052cc" strokeWidth="2"/>
-            </svg>
+            <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-3" />
             <h2 className="auth-title">Architecture Artifacts</h2>
             <p className="auth-subtitle">Please sign in to access your workspace.</p>
           </div>

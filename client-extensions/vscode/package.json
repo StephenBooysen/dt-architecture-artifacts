@@ -19,7 +19,7 @@
     "search",
     "artifacts"
   ],
-  "icon": "icons/icon-128.svg",
+  "icon": "icons/icon-128.png",
   "galleryBanner": {
     "color": "#0052cc",
     "theme": "dark"

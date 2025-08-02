@@ -208,7 +208,7 @@ app.use('/api', apiRoutes);
 // Helper functions for server pages
 function getSharedStyles() {
   return `
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
@@ -858,20 +858,8 @@ function getHeader() {
       <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
           <div class="d-flex align-items-center w-100">
-            <button
-              class="btn btn-secondary btn-sm sidebar-toggle me-3"
-              onclick="toggleSidebar()"
-              title="Toggle sidebar"
-            >
-              <i class="bi bi-aspect-ratio" id="sidebar-toggle-icon"></i>
-            </button>
-            
             <a class="navbar-brand fw-medium me-3 d-flex align-items-center" href="/">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-2">
-                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
-                <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
-              </svg>
+              <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" class="me-2" />
               Architecture Artifacts Server
             </a>
             
@@ -1449,11 +1437,7 @@ app.get('/server-landing', (req, res) => {
     <div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: var(--confluence-bg);">
       <div class="text-center" style="max-width: 400px; padding: 2rem;">
         <div class="mb-4">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-4">
-            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
-            <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
-          </svg>
+          <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" class="mb-4" />
         </div>
         <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
         <p class="text-muted">Server administration and monitoring interface</p>
@@ -1645,11 +1629,7 @@ app.get('/server-login', (req, res) => {
     <div class="server-auth-modal">
       <div class="server-auth-content">
         <div class="text-center mb-4">
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
-            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#0052cc" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
-            <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
-          </svg>
+          <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" class="mb-3" />
           <h2 class="server-auth-title">Server Administration</h2>
           <p class="server-auth-subtitle">Please sign in to access the server interface.</p>
         </div>
