@@ -11,21 +11,34 @@
 
 const express = require('express');
 const path = require('path');
-const fs = require('fs').promises;
 const simpleGit = require('simple-git');
 const multer = require('multer');
 const userStorage = require('../auth/userStorage');
 const passport = require('../auth/passport');
 const EventEmitter = require('events');
 const createFilingService = require('../services/filing/index.js');
-const filing = createFilingService('local', {}, new EventEmitter());
+
+// Create an instance of the filing service
+/*
+const filing = createFilingService('local', {
+  localPath: path.join(__dirname, '../../../content'), "ED":"TED"
+}, new EventEmitter());
+*/
+
+// Create an instance of the Git filing service
+const filing = createFilingService('git', {
+  repo: 'https://github.com/StephenBooysen/dt-architecture-artifacts-testing.git',
+  localPath: path.join(__dirname, '../../../temp-content'),
+  branch: 'main',
+  fetchInterval: 5000 // 5 seconds
+}, new EventEmitter());
 
 
 const router = express.Router();
 const git = simpleGit();
 
 /** @const {string} Path to the content directory where files are stored */
-const contentDir = path.join(__dirname, '../../../content');
+const contentDir = path.join(__dirname, '../../../temp-content');
 
 /**
  * Authentication middleware to protect routes
@@ -121,6 +134,83 @@ async function ensureContentDir() {
 }
 
 /**
+ * Initializes the required directory structure for the application.
+ * Creates content and content-templates directories and commits them if needed.
+ * 
+ * @return {Promise<void>} Promise that resolves when directories are set up
+ */
+async function initializeDirectoryStructure() {
+  try {
+    let needsCommit = false;
+    
+    // Ensure main content directory exists
+    const contentExists = await filing.exists(contentDir);
+    if (!contentExists) {
+      await filing.mkdir(contentDir, {recursive: true});
+      needsCommit = true;
+      console.log('📁 Created content directory');
+    }
+    
+    // Ensure content-templates directory exists
+    const templatesDir = path.join(contentDir, 'content-templates');
+    const templatesExists = await filing.exists(templatesDir);
+    if (!templatesExists) {
+      await filing.mkdir(templatesDir, {recursive: true});
+      needsCommit = true;
+      console.log('📁 Created content-templates directory');
+    }
+    
+    // Create initial README if content directory is empty
+    const contentFiles = await filing.list(contentDir);
+    const hasContent = contentFiles.some(file => file !== '.git' && file !== 'content-templates');
+    
+    if (!hasContent) {
+      const readmePath = path.join(contentDir, 'README.md');
+      const readmeExists = await filing.exists(readmePath);
+      
+      if (!readmeExists) {
+        const welcomeContent = `# Architecture Artifacts
+
+Welcome to your Architecture Artifacts workspace!
+
+This repository contains your architectural documentation and templates.
+
+## Structure
+
+- \`content/\` - Your markdown documentation files
+- \`content-templates/\` - Reusable document templates
+
+## Getting Started
+
+1. Create new documents using the web interface
+2. Use templates to standardize your documentation
+3. All changes are automatically version controlled with Git
+
+Created automatically by the Architecture Artifacts system.
+`;
+        
+        await filing.create(readmePath, welcomeContent);
+        needsCommit = true;
+        console.log('📄 Created initial README.md');
+      }
+    }
+    
+    // Commit initial structure if needed
+    if (needsCommit) {
+      const drafts = await filing.getDraftFiles();
+      if (drafts.length > 0) {
+        await filing.publish('Initialize directory structure\n\nCreated initial folders and README for Architecture Artifacts workspace.');
+        console.log('✅ Committed initial directory structure to Git');
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Error initializing directory structure:', error);
+    // Don't throw - let the application continue even if this fails
+  }
+}
+
+/**
  * Detects file type based on file extension.
  * 
  * Analyzes the file extension to categorize files into types for
@@ -204,12 +294,11 @@ function replacePlaceholders(content, context = {}) {
 
 /**
  * Recursively builds a directory tree structure for all files.
- * @param {string} dirPath - The directory path to scan.
- * @param {string} relativePath - The relative path from the content root.
+ * @param {string} relativePath - The relative path from the content root to scan.
  * @return {Promise<Array>} The directory tree structure.
  */
-async function getDirectoryTree(dirPath, relativePath = '') {
-  const items = await filing.listDetailed(dirPath);
+async function getDirectoryTree(relativePath = '') {
+  const items = await filing.listDetailed(relativePath || '.');
   const tree = [];
 
   for (const item of items) {
@@ -218,11 +307,10 @@ async function getDirectoryTree(dirPath, relativePath = '') {
       continue;
     }
 
-    const fullPath = path.join(dirPath, item.name);
-    const relPath = path.join(relativePath, item.name);
+    const relPath = relativePath ? path.join(relativePath, item.name) : item.name;
 
     if (item.isDirectory) {
-      const children = await getDirectoryTree(fullPath, relPath);
+      const children = await getDirectoryTree(relPath);
       tree.push({
         name: item.name,
         type: 'directory',
@@ -314,9 +402,22 @@ router.get('/server/status', (req, res) => {
   });
 });
 
+// Initialize directory structure endpoint
+router.post('/server/initialize', async (req, res) => {
+  try {
+    await initializeDirectoryStructure();
+    res.json({
+      message: 'Directory structure initialized successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error initializing directory structure:', error);
+    res.status(500).json({error: 'Failed to initialize directory structure'});
+  }
+});
+
 // OpenAPI specification endpoint
 router.get('/spec/swagger.json', async (req, res) => {
-  const fs = require('fs');
   const path = require('path');
   const swaggerPath = path.join(__dirname, '../openapi/swagger.json');
   
@@ -358,7 +459,7 @@ router.post('/folders', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    await filing.mkdir(fullPath, {recursive: true});
+    await filing.mkdir(folderPath, {recursive: true});
     res.json({message: 'Folder created successfully', path: folderPath});
   } catch (error) {
     console.error('Error creating folder:', error);
@@ -388,15 +489,18 @@ router.post('/files', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    // Check if file already exists
-    const fileExists = await filing.exists(fullPath);
+    // Check if file already exists (use relative path)
+    const fileExists = await filing.exists(filePath);
     if (fileExists) {
       return res.status(409).json({error: 'File already exists'});
     }
 
-    // Ensure directory exists
-    await filing.mkdir(path.dirname(fullPath), {recursive: true});
-    await filing.create(fullPath, content);
+    // Ensure directory exists (use relative path)
+    const dirPath = path.dirname(filePath);
+    if (dirPath && dirPath !== '.' && dirPath !== '/') {
+      await filing.mkdir(dirPath, {recursive: true});
+    }
+    await filing.create(filePath, content);
     
     res.json({message: 'File created successfully', path: filePath});
   } catch (error) {
@@ -408,7 +512,7 @@ router.post('/files', requireAuth, async (req, res) => {
 router.get('/files', async (req, res) => {
   try {
     await ensureContentDir();
-    const tree = await getDirectoryTree(contentDir);
+    const tree = await getDirectoryTree();
     res.json(tree);
   } catch (error) {
     console.error('Error getting files:', error);
@@ -429,8 +533,8 @@ router.get('/files/*', async (req, res) => {
 
     // Handle different file types
     if (fileType === 'markdown' || fileType === 'text') {
-      // Read as text
-      const content = await filing.read(fullPath, 'utf8');
+      // Read as text using relative path for Git filing provider
+      const content = await filing.read(filePath, 'utf8');
       
       // For markdown files, return both full content and clean content
       if (fileType === 'markdown') {
@@ -450,13 +554,13 @@ router.get('/files/*', async (req, res) => {
         res.json({content, path: filePath, fileType});
       }
     } else if (fileType === 'image' || fileType === 'pdf') {
-      // Read as binary and convert to base64
-      const buffer = await filing.read(fullPath);
+      // Read as binary and convert to base64 using relative path
+      const buffer = await filing.read(filePath);
       const base64Content = buffer.toString('base64');
       res.json({content: base64Content, path: filePath, fileType, encoding: 'base64'});
     } else {
-      // Unknown file type - return file info for download
-      const stats = await filing.stat(fullPath);
+      // Unknown file type - return file info for download using relative path
+      const stats = await filing.stat(filePath);
       res.json({
         path: filePath,
         fileType,
@@ -480,7 +584,7 @@ router.get('/download/*', async (req, res) => {
     }
 
     const fileName = path.basename(filePath);
-    const stats = await filing.stat(fullPath);
+    const stats = await filing.stat(filePath);
     
     // Set appropriate headers for download
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -513,8 +617,8 @@ router.get('/download/*', async (req, res) => {
     const contentType = mimeTypes[extension] || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     
-    // Stream the file
-    const fileBuffer = await filing.read(fullPath);
+    // Stream the file using relative path
+    const fileBuffer = await filing.read(filePath);
     res.send(fileBuffer);
   } catch (error) {
     console.error('Error downloading file:', error);
@@ -530,29 +634,34 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     const folderPath = req.body.folderPath || '';
-    const tempFilePath = req.file.path; // Current location of uploaded file
+    const tempFilePath = req.file.path; // Current location of uploaded file (absolute path)
     const finalFilePath = path.join(folderPath, req.file.filename);
     const finalFullPath = path.join(contentDir, finalFilePath);
     
+    // Convert absolute temp file path to relative path for filing provider
+    const tempFileRelativePath = path.relative(contentDir, tempFilePath);
+    
     console.log('Folder path from request:', folderPath);
-    console.log('Temp file path:', tempFilePath);
+    console.log('Temp file path (absolute):', tempFilePath);
+    console.log('Temp file path (relative):', tempFileRelativePath);
     console.log('Final file path:', finalFilePath);
     console.log('Final full path:', finalFullPath);
     
     // Validate that the final path is within the content directory
     if (!finalFullPath.startsWith(contentDir)) {
       // Clean up temp file
-      await filing.delete(tempFilePath);
+      await filing.delete(tempFileRelativePath);
       return res.status(403).json({ error: 'Access denied' });
     }
 
     // Create the target directory if it doesn't exist
-    const targetDir = path.dirname(finalFullPath);
-    await filing.mkdir(targetDir, { recursive: true });
+    if (folderPath) {
+      await filing.mkdir(folderPath, { recursive: true });
+    }
     
-    // Move the file to the correct location
-    if (tempFilePath !== finalFullPath) {
-      await filing.move(tempFilePath, finalFullPath);
+    // Move the file to the correct location using relative paths
+    if (tempFileRelativePath !== finalFilePath) {
+      await filing.move(tempFileRelativePath, finalFilePath);
     }
 
     res.json({
@@ -567,7 +676,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // Clean up temp file if it exists
     if (req.file && req.file.path) {
       try {
-        await filing.delete(req.file.path);
+        const tempFileRelativePath = path.relative(contentDir, req.file.path);
+        await filing.delete(tempFileRelativePath);
       } catch (cleanupError) {
         console.error('Error cleaning up temp file:', cleanupError);
       }
@@ -619,7 +729,7 @@ router.post('/files/*', requireAuth, async (req, res) => {
       }
     }
     
-    await filing.update(fullPath, finalContent);
+    await filing.update(filePath, finalContent); // Use relative path for filing provider
     res.json({message: 'File saved successfully', path: filePath});
   } catch (error) {
     console.error('Error saving file:', error);
@@ -635,12 +745,12 @@ router.delete('/files/*', requireAuth, async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    const stats = await filing.stat(fullPath);
+    const stats = await filing.stat(filePath); // Use relative path for filing provider
     if (stats.isDirectory) {
-      await filing.delete(fullPath);
+      await filing.delete(filePath); // Use relative path for filing provider
       res.json({message: 'Folder deleted successfully', path: filePath});
     } else {
-      await filing.delete(fullPath);
+      await filing.delete(filePath); // Use relative path for filing provider
       res.json({message: 'File deleted successfully', path: filePath});
     }
   } catch (error) {
@@ -657,7 +767,7 @@ router.delete('/folders/*', async (req, res) => {
       return res.status(403).json({error: 'Access denied'});
     }
 
-    await filing.delete(fullPath);
+    await filing.delete(folderPath); // Use relative path for filing provider
     res.json({message: 'Folder deleted successfully', path: folderPath});
   } catch (error) {
     console.error('Error deleting folder:', error);
@@ -704,7 +814,7 @@ router.put('/rename/*', async (req, res) => {
   }
 });
 
-// Git operations
+// Git operations - Updated to use filing provider
 router.post('/commit', requireAuth, async (req, res) => {
   try {
     const {message} = req.body;
@@ -712,24 +822,35 @@ router.post('/commit', requireAuth, async (req, res) => {
       return res.status(400).json({error: 'Commit message is required'});
     }
 
-    await git.cwd(contentDir);
-    await git.add('.');
-    await git.commit(message);
-    res.json({message: 'Changes committed successfully'});
+    // Use the filing provider's publish method which handles drafts and requires a message
+    const result = await filing.publish(message);
+    
+    res.json({
+      message: 'Changes committed successfully',
+      commit: result.commit,
+      draftsCleared: true
+    });
   } catch (error) {
     console.error('Error committing changes:', error);
-    res.status(500).json({error: 'Failed to commit changes'});
+    if (error.message.includes('A comment is required')) {
+      res.status(400).json({error: 'Commit message is required'});
+    } else {
+      res.status(500).json({error: 'Failed to commit changes'});
+    }
   }
 });
 
 router.post('/push', async (req, res) => {
   try {
-    await git.cwd(contentDir);
-    await git.push('origin', 'main');
-    res.json({message: 'Changes pushed successfully'});
+    // Note: The Git filing provider's publish() method already pushes changes
+    // This endpoint now provides information about push status
+    res.json({
+      message: 'Push operations are handled automatically by commit endpoint',
+      note: 'Use /api/commit to commit and push changes simultaneously'
+    });
   } catch (error) {
-    console.error('Error pushing changes:', error);
-    res.status(500).json({error: 'Failed to push changes'});
+    console.error('Error with push operation:', error);
+    res.status(500).json({error: 'Failed to handle push request'});
   }
 });
 
@@ -792,6 +913,114 @@ router.post('/pull', async (req, res) => {
   } catch (error) {
     console.error('Error pulling repository:', error);
     res.status(500).json({error: 'Failed to pull repository'});
+  }
+});
+
+// Draft management endpoints for Git filing provider
+router.get('/drafts', requireAuth, async (req, res) => {
+  try {
+    // Get list of draft files from the Git filing provider
+    const draftFiles = await filing.getDraftFiles();
+    
+    res.json({
+      drafts: draftFiles,
+      count: draftFiles.length,
+      message: draftFiles.length > 0 
+        ? `You have ${draftFiles.length} draft file(s) ready to commit`
+        : 'No draft files. All changes are committed.'
+    });
+  } catch (error) {
+    console.error('Error getting draft files:', error);
+    res.status(500).json({error: 'Failed to get draft files'});
+  }
+});
+
+router.post('/discard-drafts', requireAuth, async (req, res) => {
+  try {
+    // Discard all draft changes and reset to remote state
+    await filing.discardDrafts();
+    
+    res.json({
+      message: 'All draft changes discarded successfully',
+      note: 'Repository has been reset to match the remote state'
+    });
+  } catch (error) {
+    console.error('Error discarding drafts:', error);
+    res.status(500).json({error: 'Failed to discard draft changes'});
+  }
+});
+
+// Enhanced status endpoint that includes draft information
+router.get('/git-status', async (req, res) => {
+  try {
+    // Get draft files from filing provider
+    const draftFiles = await filing.getDraftFiles();
+    
+    // Get traditional git status for additional info
+    await git.cwd(contentDir);
+    const gitStatus = await git.status();
+    
+    res.json({
+      drafts: {
+        files: draftFiles,
+        count: draftFiles.length,
+        hasDrafts: draftFiles.length > 0
+      },
+      git: gitStatus,
+      repository: {
+        url: filing.options.repo,
+        branch: filing.options.branch,
+        localPath: filing.options.localPath
+      }
+    });
+  } catch (error) {
+    console.error('Error getting git status:', error);
+    res.status(500).json({error: 'Failed to get git status'});
+  }
+});
+
+// Last sync info endpoint for efficient polling
+router.get('/sync-status', async (req, res) => {
+  try {
+    // Get the last sync time from the Git provider if available
+    let lastSync = null;
+    let hasRemoteChanges = false;
+    
+    if (filing.lastRemoteSync) {
+      lastSync = filing.lastRemoteSync;
+    }
+    
+    res.json({
+      lastSync,
+      hasRemoteChanges,
+      provider: filing.constructor.name.includes('Git') ? 'git' : 'local'
+    });
+  } catch (error) {
+    console.error('Error getting sync status:', error);
+    res.status(500).json({error: 'Failed to get sync status'});
+  }
+});
+
+// Filing provider info endpoint
+router.get('/provider-info', async (req, res) => {
+  try {
+    // Determine provider type based on filing service instance
+    const providerType = filing.constructor.name.includes('Git') ? 'git' : 'local';
+    
+    res.json({
+      provider: providerType,
+      supportsDrafts: providerType === 'git',
+      supportsCommits: providerType === 'git',
+      info: {
+        type: providerType,
+        description: providerType === 'git' 
+          ? 'Git-based filing with draft tracking and version control'
+          : 'Local filesystem with immediate saves (no drafts)'
+      }
+    });
+  } catch (error) {
+    console.error('Error getting provider info:', error);
+    res.status(500).json({error: 'Failed to get provider info'});
   }
 });
 
@@ -931,7 +1160,7 @@ router.get('/search/content', async (req, res) => {
 // Get all templates
 router.get('/templates', async (req, res) => {
   try {
-    const templatesDir = path.resolve('./content-templates');
+    const templatesDir = path.join(contentDir, 'content-templates');
     
     // Create templates directory if it doesn't exist
     await filing.ensureDir(templatesDir);
@@ -958,7 +1187,7 @@ router.get('/templates', async (req, res) => {
 router.get('/templates/:templateName', async (req, res) => {
   try {
     const templateName = req.params.templateName;
-    const templatesDir = path.resolve('./content-templates');
+    const templatesDir = path.join(contentDir, 'content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
@@ -979,7 +1208,7 @@ router.post('/templates', async (req, res) => {
       return res.status(400).json({error: 'Template name is required'});
     }
     
-    const templatesDir = path.resolve('./content-templates');
+    const templatesDir = path.join(contentDir, 'content-templates');
     
     // Create templates directory if it doesn't exist
     await filing.ensureDir(templatesDir);
@@ -1014,7 +1243,7 @@ router.put('/templates/:templateName', async (req, res) => {
     const templateName = req.params.templateName;
     const { name, content, description } = req.body;
     
-    const templatesDir = path.resolve('./content-templates');
+    const templatesDir = path.join(contentDir, 'content-templates');
     const oldTemplateFile = `${templateName.replace('.md', '')}.json`;
     const oldFilePath = path.join(templatesDir, oldTemplateFile);
     
@@ -1058,7 +1287,7 @@ router.put('/templates/:templateName', async (req, res) => {
 router.delete('/templates/:templateName', async (req, res) => {
   try {
     const templateName = req.params.templateName;
-    const templatesDir = path.resolve('./content-templates');
+    const templatesDir = path.join(contentDir, 'content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const filePath = path.join(templatesDir, templateFile);
     
@@ -1085,7 +1314,7 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
     }
 
     // Load the template
-    const templatesDir = path.resolve('./content-templates');
+    const templatesDir = path.join(contentDir, 'content-templates');
     const templateFile = `${templateName.replace('.md', '')}.json`;
     const templateFilePath = path.join(templatesDir, templateFile);
     
@@ -1131,14 +1360,14 @@ router.post('/templates/:templateName/create-file', async (req, res) => {
     }
 
     // Check if file already exists
-    const fileExists = await filing.exists(fullPath);
+    const fileExists = await filing.exists(filePath); // Use relative path for filing provider
     if (fileExists) {
       return res.status(409).json({error: 'File already exists'});
     }
 
     // Ensure directory exists
-    await filing.ensureDir(path.dirname(fullPath));
-    await filing.create(fullPath, processedContent);
+    await filing.ensureDir(path.dirname(filePath)); // Use relative path for filing provider
+    await filing.create(filePath, processedContent); // Use relative path for filing provider
     
     res.json({
       message: 'File created from template successfully', 
@@ -1257,7 +1486,7 @@ router.post('/comments/*', requireAuth, async (req, res) => {
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
     // Save the updated content
-    await filing.update(fullPath, updatedMarkdownContent);
+    await filing.update(filePath, updatedMarkdownContent); // Use relative path for filing provider
     
     // Return the new comment and updated list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1325,7 +1554,7 @@ router.put('/comments/:commentId/*', requireAuth, async (req, res) => {
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
     // Save the updated content
-    await filing.update(fullPath, updatedMarkdownContent);
+    await filing.update(filePath, updatedMarkdownContent); // Use relative path for filing provider
     
     // Return the updated comment and list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1388,7 +1617,7 @@ router.delete('/comments/:commentId/*', requireAuth, async (req, res) => {
       : cleanContent;
     
     // Save the updated content
-    await filing.update(fullPath, updatedMarkdownContent);
+    await filing.update(filePath, updatedMarkdownContent); // Use relative path for filing provider
     
     // Return the updated list
     const sortedComments = sortCommentsByNewest(updatedComments);
@@ -1547,7 +1776,7 @@ router.post('/starred/*', requireAuth, async (req, res) => {
     const fullPath = path.join(contentDir, filePath);
     
     // Check if file exists
-    const fileExists = await filing.exists(fullPath);
+    const fileExists = await filing.exists(filePath); // Use relative path for filing provider
     if (!fileExists) {
       return res.status(404).json({ error: 'File not found' });
     }
@@ -1573,7 +1802,7 @@ router.post('/starred/*', requireAuth, async (req, res) => {
     updatedContent = injectMetadata(updatedContent, updatedMetadata);
     
     // Write updated content
-    await filing.update(fullPath, updatedContent);
+    await filing.update(filePath, updatedContent); // Use relative path for filing provider
     
     res.json({
       message: `File ${updatedMetadata.starred ? 'starred' : 'unstarred'} successfully`,
@@ -1606,7 +1835,7 @@ router.get('/metadata/*', async (req, res) => {
     const fullPath = path.join(contentDir, filePath);
     
     // Check if file exists
-    const fileExists = await filing.exists(fullPath);
+    const fileExists = await filing.exists(filePath); // Use relative path for filing provider
     if (!fileExists) {
       return res.status(404).json({ error: 'File not found' });
     }

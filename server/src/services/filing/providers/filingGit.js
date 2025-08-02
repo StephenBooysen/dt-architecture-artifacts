@@ -9,17 +9,21 @@ class FilingGitProvider {
       fetchInterval: 300000, // 5 minutes
       ...options,
     };
-    this.eventEmitter = eventEmitter;
+    this.eventEmitter_ = eventEmitter;
+    this.draftFiles = new Set(); // Track files that are local drafts
+    this.lastRemoteSync = null; // Track last time we pulled remote changes
 
     if (!this.options.repo || !this.options.localPath || !this.options.branch) {
       throw new Error('Git provider requires repo, localPath, and branch options.');
     }
 
-    this.git = simpleGit(this.options.localPath);
-    this._initializeRepo();
+    // Initialize git instance after ensuring the repo exists
+    this._initializeRepo().catch(console.error);
 
     this.fetchIntervalId = setInterval(() => this._periodicFetch(), this.options.fetchInterval);
-    this.eventEmitter.emit('FilingGitProvider:Initialized', { localPath: this.options.localPath });
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('FilingGitProvider:Initialized', { localPath: this.options.localPath });
+    }
   }
 
   async _initializeRepo() {
@@ -27,17 +31,26 @@ class FilingGitProvider {
     const dirExists = await fs.pathExists(this.options.localPath);
 
     if (dirExists) {
+        // Initialize git instance for existing directory
+        this.git = simpleGit(this.options.localPath);
         const isRepo = await this.git.checkIsRepo();
         if(isRepo) {
-            this.eventEmitter.emit('FilingGitProvider:Pulling', { localPath: this.options.localPath });
+            if (this.eventEmitter_) {
+              this.eventEmitter_.emit('FilingGitProvider:Pulling', { localPath: this.options.localPath });
+            }
             await this.git.pull(remoteUrl, this.options.branch);
             return;
         }
     }
     
-    this.eventEmitter.emit('FilingGitProvider:Cloning', { repo: this.options.repo, localPath: this.options.localPath });
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('FilingGitProvider:Cloning', { repo: this.options.repo, localPath: this.options.localPath });
+    }
     await fs.ensureDir(path.dirname(this.options.localPath));
     await simpleGit().clone(remoteUrl, this.options.localPath);
+    
+    // Initialize git instance after cloning
+    this.git = simpleGit(this.options.localPath);
     await this.git.checkout(this.options.branch);
   }
 
@@ -53,10 +66,35 @@ class FilingGitProvider {
 
   async _periodicFetch() {
     try {
-      await this.git.fetch();
-      this.eventEmitter.emit('FilingGitProvider:FetchSuccess', {});
+      if (this.git) {
+        // Fetch remote changes
+        await this.git.fetch();
+        
+        // Check if there are remote changes to pull
+        const status = await this.git.status();
+        const behind = status.behind;
+        
+        if (behind > 0) {
+          // Pull changes if we're behind
+          await this.git.pull('origin', this.options.branch);
+          this.lastRemoteSync = new Date().toISOString(); // Record sync time
+          if (this.eventEmitter_) {
+            this.eventEmitter_.emit('FilingGitProvider:PulledChanges', { 
+              changesPulled: behind,
+              message: `Pulled ${behind} remote changes`,
+              syncTime: this.lastRemoteSync
+            });
+          }
+        }
+        
+        if (this.eventEmitter_) {
+          this.eventEmitter_.emit('FilingGitProvider:FetchSuccess', { behind });
+        }
+      }
     } catch (error) {
-      this.eventEmitter.emit('FilingGitProvider:FetchFailed', { error: error.message });
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('FilingGitProvider:FetchFailed', { error: error.message });
+      }
     }
   }
 
@@ -69,29 +107,72 @@ class FilingGitProvider {
     return resolvedPath;
   }
 
+  _isDraft(filePath) {
+    return this.draftFiles.has(filePath);
+  }
+
+  async _ensureGitReady() {
+    if (!this.git) {
+      // Wait a bit and check again
+      await new Promise(resolve => setTimeout(resolve, 100));
+      if (!this.git) {
+        throw new Error('Git instance not ready. Repository may still be initializing.');
+      }
+    }
+  }
+
   async create(filePath, content) {
     const absolutePath = this._resolvePath(filePath);
     await fs.ensureDir(path.dirname(absolutePath));
-    return fs.writeFile(absolutePath, content);
+    await fs.writeFile(absolutePath, content);
+    this.draftFiles.add(filePath);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:create', { filePath, content, isDraft: true });
+    }
   }
 
-  async read(filePath) {
+  async read(filePath, encoding) {
     const absolutePath = this._resolvePath(filePath);
-    return fs.readFile(absolutePath, 'utf8');
+    const content = await fs.readFile(absolutePath, encoding);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:read', { 
+        filePath, 
+        content, 
+        isDraft: this._isDraft(filePath) 
+      });
+    }
+    return content;
   }
 
   async update(filePath, content) {
-    return this.create(filePath, content); // writeFile overwrites
+    const absolutePath = this._resolvePath(filePath);
+    await fs.writeFile(absolutePath, content);
+    this.draftFiles.add(filePath);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:update', { 
+        filePath, 
+        content, 
+        isDraft: true 
+      });
+    }
   }
 
   async delete(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    return fs.remove(absolutePath);
+    await fs.remove(absolutePath);
+    this.draftFiles.add(filePath); // Mark as draft since it's a pending deletion
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:delete', { filePath, isDraft: true });
+    }
   }
 
   async list(dirPath) {
     const absolutePath = this._resolvePath(dirPath);
-    return fs.readdir(absolutePath);
+    const files = await fs.readdir(absolutePath);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:list', { dirPath, files });
+    }
+    return files;
   }
 
   async publish(comment) {
@@ -99,16 +180,27 @@ class FilingGitProvider {
       throw new Error('A comment is required to publish changes.');
     }
     try {
+      await this._ensureGitReady();
+      
       await this.git.add('.');
       const commitSummary = await this.git.commit(comment);
-      this.eventEmitter.emit('FilingGitProvider:Committed', { summary: commitSummary });
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('FilingGitProvider:Committed', { summary: commitSummary });
+      }
 
       await this.git.push('origin', this.options.branch);
-      this.eventEmitter.emit('FilingGitProvider:Pushed', { branch: this.options.branch });
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('FilingGitProvider:Pushed', { branch: this.options.branch });
+      }
+      
+      // Clear draft files that were committed
+      this.draftFiles.clear();
       
       return { commit: commitSummary };
     } catch (error) {
-      this.eventEmitter.emit('FilingGitProvider:PublishFailed', { error: error.message });
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('FilingGitProvider:PublishFailed', { error: error.message });
+      }
       throw new Error(`Publish failed: ${error.message}`);
     }
   }
@@ -127,38 +219,71 @@ class FilingGitProvider {
 
   async exists(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    return fs.pathExists(absolutePath);
+    const exists = await fs.pathExists(absolutePath);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:exists', { 
+        filePath, 
+        exists,
+        isDraft: this._isDraft(filePath)
+      });
+    }
+    return exists;
   }
 
   async mkdir(dirPath, options = { recursive: true }) {
     const absolutePath = this._resolvePath(dirPath);
-    return fs.ensureDir(absolutePath);
+    await fs.ensureDir(absolutePath);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:mkdir', { dirPath, options });
+    }
   }
 
   async copy(sourcePath, destPath) {
     const sourceAbsolutePath = this._resolvePath(sourcePath);
     const destAbsolutePath = this._resolvePath(destPath);
-    return fs.copy(sourceAbsolutePath, destAbsolutePath);
+    await fs.copy(sourceAbsolutePath, destAbsolutePath);
+    this.draftFiles.add(destPath);
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:copy', { 
+        sourcePath, 
+        destPath, 
+        isDraft: true 
+      });
+    }
   }
 
   async move(sourcePath, destPath) {
     const sourceAbsolutePath = this._resolvePath(sourcePath);
     const destAbsolutePath = this._resolvePath(destPath);
-    return fs.move(sourceAbsolutePath, destAbsolutePath);
+    await fs.move(sourceAbsolutePath, destAbsolutePath);
+    this.draftFiles.add(destPath);
+    this.draftFiles.add(sourcePath); // Mark source as draft (deleted)
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:move', { 
+        sourcePath, 
+        destPath, 
+        isDraft: true 
+      });
+    }
   }
 
   async stat(filePath) {
     const absolutePath = this._resolvePath(filePath);
     const stats = await fs.stat(absolutePath);
-    return {
+    const result = {
       size: stats.size,
       isFile: stats.isFile(),
       isDirectory: stats.isDirectory(),
       mtime: stats.mtime,
       ctime: stats.ctime,
       atime: stats.atime,
-      mode: stats.mode
+      mode: stats.mode,
+      isDraft: this._isDraft(filePath)
     };
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:stat', { filePath, stats: result });
+    }
+    return result;
   }
 
   async readdir(dirPath) {
@@ -170,27 +295,33 @@ class FilingGitProvider {
     const files = await fs.readdir(absolutePath);
     const detailed = await Promise.all(
       files.map(async (file) => {
-        const filePath = path.join(absolutePath, file);
-        const stats = await fs.stat(filePath);
+        const filePath = path.join(dirPath, file);
+        const stats = await this.stat(filePath);
         return {
           name: file,
-          path: path.join(dirPath, file),
-          size: stats.size,
-          isFile: stats.isFile(),
-          isDirectory: stats.isDirectory(),
-          mtime: stats.mtime,
-          ctime: stats.ctime,
-          atime: stats.atime,
-          mode: stats.mode
+          path: filePath,
+          ...stats
         };
       })
     );
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:listDetailed', { dirPath, files: detailed });
+    }
     return detailed;
   }
 
   async ensureDir(dirPath) {
     const absolutePath = this._resolvePath(dirPath);
-    return fs.ensureDir(absolutePath);
+    try {
+      await fs.ensureDir(absolutePath);
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('filing:ensureDir', { dirPath });
+      }
+    } catch (error) {
+      if (error.code !== 'EEXIST') {
+        throw error;
+      }
+    }
   }
 
   async rename(sourcePath, destPath) {
@@ -199,6 +330,36 @@ class FilingGitProvider {
 
   async unlink(filePath) {
     return this.delete(filePath);
+  }
+
+  // Git-specific methods for managing drafts and commits
+  async commit(message = 'Auto-commit from filing provider') {
+    return this.publish(message);
+  }
+
+  async getDraftFiles() {
+    return Array.from(this.draftFiles);
+  }
+
+  async discardDrafts() {
+    try {
+      await this._ensureGitReady();
+      
+      // Reset to latest remote state
+      await this.git.fetch();
+      await this.git.reset(['--hard', `origin/${this.options.branch}`]);
+      this.draftFiles.clear();
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('filing:discardDrafts');
+      }
+    } catch (error) {
+      throw new Error(`Failed to discard drafts: ${error.message}`);
+    }
+  }
+
+  // Cleanup method
+  async cleanup() {
+    this.destroy();
   }
 
   destroy() {

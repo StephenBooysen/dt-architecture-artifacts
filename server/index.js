@@ -193,8 +193,6 @@ const limiter = rateLimit({
 app.use('/api', apiRoutes);
 
 
-
-
 // Helper functions for server pages
 function getSharedStyles() {
   return `

@@ -33,15 +33,36 @@ const PublishModal = ({ onClose, onPublish }) => {
     setIsPublishing(true);
     
     try {
-      toast.success('Changes published successfully');
+      // Make API call to commit changes
+      const response = await fetch('/api/commit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include session cookies
+        body: JSON.stringify({
+          message: publishMessage.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish changes');
+      }
+
+      const result = await response.json();
+      
+      toast.success('Changes published successfully to Git repository');
+      console.log('Publish result:', result);
       
       if (onPublish) {
-        onPublish();
+        onPublish(result);
       }
       onClose();
     } catch (error) {
-      const errorMessage = error.response?.data?.error || error.message;
+      const errorMessage = error.message || 'Failed to publish changes';
       toast.error(`Failed to publish: ${errorMessage}`);
+      console.error('Publish error:', error);
     } finally {
       setIsPublishing(false);
     }
@@ -53,43 +74,52 @@ const PublishModal = ({ onClose, onPublish }) => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <h2>Publish Changes</h2>
-        <p>This will save and publish your changes.</p>
-        
-        <form onSubmit={handlePublish} className="modal-form">
-          <div className="form-group">
-            <label htmlFor="publish-message">Publish Message:</label>
-            <textarea
-              id="publish-message"
-              value={publishMessage}
-              onChange={(e) => setPublishMessage(e.target.value)}
-              placeholder="Describe your changes..."
-              rows="4"
-              required
-              disabled={isPublishing}
-            />
+    <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
+      <div className="modal-dialog">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Publish Changes</h5>
+            <button type="button" className="btn-close" onClick={onClose} disabled={isPublishing}></button>
           </div>
-          
-          <div className="modal-actions">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={isPublishing}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!publishMessage.trim() || isPublishing}
-            >
-              {getButtonText()}
-            </button>
-          </div>
-        </form>
+          <form onSubmit={handlePublish}>
+            <div className="modal-body">
+              <p className="text-muted mb-3">This will commit and push your changes to the Git repository.</p>
+              <div className="mb-3">
+                <label htmlFor="publish-message" className="form-label">Commit Message:</label>
+                <textarea
+                  id="publish-message"
+                  className="form-control"
+                  value={publishMessage}
+                  onChange={(e) => setPublishMessage(e.target.value)}
+                  placeholder="Describe your changes..."
+                  rows="4"
+                  required
+                  disabled={isPublishing}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onClose}
+                disabled={isPublishing}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!publishMessage.trim() || isPublishing}
+              >
+                {isPublishing && (
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                )}
+                {getButtonText()}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

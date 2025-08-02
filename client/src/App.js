@@ -70,6 +70,9 @@ function AppContent() {
   const [isFileLoading, setIsFileLoading] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [draftFiles, setDraftFiles] = useState([]);
+  const [providerInfo, setProviderInfo] = useState({ provider: 'git', supportsDrafts: true });
+  const [lastSyncCheck, setLastSyncCheck] = useState(null);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('architecture-artifacts-sidebar-width');
     return saved ? parseInt(saved, 10) : 300;
@@ -126,14 +129,116 @@ function AppContent() {
     }
   }, [loading, isAuthenticated]);
 
-  // Set up periodic sync to catch external changes
+  // Function to fetch provider info
+  const fetchProviderInfo = useCallback(async () => {
+    try {
+      const response = await fetch('/api/provider-info', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setProviderInfo(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch provider info:', error);
+    }
+  }, []);
+
+    // Periodic sync with server to catch external changes
+  const syncFiles = async () => {
+    try {
+      const fileTree = await fetchFiles();
+      const updatedTree = diffAndUpdateTree(files, fileTree);
+      
+      // Only update if tree actually changed (silent sync)
+      if (JSON.stringify(updatedTree) !== JSON.stringify(files)) {
+        setFiles(updatedTree);
+      }
+    } catch (error) {
+      // Silent failure for background sync
+      console.warn('Background sync failed:', error);
+    }
+  };
+
+  // Function to check for draft files from server
+  const checkForDrafts = useCallback(async () => {
+    // Only check for drafts if provider supports them
+    if (!providerInfo.supportsDrafts) {
+      setDraftFiles([]);
+      setHasChanges(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/drafts', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setDraftFiles(data.drafts || []);
+        setHasChanges(data.drafts && data.drafts.length > 0);
+      }
+    } catch (error) {
+      console.error('Failed to check for drafts:', error);
+    }
+  }, [providerInfo.supportsDrafts]);
+
+  // Function to check for remote sync status
+  const checkSyncStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/sync-status', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.lastSync && data.lastSync !== lastSyncCheck) {
+          // Remote changes were pulled, trigger immediate sync
+          console.log('Remote changes detected, syncing file tree...');
+          setLastSyncCheck(data.lastSync);
+          await syncFiles(); // Immediate sync
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check sync status:', error);
+    }
+  }, [lastSyncCheck, syncFiles]);
+
+  // Set up periodic sync to catch external changes and check for drafts
   useEffect(() => {
     if (isAuthenticated && files.length > 0) {
       const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
+      const syncStatusInterval = setInterval(checkSyncStatus, 5000); // Check for remote changes every 5 seconds
       
-      return () => clearInterval(syncInterval);
+      // Only set up draft polling if provider supports drafts
+      let draftInterval;
+      if (providerInfo.supportsDrafts) {
+        draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
+      }
+      
+      return () => {
+        clearInterval(syncInterval);
+        clearInterval(syncStatusInterval);
+        if (draftInterval) clearInterval(draftInterval);
+      };
     }
-  }, [isAuthenticated, files.length]);
+  }, [isAuthenticated, files.length, providerInfo.supportsDrafts, checkForDrafts, checkSyncStatus]);
+
+  // Fetch provider info when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProviderInfo();
+    }
+  }, [isAuthenticated, fetchProviderInfo]);
+
+  // Initial draft check when authenticated and provider info is loaded
+  useEffect(() => {
+    if (isAuthenticated && providerInfo) {
+      checkForDrafts();
+    }
+  }, [isAuthenticated, providerInfo, checkForDrafts]);
 
   // Tree manipulation utilities for local updates
   const findNodeInTree = (tree, path) => {
@@ -252,23 +357,7 @@ function AppContent() {
     }
   };
 
-  // Periodic sync with server to catch external changes
-  const syncFiles = async () => {
-    try {
-      const fileTree = await fetchFiles();
-      const updatedTree = diffAndUpdateTree(files, fileTree);
-      
-      // Only update if tree actually changed (silent sync)
-      if (JSON.stringify(updatedTree) !== JSON.stringify(files)) {
-        setFiles(updatedTree);
-      }
-    } catch (error) {
-      // Silent failure for background sync
-      console.warn('Background sync failed:', error);
-    }
-  };
-
-  // Diff algorithm to only update changed items
+  // Incremental tree update algorithm to preserve UI state
   const diffAndUpdateTree = (oldTree, newTree) => {
     // If first load, return new tree
     if (oldTree.length === 0) {
@@ -284,7 +373,132 @@ function AppContent() {
       return oldTree; // No changes, keep existing tree
     }
 
-    return newTree; // Return new tree if changes detected
+    // Perform incremental update
+    return mergeTreeChanges(oldTree, newTree, oldMap, newMap);
+  };
+
+  // Merge only the changes between old and new trees
+  const mergeTreeChanges = (oldTree, newTree, oldMap, newMap) => {
+    const updatedTree = JSON.parse(JSON.stringify(oldTree)); // Deep clone old tree
+    
+    // Track paths that exist in new tree
+    const newPaths = new Set(Object.keys(newMap));
+    const oldPaths = new Set(Object.keys(oldMap));
+    
+    // Find added and modified items
+    const addedPaths = [...newPaths].filter(path => !oldPaths.has(path));
+    const removedPaths = [...oldPaths].filter(path => !newPaths.has(path));
+    const potentiallyModified = [...newPaths].filter(path => oldPaths.has(path));
+    
+    // Remove deleted items
+    removedPaths.forEach(removedPath => {
+      removeNodeFromTreeByPath(updatedTree, removedPath);
+    });
+    
+    // Add new items and update modified ones
+    addedPaths.forEach(addedPath => {
+      const newItem = findNodeInTreeByPath(newTree, addedPath);
+      if (newItem) {
+        addNodeToTreeByPath(updatedTree, newItem, addedPath);
+      }
+    });
+    
+    // Check for modifications (size, mtime changes, etc.)
+    potentiallyModified.forEach(path => {
+      const oldItem = oldMap[path];
+      const newItem = newMap[path];
+      
+      // Check if item actually changed (compare relevant properties)
+      if (hasItemChanged(oldItem, newItem)) {
+        const fullNewItem = findNodeInTreeByPath(newTree, path);
+        if (fullNewItem) {
+          updateNodeInTreeByPath(updatedTree, path, fullNewItem);
+        }
+      }
+    });
+    
+    return sortTree(updatedTree);
+  };
+
+  // Helper function to check if an item has actually changed
+  const hasItemChanged = (oldItem, newItem) => {
+    if (!oldItem || !newItem) return true;
+    
+    // Compare relevant properties that indicate real changes
+    return (
+      oldItem.type !== newItem.type ||
+      oldItem.name !== newItem.name ||
+      oldItem.path !== newItem.path
+      // Note: We don't compare mtime here as it causes too many false positives
+    );
+  };
+
+  // Helper function to find a node in tree by path
+  const findNodeInTreeByPath = (tree, targetPath) => {
+    for (const node of tree) {
+      if (node.path === targetPath) {
+        return node;
+      }
+      if (node.type === 'directory' && node.children) {
+        const found = findNodeInTreeByPath(node.children, targetPath);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  // Helper function to add a node to tree by path
+  const addNodeToTreeByPath = (tree, newNode, targetPath) => {
+    const pathParts = targetPath.split('/');
+    if (pathParts.length === 1) {
+      // Root level item
+      tree.push(newNode);
+      return;
+    }
+    
+    // Find parent and add to it
+    const parentPath = pathParts.slice(0, -1).join('/');
+    const parent = findNodeInTreeByPath(tree, parentPath);
+    if (parent && parent.type === 'directory') {
+      if (!parent.children) parent.children = [];
+      parent.children.push(newNode);
+    }
+  };
+
+  // Helper function to update a node in tree by path
+  const updateNodeInTreeByPath = (tree, targetPath, updatedNode) => {
+    for (let i = 0; i < tree.length; i++) {
+      if (tree[i].path === targetPath) {
+        // Preserve children if it's a directory
+        if (tree[i].type === 'directory' && tree[i].children) {
+          updatedNode.children = tree[i].children;
+        }
+        tree[i] = updatedNode;
+        return true;
+      }
+      if (tree[i].type === 'directory' && tree[i].children) {
+        if (updateNodeInTreeByPath(tree[i].children, targetPath, updatedNode)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Helper function to remove a node from tree by path
+  const removeNodeFromTreeByPath = (tree, targetPath) => {
+    for (let i = 0; i < tree.length; i++) {
+      if (tree[i].path === targetPath) {
+        tree.splice(i, 1);
+        return true;
+      }
+      if (tree[i].type === 'directory' && tree[i].children) {
+        if (removeNodeFromTreeByPath(tree[i].children, targetPath)) {
+          return true;
+        }
+      }
+    }
+    return false;
   };
 
   const createTreeMap = (tree) => {
@@ -370,6 +584,11 @@ function AppContent() {
         setHasChanges(false);
         toast.success('File saved successfully');
       }
+      
+      // Check for drafts after saving
+      if (providerInfo.supportsDrafts) {
+        checkForDrafts();
+      }
     } catch (error) {
       toast.error('Failed to save file');
     } finally {
@@ -377,9 +596,11 @@ function AppContent() {
     }
   };
 
-  const handlePublish = () => {
+  const handlePublish = (result) => {
+    // This is called after successful publish from the modal
     setShowPublishModal(false);
     setHasChanges(false);
+    setDraftFiles([]); // Clear draft files after publishing
     loadFiles(true); // Force refresh after publishing
   };
 
@@ -389,6 +610,7 @@ function AppContent() {
     setFileContent('');
     setFileData(null);
     setHasChanges(false);
+    setDraftFiles([]); // Clear draft files after publishing
     setExpandedFolders(new Set()); // Reset expanded folders after publishing
   };
 
@@ -459,6 +681,11 @@ function AppContent() {
       toast.success('File created successfully');
       // Automatically open the newly created file
       await handleFileSelect(filePath);
+      
+      // Check for drafts after creating file
+      if (providerInfo.supportsDrafts) {
+        checkForDrafts();
+      }
     } catch (error) {
       // Rollback on error - remove the file from tree
       setFiles(files);
@@ -486,6 +713,11 @@ function AppContent() {
       // Make API call to persist on server
       await deleteItem(itemPath);
       toast.success('Item deleted successfully');
+      
+      // Check for drafts after deleting item
+      if (providerInfo.supportsDrafts) {
+        checkForDrafts();
+      }
     } catch (error) {
       // Rollback on error - restore original tree
       setFiles(originalTree);
@@ -603,7 +835,12 @@ function AppContent() {
     setFiles(updatedTree);
     
     toast.success('File uploaded successfully');
-  }, [files]);
+    
+    // Check for drafts after uploading file
+    if (providerInfo.supportsDrafts) {
+      checkForDrafts();
+    }
+  }, [files, providerInfo.supportsDrafts, checkForDrafts]);
 
   const handleFolderToggle = useCallback((folderPath, isExpanded) => {
     const newExpanded = new Set(expandedFolders);
@@ -1081,6 +1318,8 @@ function AppContent() {
                 onFolderToggle={handleFolderToggle}
                 onPublish={() => setShowPublishModal(true)}
                 hasChanges={hasChanges}
+                draftFiles={draftFiles}
+                providerInfo={providerInfo}
                 onViewChange={handleViewChange}
               />
             </div>

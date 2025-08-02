@@ -7,39 +7,62 @@ const path = require('path');
 
 class LocalFilingProvider {
   constructor(options, eventEmitter) {
+    this.options = options || {};
     this.eventEmitter_ = eventEmitter;
+    if (!this.options.localPath) {
+      this.options.localPath = "../content"; 
+    }
+  }
+
+  _resolvePath(filePath) {
+    // Handle empty or current directory path
+    if (!filePath || filePath === '.' || filePath === '') {
+      return this.options.localPath;
+    }
+    
+    // Prevent path traversal attacks
+    const resolvedPath = path.join(this.options.localPath, filePath);
+    if (!resolvedPath.startsWith(this.options.localPath)) {
+        throw new Error('Access denied: Path traversal detected.');
+    }
+    return resolvedPath;
   }
 
   async create(filePath, content) {
-    await fs.writeFile(filePath, content);
+    const absolutePath = this._resolvePath(filePath);
+    await fs.writeFile(absolutePath, content);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:create', { filePath, content });
+      this.eventEmitter_.emit('filing:create', { filePath, content, isDraft: false });
   }
 
   async read(filePath,encoding) {
-    const content = await fs.readFile(filePath, encoding);
+    const absolutePath = this._resolvePath(filePath);
+    const content = await fs.readFile(absolutePath, encoding);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:read', { filePath, content });
+      this.eventEmitter_.emit('filing:read', { filePath, content, isDraft: false });
     return content;
   }
 
   async delete(filePath) {
-    await fs.unlink(filePath);
+    const absolutePath = this._resolvePath(filePath);
+    await fs.unlink(absolutePath);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:delete', { filePath });
+      this.eventEmitter_.emit('filing:delete', { filePath, isDraft: false });
   }
 
   async list(dirPath) {
-    const files = await fs.readdir(dirPath);
+    const absolutePath = this._resolvePath(dirPath);
+    const files = await fs.readdir(absolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:list', { dirPath, files });
     return files;
   }
 
   async update(filePath, content) {
-    await fs.writeFile(filePath, content);
+    const absolutePath = this._resolvePath(filePath);
+    await fs.writeFile(absolutePath, content);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:update', { filePath, content });
+      this.eventEmitter_.emit('filing:update', { filePath, content, isDraft: false });
   }
 
   async upload(filePath, content) {
@@ -55,38 +78,45 @@ class LocalFilingProvider {
   }
 
   async exists(filePath) {
+    const absolutePath = this._resolvePath(filePath);
     try {
-      await fs.access(filePath);
+      await fs.access(absolutePath);
       if (this.eventEmitter_)
-        this.eventEmitter_.emit('filing:exists', { filePath, exists: true });
+        this.eventEmitter_.emit('filing:exists', { filePath, exists: true, isDraft: false });
       return true;
     } catch (error) {
       if (this.eventEmitter_)
-        this.eventEmitter_.emit('filing:exists', { filePath, exists: false });
+        this.eventEmitter_.emit('filing:exists', { filePath, exists: false, isDraft: false });
       return false;
     }
   }
 
   async mkdir(dirPath, options = { recursive: true }) {
-    await fs.mkdir(dirPath, options);
+    const absolutePath = this._resolvePath(dirPath);
+    await fs.mkdir(absolutePath, options);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:mkdir', { dirPath, options });
   }
 
   async copy(sourcePath, destPath) {
-    await fs.copyFile(sourcePath, destPath);
+    const sourceAbsolutePath = this._resolvePath(sourcePath);
+    const destAbsolutePath = this._resolvePath(destPath);
+    await fs.copyFile(sourceAbsolutePath, destAbsolutePath);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:copy', { sourcePath, destPath });
+      this.eventEmitter_.emit('filing:copy', { sourcePath, destPath, isDraft: false });
   }
 
   async move(sourcePath, destPath) {
-    await fs.rename(sourcePath, destPath);
+    const sourceAbsolutePath = this._resolvePath(sourcePath);
+    const destAbsolutePath = this._resolvePath(destPath);
+    await fs.rename(sourceAbsolutePath, destAbsolutePath);
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:move', { sourcePath, destPath });
+      this.eventEmitter_.emit('filing:move', { sourcePath, destPath, isDraft: false });
   }
 
   async stat(filePath) {
-    const stats = await fs.stat(filePath);
+    const absolutePath = this._resolvePath(filePath);
+    const stats = await fs.stat(absolutePath);
     const result = {
       size: stats.size,
       isFile: stats.isFile(),
@@ -96,31 +126,19 @@ class LocalFilingProvider {
       atime: stats.atime,
       mode: stats.mode
     };
+    const resultWithDraft = { ...result, isDraft: false };
     if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:stat', { filePath, stats: result });
-    return result;
+      this.eventEmitter_.emit('filing:stat', { filePath, stats: resultWithDraft });
+    return resultWithDraft;
   }
 
   async readdir(dirPath) {
-    const files = await fs.readdir(dirPath);
-    const detailed = await Promise.all(
-      files.map(async (file) => {
-        const filePath = path.join(dirPath, file);
-        const stats = await this.stat(filePath);
-        return {
-          name: file,
-          path: filePath,
-          ...stats
-        };
-      })
-    );
-    if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:readdir', { dirPath, files: detailed });
-    return detailed
+    return this.listDetailed(dirPath);
   } 
 
   async listDetailed(dirPath) {
-    const files = await fs.readdir(dirPath);
+    const absolutePath = this._resolvePath(dirPath);
+    const files = await fs.readdir(absolutePath);
     const detailed = await Promise.all(
       files.map(async (file) => {
         const filePath = path.join(dirPath, file);
@@ -138,8 +156,9 @@ class LocalFilingProvider {
   }
 
   async ensureDir(dirPath) {
+    const absolutePath = this._resolvePath(dirPath);
     try {
-      await fs.mkdir(dirPath, { recursive: true });
+      await fs.mkdir(absolutePath, { recursive: true });
       if (this.eventEmitter_)
         this.eventEmitter_.emit('filing:ensureDir', { dirPath });
     } catch (error) {
@@ -155,6 +174,43 @@ class LocalFilingProvider {
 
   async unlink(filePath) {
     return this.delete(filePath);
+  }
+
+  // Git-specific methods for compatibility (local provider has no drafts)
+  async getDraftFiles() {
+    // Local provider has no drafts - everything is immediately saved
+    return [];
+  }
+
+  async publish(message) {
+    // Local provider doesn't need publishing - files are immediately saved
+    // This method exists for compatibility but does nothing
+    return { 
+      message: 'Local provider does not require publishing - files are automatically saved',
+      success: true 
+    };
+  }
+
+  async commit(message = 'Auto-commit from filing provider') {
+    // Alias for publish for compatibility
+    return this.publish(message);
+  }
+
+  async discardDrafts() {
+    // Local provider has no drafts to discard
+    return { 
+      message: 'Local provider has no drafts to discard - all files are automatically saved',
+      success: true 
+    };
+  }
+
+  // Cleanup method
+  async cleanup() {
+    // Local provider doesn't need cleanup
+  }
+
+  destroy() {
+    // Local provider doesn't need destruction
   }
 }
 

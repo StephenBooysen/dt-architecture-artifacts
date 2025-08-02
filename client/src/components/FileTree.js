@@ -37,6 +37,8 @@ import { fetchTemplates } from '../services/api';
  * @param {Function} props.onFileUpload - Callback for file upload.
  * @param {Set} props.expandedFolders - Set of folder paths that should be expanded.
  * @param {Function} props.onFolderToggle - Callback when a folder is expanded/collapsed.
+ * @param {Array} props.draftFiles - Array of draft file paths that haven't been committed.
+ * @param {Object} props.providerInfo - Information about the filing provider (type, capabilities).
  * @param {Function} props.onViewChange - Callback for view changes (recent, starred).
  * @return {JSX.Element} The FileTree component.
  */
@@ -54,6 +56,8 @@ const FileTree = ({
   onFolderToggle,
   onPublish,
   hasChanges,
+  draftFiles = [],
+  providerInfo = { provider: 'git', supportsDrafts: true },
   onViewChange,
 }) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -373,6 +377,7 @@ const FileTree = ({
     const isSelected = selectedFile === item.path;
     const paddingLeft = depth * 1.5;
     const isCollapsed = collapsedFolders.has(item.path);
+    const isDraft = providerInfo.supportsDrafts && draftFiles.includes(item.path);
 
     if (item.type === 'directory') {
       return (
@@ -386,9 +391,12 @@ const FileTree = ({
             onContextMenu={(e) => handleContextMenu(e, item.path, 'directory')}>
             <div className="folder-content">
               <span className="icon">
-                <i className={`bi ${isCollapsed ? 'bi-folder2' : 'bi-folder2-open'}`}></i>
+                <i className={`bi ${isCollapsed ? 'bi-folder2' : 'bi-folder2-open'}${isDraft ? ' text-primary' : ''}`}></i>
               </span>
-              <span className="file-name" title={item.name}>{item.name}</span>
+              <span className={`file-name${isDraft ? ' text-primary fw-semibold' : ''}`} title={item.name}>
+                {item.name}
+                {isDraft && <i className="bi bi-circle-fill text-primary ms-1" style={{fontSize: '0.5rem'}}></i>}
+              </span>
             </div>
             <div className="file-tree-actions">
               <button
@@ -446,9 +454,12 @@ const FileTree = ({
         onFocus={() => setFocusedItem({path: item.path, type: 'file', name: item.name})}
         onContextMenu={(e) => handleContextMenu(e, item.path, 'file')}>
         <span className="icon">
-          <i className="bi bi-file-earmark-text"></i>
+          <i className={`bi bi-file-earmark-text${isDraft ? ' text-primary' : ''}`}></i>
         </span>
-        <span className="file-name" title={item.name}>{item.name}</span>
+        <span className={`file-name${isDraft ? ' text-primary fw-semibold' : ''}`} title={item.name}>
+          {item.name}
+          {isDraft && <i className="bi bi-circle-fill text-primary ms-1" style={{fontSize: '0.5rem'}}></i>}
+        </span>
       </div>
     );
   };
@@ -538,11 +549,18 @@ const FileTree = ({
             Files {isUploading && <small className="text-primary">Uploading...</small>}
           </h3>
           <button
-            className="btn btn-primary btn-sm"
+            className={`btn btn-sm ${hasChanges && providerInfo.supportsDrafts ? 'btn-primary' : 'btn-secondary'}`}
             onClick={onPublish}
-            disabled={!hasChanges || isLoading}
-            title="Publish changes">
-            <i className="bi bi-cloud-upload me-1"></i>Publish
+            disabled={!hasChanges || isLoading || !providerInfo.supportsDrafts}
+            title={
+              !providerInfo.supportsDrafts 
+                ? "Publishing not available (local provider)" 
+                : hasChanges 
+                  ? "Publish changes" 
+                  : "No changes to publish"
+            }>
+            <i className={`bi ${providerInfo.supportsDrafts ? 'bi-cloud-upload' : 'bi-check-circle'} me-1`}></i>
+            {providerInfo.supportsDrafts ? 'Publish' : 'Committed'}
           </button>
         </div>
         
