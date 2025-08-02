@@ -1,7 +1,20 @@
+/**
+ * @fileoverview Authorisation for Architecture Artifacts application.
+ * 
+ * This server provides the current auth capability for the Architecture Artifacts application.
+ * Currently we use a passport local auth strategy. Google and Azure auth will be added
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-02
+ */
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const userStorage = require('./userStorage');
 
+/**
+ * Implement the passport local strategy 
+ */
 passport.use(new LocalStrategy(
   async (username, password, done) => {
     try {
@@ -16,10 +29,20 @@ passport.use(new LocalStrategy(
   }
 ));
 
+/**
+ * Serialize a user
+ * @param {} user
+ * @param {} done
+ */
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
+/**
+ * Deserialize a user
+ * @param {} user
+ * @param {} done
+ */
 passport.deserializeUser(async (id, done) => {
   try {
     const user = userStorage.findUserById(id);

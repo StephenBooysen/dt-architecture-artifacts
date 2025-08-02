@@ -134,7 +134,29 @@ app.use(helmet({
   }
 }));
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) {
+      console.log('CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
+    
+    // Get allowed origins from environment variables
+    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS 
+      ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim())
+      : [process.env.CLIENT_URL || 'http://localhost:3000'];
+    
+    console.log(`CORS: Checking origin "${origin}" against allowed origins:`, allowedOrigins);
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log(`CORS: Allowing origin: ${origin}`);
+      return callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      console.warn(`Allowed origins are:`, allowedOrigins);
+      return callback(new Error('Not allowed by CORS'), false);
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '105mb' }));
