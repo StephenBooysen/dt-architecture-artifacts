@@ -5,12 +5,10 @@
 - Phase 3: Shoprite enterprise integration
 - Phase 4: AI with ollama
 
-### Phase 2: Fully functioning wiki for more than me (multiple users)
-#### Client
-- Spaces concept that can user different storage solutions (Private, Shared, Enterprise) - dome
-
-#### Server
-- Security: Roles and permissions (read, write, backoffice, spaces) - done
+### Phase 2
+- VS code extension
+- chrome extensions: make start screen login if not logged in
+- Electron - Be careful
 
 ### Phase 3: Shoprite enterprise integration
 #### Client
