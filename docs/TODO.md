@@ -5,29 +5,21 @@
 - Phase 3: Shoprite enterprise integration
 - Phase 4: AI with ollama
 
-### Phase 2
+### Phase 2 BUGS
 - VS code extension
 - chrome extensions: make start screen login if not logged in
 - Electron - Be careful
 
 ### Phase 3: Shoprite enterprise integration
 #### Client
-- Readonly pages
-- View: Have a knowledge view that has no editing
-- Subscribe to changes and notify in notification popup
-- Shortcuts
-- Drafts list
-- Spaces page (r- Readonly pagesecent viewed, starred, changes, announcements)
-- Watch a file
-- Share a link to a file
+- Readonly Space
+- View: Have a knowledge view that has no editing (Copy to clipboard, commets)
 
 #### Server
-- View: Knowledge Viewhttps://stephenbooysen.atlassian.net/wiki/x/HoEE
-- Move recent and starred to user account
-- Invitations so include email in users
+- View: Knowledge View 
 
 #### Extensions
-- View: Knowledge View
+- View: Apply Knowledge View (Clipboard)
 
 #### Plugins
 - Import ARIS items
@@ -43,3 +35,13 @@
 - AI Settings
 - Ollama implementation
 
+## Nice to have
+- Readonly pages
+- Subscribe to changes and notify in notification popup
+- Shortcuts
+- Drafts list
+- Spaces page (r- Readonly pagesecent viewed, starred, changes, announcements)
+- Watch a file
+- Share a link to a file
+- Move recent and starred to user account
+- Invitations so include email in users
