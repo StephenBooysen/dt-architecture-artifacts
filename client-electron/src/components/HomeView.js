@@ -159,7 +159,7 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
   };
 
   const handleForceReset = async () => {
-    if (!confirm(`Are you sure you want to force reset "${currentSpace}"? This will discard all local changes.`)) {
+    if (!window.confirm(`Are you sure you want to force reset "${currentSpace}"? This will discard all local changes.`)) {
       return;
     }
 

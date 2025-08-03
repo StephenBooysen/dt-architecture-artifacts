@@ -45,11 +45,13 @@ api.interceptors.response.use(
 
 /**
  * Fetches the file tree structure from the API.
+ * @param {string} [space] - Optional space name for space-aware requests.
  * @return {Promise<Array>} The file tree data.
  */
-export const fetchFiles = async () => {
+export const fetchFiles = async (space = null) => {
   try {
-    const response = await api.get('/files');
+    const url = space ? `/${space}/files` : '/files';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching files:', error);
@@ -60,11 +62,13 @@ export const fetchFiles = async () => {
 /**
  * Fetches a specific file's content from the API.
  * @param {string} filePath - The path to the file.
+ * @param {string} [space] - Optional space name for space-aware requests.
  * @return {Promise<Object>} The file data.
  */
-export const fetchFile = async (filePath) => {
+export const fetchFile = async (filePath, space = null) => {
   try {
-    const response = await api.get(`/files/${filePath}`);
+    const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching file:', error);
@@ -75,23 +79,25 @@ export const fetchFile = async (filePath) => {
 /**
  * Downloads a file from the server.
  * @param {string} filePath - The path to the file.
+ * @param {string} [space] - Optional space name for space-aware requests.
  * @return {Promise<void>} Downloads the file.
  */
-export const downloadFile = async (filePath) => {
+export const downloadFile = async (filePath, space = null) => {
   try {
-    const response = await api.get(`/download/${filePath}`, {
+    const url = space ? `/${space}/download/${filePath}` : `/download/${filePath}`;
+    const response = await api.get(url, {
       responseType: 'blob'
     });
     
     // Create a download link
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
-    link.href = url;
+    link.href = downloadUrl;
     link.setAttribute('download', filePath.split('/').pop());
     document.body.appendChild(link);
     link.click();
     link.remove();
-    window.URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error('Error downloading file:', error);
     throw error;
@@ -104,9 +110,10 @@ export const downloadFile = async (filePath) => {
  * @param {string} content - The file content to save.
  * @return {Promise<Object>} The save response.
  */
-export const saveFile = async (filePath, content) => {
+export const saveFile = async (filePath, content, space = null) => {
   try {
-    const response = await api.post(`/files/${filePath}`, {content});
+    const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
+    const response = await api.put(url, {content});
     return response.data;
   } catch (error) {
     console.error('Error saving file:', error);
@@ -120,9 +127,10 @@ export const saveFile = async (filePath, content) => {
  * @param {string} folderPath - The path for the new folder.
  * @return {Promise<Object>} The create folder response.
  */
-export const createFolder = async (folderPath) => {
+export const createFolder = async (folderPath, space = null) => {
   try {
-    const response = await api.post('/folders', {folderPath});
+    const url = space ? `/${space}/folders` : '/folders';
+    const response = await api.post(url, {folderPath});
     return response.data;
   } catch (error) {
     console.error('Error creating folder:', error);
@@ -136,9 +144,10 @@ export const createFolder = async (folderPath) => {
  * @param {string} content - The initial content for the file.
  * @return {Promise<Object>} The create file response.
  */
-export const createFile = async (filePath, content = '') => {
+export const createFile = async (filePath, content = '', space = null) => {
   try {
-    const response = await api.post('/files', {filePath, content});
+    const url = space ? `/${space}/files/${filePath}` : `/files/${filePath}`;
+    const response = await api.post(url, {content});
     return response.data;
   } catch (error) {
     console.error('Error creating file:', error);
@@ -152,9 +161,10 @@ export const createFile = async (filePath, content = '') => {
  * @param {string} itemPath - The path of the file or folder to delete.
  * @return {Promise<Object>} The delete response.
  */
-export const deleteItem = async (itemPath) => {
+export const deleteItem = async (itemPath, space = null) => {
   try {
-    const response = await api.delete(`/files/${itemPath}`);
+    const url = space ? `/${space}/files/${itemPath}` : `/files/${itemPath}`;
+    const response = await api.delete(url);
     return response.data;
   } catch (error) {
     console.error('Error deleting item:', error);
@@ -168,9 +178,10 @@ export const deleteItem = async (itemPath) => {
  * @param {string} newName - The new name for the item.
  * @return {Promise<Object>} The rename response.
  */
-export const renameItem = async (itemPath, newName) => {
+export const renameItem = async (itemPath, newName, space = null) => {
   try {
-    const response = await api.put(`/rename/${itemPath}`, {newName});
+    const url = space ? `/${space}/rename/${itemPath}` : `/rename/${itemPath}`;
+    const response = await api.put(url, {newName});
     return response.data;
   } catch (error) {
     console.error('Error renaming item:', error);
@@ -182,9 +193,10 @@ export const renameItem = async (itemPath, newName) => {
  * Fetches all available templates.
  * @return {Promise<Array>} The templates array.
  */
-export const fetchTemplates = async () => {
+export const fetchTemplates = async (space = null) => {
   try {
-    const response = await api.get('/templates');
+    const url = space ? `/${space}/templates` : '/templates';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error fetching templates:', error);
@@ -395,9 +407,10 @@ export const getAllUsers = async () => {
  * @param {string} filePath - The path to the file.
  * @return {Promise<Object>} The comments data.
  */
-export const getComments = async (filePath) => {
+export const getComments = async (filePath, space = null) => {
   try {
-    const response = await api.get(`/comments/${filePath}`);
+    const url = space ? `/${space}/comments/${filePath}` : `/comments/${filePath}`;
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error getting comments:', error);
@@ -411,9 +424,10 @@ export const getComments = async (filePath) => {
  * @param {string} content - The comment content.
  * @return {Promise<Object>} The response with new comment and updated list.
  */
-export const addComment = async (filePath, content) => {
+export const addComment = async (filePath, content, space = null) => {
   try {
-    const response = await api.post(`/comments/${filePath}`, { content });
+    const url = space ? `/${space}/comments/${filePath}` : `/comments/${filePath}`;
+    const response = await api.post(url, { content });
     return response.data;
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -428,9 +442,10 @@ export const addComment = async (filePath, content) => {
  * @param {string} content - The updated comment content.
  * @return {Promise<Object>} The response with updated comment and list.
  */
-export const updateComment = async (filePath, commentId, content) => {
+export const updateComment = async (filePath, commentId, content, space = null) => {
   try {
-    const response = await api.put(`/comments/${commentId}/${filePath}`, { content });
+    const url = space ? `/${space}/comments/${commentId}/${filePath}` : `/comments/${commentId}/${filePath}`;
+    const response = await api.put(url, { content });
     return response.data;
   } catch (error) {
     console.error('Error updating comment:', error);
@@ -444,9 +459,10 @@ export const updateComment = async (filePath, commentId, content) => {
  * @param {string} commentId - The ID of the comment to delete.
  * @return {Promise<Object>} The response with updated comment list.
  */
-export const deleteComment = async (filePath, commentId) => {
+export const deleteComment = async (filePath, commentId, space = null) => {
   try {
-    const response = await api.delete(`/comments/${commentId}/${filePath}`);
+    const url = space ? `/${space}/comments/${commentId}/${filePath}` : `/comments/${commentId}/${filePath}`;
+    const response = await api.delete(url);
     return response.data;
   } catch (error) {
     console.error('Error deleting comment:', error);
@@ -465,7 +481,7 @@ export const deleteComment = async (filePath, commentId) => {
  */
 export const getRecentFiles = async (days = 7) => {
   try {
-    const response = await api.get(`/recent?days=${days}`);
+    const response = await api.get(`/metadata/recent?days=${days}`);
     return response.data;
   } catch (error) {
     console.error('Error getting recent files:', error);
@@ -479,7 +495,7 @@ export const getRecentFiles = async (days = 7) => {
  */
 export const getStarredFiles = async () => {
   try {
-    const response = await api.get('/starred');
+    const response = await api.get('/metadata/starred');
     return response.data;
   } catch (error) {
     console.error('Error getting starred files:', error);
@@ -515,6 +531,20 @@ export const getFileMetadata = async (filePath) => {
     return response.data;
   } catch (error) {
     console.error('Error getting file metadata:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches the user's allowed spaces.
+ * @return {Promise<Array>} The user's allowed spaces data.
+ */
+export const fetchUserSpaces = async () => {
+  try {
+    const response = await api.get('/auth/user-spaces');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user spaces:', error);
     throw error;
   }
 };
