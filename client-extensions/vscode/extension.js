@@ -8,6 +8,7 @@ class AuthManager {
         this.context = context;
         this.isAuthenticated = false;
         this.currentUser = null;
+        this.sessionToken = null;
         this.spaces = [];
         this.currentSpace = null;
         this.authStatusChangedEmitter = new vscode.EventEmitter();
@@ -47,6 +48,7 @@ class AuthManager {
             try {
                 const authData = JSON.parse(storedAuth);
                 this.currentUser = authData.user;
+                this.sessionToken = authData.sessionToken; // Load the session token
                 this.isAuthenticated = true;
                 this.authStatusChangedEmitter.fire(true);
                 
@@ -59,15 +61,17 @@ class AuthManager {
         }
     }
 
-    async storeAuth(user) {
-        const authData = { user };
-        await this.context.secrets.store('architectureArtifacts.auth', JSON.stringify(authData));
+    async storeAuth(authData) {
+        // Support both old format (just user) and new format (user + sessionToken)
+        const dataToStore = authData.user ? authData : { user: authData, sessionToken: this.sessionToken };
+        await this.context.secrets.store('architectureArtifacts.auth', JSON.stringify(dataToStore));
     }
 
     async clearStoredAuth() {
         await this.context.secrets.delete('architectureArtifacts.auth');
         await this.context.secrets.delete('architectureArtifacts.currentSpace');
         this.currentSpace = null;
+        this.sessionToken = null; // Clear the session token
         this.spaces = [];
         this.spacesChangedEmitter.fire([]);
     }
@@ -106,9 +110,10 @@ class AuthManager {
 
                 const userData = response.data;
                 this.currentUser = userData.user || userData;
+                this.sessionToken = userData.sessionToken; // Store the session token
                 this.isAuthenticated = true;
                 
-                await this.storeAuth(this.currentUser);
+                await this.storeAuth({ user: this.currentUser, sessionToken: this.sessionToken });
                 this.authStatusChangedEmitter.fire(true);
                 
                 // Load spaces after successful login
@@ -149,6 +154,7 @@ class AuthManager {
 
         // Clear local state regardless of server response
         this.currentUser = null;
+        this.sessionToken = null;
         this.isAuthenticated = false;
         this.spaces = [];
         this.currentSpace = null;
@@ -161,14 +167,14 @@ class AuthManager {
 
     async checkAuthStatus() {
         try {
-            const response = await this.api.get('/api/auth/me');
+            const response = await this.makeAuthenticatedRequest('/api/auth/me');
 
             if (response.status === 200) {
                 const userData = response.data;
                 this.currentUser = userData.user || userData;
                 this.isAuthenticated = true;
                 if (this.currentUser) {
-                    await this.storeAuth(this.currentUser);
+                    await this.storeAuth({ user: this.currentUser, sessionToken: this.sessionToken });
                 }
                 this.authStatusChangedEmitter.fire(true);
                 
@@ -267,9 +273,22 @@ class AuthManager {
 
     async makeAuthenticatedRequest(url, options = {}) {
         try {
+            // Prepare headers with authorization token
+            const headers = {
+                ...options.headers
+            };
+            
+            // Add Authorization header if we have a session token
+            if (this.sessionToken) {
+                headers.Authorization = `Bearer ${this.sessionToken}`;
+            } else {
+                console.log(`[VS Code Extension] makeAuthenticatedRequest - No session token available`);
+            }
+                        
             const response = await this.api({
                 url: url,
-                ...options
+                ...options,
+                headers: headers
             });
             return response;
         } catch (error) {
@@ -514,7 +533,10 @@ class SearchWebview {
     }
 
     async handleGetFile(filePath) {
+        console.log(`[VS Code Extension] handleGetFile called with filePath: ${filePath}`);
+        
         if (!this.authManager.getIsAuthenticated()) {
+            console.log('[VS Code Extension] User not authenticated, sending fileError');
             this.panel?.webview.postMessage({
                 command: 'fileError',
                 error: 'Authentication required. Please sign in first.'
@@ -527,18 +549,43 @@ class SearchWebview {
             
             // Add space parameter if a space is selected
             const currentSpace = this.authManager.getCurrentSpace();
+            console.log(`[VS Code Extension] Current space: ${currentSpace}`);
+            
             if (currentSpace) {
                 url = `/api/${encodeURIComponent(currentSpace)}/files/${encodeURIComponent(filePath)}`;
             }
             
+            console.log(`[VS Code Extension] Making request to URL: ${url}`);
+            console.log(`[VS Code Extension] Has session token: ${!!this.authManager.sessionToken}`);
+            
             const response = await this.authManager.makeAuthenticatedRequest(url);
+            
+            console.log(`[VS Code Extension] Raw server response:`, response.data);
+            console.log(`[VS Code Extension] cleanContent:`, response.data.cleanContent);
+            console.log(`[VS Code Extension] content:`, response.data.content);
+            
+            const contentToSend = response.data.content || response.data.cleanContent || '';
+            console.log(`[VS Code Extension] Final content to send length:`, contentToSend.length);
+            console.log(`[VS Code Extension] Final content preview:`, contentToSend.substring(0, 200));
 
-            this.panel?.webview.postMessage({
+            const message = {
                 command: 'fileContent',
                 filePath: filePath,
-                content: response.data.content || response.data.cleanContent || ''
-            });
+                content: contentToSend
+            };
+            console.log(`[VS Code Extension] Sending postMessage:`, message);
+            
+            if (this.panel?.webview) {
+                console.log(`[VS Code Extension] Webview exists, posting message`);
+                this.panel.webview.postMessage(message);
+            } else {
+                console.error(`[VS Code Extension] ERROR: No webview available to post message to`);
+            }
         } catch (error) {
+            console.error(`[VS Code Extension] Error loading file:`, error);
+            console.error(`[VS Code Extension] Error response status:`, error.response?.status);
+            console.error(`[VS Code Extension] Error response data:`, error.response?.data);
+            
             this.panel?.webview.postMessage({
                 command: 'fileError',
                 error: error.message || 'Failed to load file'
@@ -973,6 +1020,7 @@ class SearchWebview {
             border-color: var(--vscode-focusBorder);
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
 </head>
 <body>
     <div class="header">
@@ -1060,26 +1108,35 @@ class SearchWebview {
         // Handle messages from extension
         window.addEventListener('message', event => {
             const message = event.data;
+            console.log('[VS Code Webview] Received message:', message);
             
             switch (message.command) {
                 case 'authStatus':
+                    console.log('[VS Code Webview] Processing authStatus message');
                     handleAuthStatus(message.isAuthenticated, message.user);
                     break;
                 case 'searchResults':
+                    console.log('[VS Code Webview] Processing searchResults message');
                     handleSearchResults(message.results, message.query);
                     break;
                 case 'searchError':
+                    console.log('[VS Code Webview] Processing searchError message');
                     handleSearchError(message.error);
                     break;
                 case 'fileContent':
+                    console.log('[VS Code Webview] Processing fileContent message');
                     handleFileContent(message.filePath, message.content);
                     break;
                 case 'fileError':
+                    console.log('[VS Code Webview] Processing fileError message');
                     handleFileError(message.error);
                     break;
                 case 'spacesData':
+                    console.log('[VS Code Webview] Processing spacesData message');
                     handleSpacesData(message.spaces, message.currentSpace);
                     break;
+                default:
+                    console.log('[VS Code Webview] Unknown message command:', message.command);
             }
         });
 
@@ -1305,11 +1362,17 @@ class SearchWebview {
 
         function showPreview(result) {
             const filePath = result.filePath || result.fileName;
+            console.log('[VS Code Webview] showPreview called');
+            console.log('[VS Code Webview] result object:', result);
+            console.log('[VS Code Webview] extracted filePath:', filePath);
+            
             document.getElementById('previewTitle').textContent = filePath || 'Preview';
             
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('previewSection').style.display = 'block';
+            console.log('[VS Code Webview] Switched to preview view');
             
+            console.log('[VS Code Webview] Sending getFile message to extension');
             vscode.postMessage({
                 command: 'getFile',
                 filePath: filePath
@@ -1322,25 +1385,72 @@ class SearchWebview {
         }
 
         function handleFileContent(filePath, content) {
+            console.log('[VS Code Webview] handleFileContent called');
+            console.log('[VS Code Webview] filePath:', filePath);
+            console.log('[VS Code Webview] content length:', content ? content.length : 'null/undefined');
+            console.log('[VS Code Webview] content preview:', content ? content.substring(0, 100) : 'empty');
+            
             const previewContent = document.getElementById('previewContent');
+            if (!previewContent) {
+                console.error('[VS Code Webview] previewContent element not found');
+                return;
+            }
+            
             const htmlContent = markdownToHtml(content);
+            console.log('[VS Code Webview] converted HTML length:', htmlContent ? htmlContent.length : 'null/undefined');
+            
             previewContent.innerHTML = htmlContent;
+            console.log('[VS Code Webview] Content set to previewContent element');
+            console.log('[VS Code Webview] previewContent element after setting:', previewContent);
+            console.log('[VS Code Webview] previewContent innerHTML length after setting:', previewContent.innerHTML.length);
+            console.log('[VS Code Webview] previewContent visible?', previewContent.offsetWidth > 0 && previewContent.offsetHeight > 0);
+            console.log('[VS Code Webview] previewContent parent element:', previewContent.parentElement);
+            
+            // Also check if preview section is visible
+            const previewSection = document.getElementById('previewSection');
+            if (previewSection) {
+                console.log('[VS Code Webview] previewSection display style:', getComputedStyle(previewSection).display);
+                console.log('[VS Code Webview] previewSection visible?', previewSection.offsetWidth > 0 && previewSection.offsetHeight > 0);
+            } else {
+                console.error('[VS Code Webview] previewSection element not found');
+            }
         }
 
         function handleFileError(error) {
             const previewContent = document.getElementById('previewContent');
-            previewContent.innerHTML = \\`
+            previewContent.innerHTML = \`
                 <div style="color: var(--vscode-errorForeground); text-align: center; padding: 20px;">
                     <p>Failed to load preview</p>
-                    <small>\\${error}</small>
+                    <small>\${error}</small>
                 </div>
-            \\`;
+            \`;
         }
 
         function markdownToHtml(markdown) {
-            if (!markdown) return '';
-            const md = markdownit();
-            return md.render(markdown);
+            console.log('[VS Code Webview] markdownToHtml called with input length:', markdown ? markdown.length : 'null/undefined');
+            if (!markdown) {
+                console.log('[VS Code Webview] markdownToHtml returning empty string - no input');
+                return '';
+            }
+            
+            console.log('[VS Code Webview] markdown input preview:', markdown.substring(0, 100));
+            
+            try {
+                // Check if markdownit is available
+                if (typeof markdownit === 'undefined') {
+                    console.error('[VS Code Webview] markdownit library not loaded');
+                    return '<p>Markdown library not loaded</p>';
+                }
+                
+                const md = markdownit();
+                const result = md.render(markdown);
+                console.log('[VS Code Webview] markdownToHtml result length:', result ? result.length : 'null/undefined');
+                console.log('[VS Code Webview] markdownToHtml result preview:', result ? result.substring(0, 200) : 'empty');
+                return result;
+            } catch (error) {
+                console.error('[VS Code Webview] Error in markdownToHtml:', error);
+                return \`<p>Error rendering markdown: \${error.message}</p>\`;
+            }
         }
 
         function showLoading() {
@@ -1357,12 +1467,12 @@ class SearchWebview {
         function showError(error) {
             hideLoading();
             const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = \\`
+            resultsList.innerHTML = \`
                 <div class="error-message">
-                    <p>\\${error}</p>
+                    <p>\${error}</p>
                     <small>Check your connection and authentication status</small>
                 </div>
-            \\`;
+            \`;
             resultsList.style.display = 'block';
         }
 
@@ -1373,7 +1483,7 @@ class SearchWebview {
         }
 
         function escapeRegex(string) {
-            return string.replace(/[.*+?^${}()|[\\\\]\\\\\\\\]/g, '\\\\\\\\\\$&');
+            return string.replace(/[.*+?^$\\{\\}()|]/g, '\\\\\\\\$&').replace(/\\\\/g, '\\\\\\\\\\\\\\\\');
         }
 
         // Enter key search

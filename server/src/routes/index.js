@@ -14,6 +14,7 @@ const path = require('path');
 const simpleGit = require('simple-git');
 const EventEmitter = require('events');
 const createFilingService = require('../services/filing/index.js');
+const userStorage = require('../auth/userStorage');
 
 // Import specialized route modules
 const authRoutes = require('./auth');
@@ -62,11 +63,27 @@ if (process.env.FILING_PROVIDER === 'git') {
 
 /**
  * Authentication middleware to protect routes
+ * Supports both session-based (cookies) and token-based (Authorization header) authentication
  */
 function requireAuth(req, res, next) {
+  // First, check if user is authenticated via session (for web clients)
   if (req.isAuthenticated()) {
     return next();
   }
+  
+  // If not authenticated via session, check for Authorization header (for VS Code extension)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const user = userStorage.validateSessionToken(token);
+    
+    if (user) {
+      // Set user on request object so other middleware can access it
+      req.user = user;
+      return next();
+    }
+  }
+  
   res.status(401).json({ error: 'Authentication required' });
 }
 
@@ -77,12 +94,20 @@ function requireAuth(req, res, next) {
 // Get specific file content for a space
 router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
   try {
+    console.log(`[Server] Space file request - Space: ${req.params.space}, File: ${req.params[0] || ''}`);
+    console.log(`[Server] User authenticated:`, !!req.user);
+    console.log(`[Server] User details:`, req.user ? { id: req.user.id, username: req.user.username } : 'none');
+    console.log(`[Server] Request headers Authorization:`, req.headers.authorization ? 'present' : 'missing');
+    
     const filing = req.filing;
     const spaceName = req.params.space;
     const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     const isReadonly = spaceConfig.access === 'readonly';
     const actualFilePath = getSpaceFilePath(filePath, isReadonly);
+    
+    console.log(`[Server] Space config:`, spaceConfig ? { space: spaceConfig.space, access: spaceConfig.access } : 'none');
+    console.log(`[Server] Actual file path: ${actualFilePath}`);
     
     const fileName = path.basename(filePath);
     
@@ -103,26 +128,37 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
     
     const fileType = detectFileType(fileName);
 
+    console.log(`[Server] File type detected: ${fileType}`);
+    
     // Handle different file types
     if (fileType === 'markdown' || fileType === 'text') {
+      console.log(`[Server] Reading text/markdown file: ${actualFilePath}`);
       // Read as text
       const content = await filing.read(actualFilePath, 'utf8');
+      console.log(`[Server] File content length: ${content ? content.length : 'null/undefined'}`);
       
       // For markdown files, return both full content and clean content
       if (fileType === 'markdown') {
+        console.log(`[Server] Processing markdown file`);
         const { getCleanMarkdownContent, extractComments } = require('../utils/commentParser');
         const cleanContent = getCleanMarkdownContent(content);
         const comments = extractComments(content);
         
-        res.json({
+        console.log(`[Server] Clean content length: ${cleanContent ? cleanContent.length : 'null/undefined'}`);
+        console.log(`[Server] Comments found: ${comments.length}`);
+        
+        const response = {
           content, // Full content with comments for saving
           cleanContent, // Clean content for editing
           comments, // Extracted comments
           path: filePath, 
           fileType,
           hasComments: comments.length > 0
-        });
+        };
+        console.log(`[Server] Sending markdown response with keys:`, Object.keys(response));
+        res.json(response);
       } else {
+        console.log(`[Server] Sending text file response`);
         res.json({content, path: filePath, fileType});
       }
     } else if (fileType === 'image' || fileType === 'pdf') {
@@ -142,10 +178,19 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
       });
     }
   } catch (error) {
-    console.error('Error reading file for space:', error);
+    console.error(`[Server] Error reading file for space ${req.params.space}:`, error);
+    console.error(`[Server] Error details:`, {
+      message: error.message,
+      stack: error.stack,
+      filePath: req.params[0],
+      actualFilePath: getSpaceFilePath(req.params[0] || '', req.spaceConfig?.access === 'readonly')
+    });
+    
     if (error.message.includes('ENOENT') || error.message.includes('not found')) {
+      console.log(`[Server] Sending 404 - File not found`);
       res.status(404).json({ error: 'File not found' });
     } else {
+      console.log(`[Server] Sending 500 - Failed to read file`);
       res.status(500).json({ error: 'Failed to read file' });
     }
   }

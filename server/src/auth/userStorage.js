@@ -1,12 +1,14 @@
 const fs = require('fs').promises;
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const USERS_FILE = path.join(__dirname, '../../../server-data/users.json');
 
 class UserStorage {
   constructor() {
     this.users = [];
+    this.sessions = new Map(); // In-memory session storage: sessionId -> { userId, expiresAt }
     this.loadUsersSync();
   }
 
@@ -110,6 +112,78 @@ class UserStorage {
       username: user.username,
       createdAt: user.createdAt
     }));
+  }
+
+  /**
+   * Generate a new session token for a user
+   * @param {string} userId - The user ID
+   * @returns {string} - The session token
+   */
+  generateSessionToken(userId) {
+    const sessionId = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    
+    this.sessions.set(sessionId, {
+      userId,
+      expiresAt
+    });
+    
+    // Clean up expired sessions periodically
+    this.cleanupExpiredSessions();
+    
+    return sessionId;
+  }
+
+  /**
+   * Validate a session token and return the associated user
+   * @param {string} sessionId - The session token
+   * @returns {Object|null} - The user object or null if invalid
+   */
+  validateSessionToken(sessionId) {
+    const session = this.sessions.get(sessionId);
+    
+    if (!session) {
+      return null;
+    }
+    
+    if (new Date() > session.expiresAt) {
+      this.sessions.delete(sessionId);
+      return null;
+    }
+    
+    const user = this.findUserById(session.userId);
+    if (!user) {
+      this.sessions.delete(sessionId);
+      return null;
+    }
+    
+    return {
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt,
+      roles: user.roles || [],
+      spaces: user.spaces
+    };
+  }
+
+  /**
+   * Invalidate a session token
+   * @param {string} sessionId - The session token to invalidate
+   */
+  invalidateSessionToken(sessionId) {
+    this.sessions.delete(sessionId);
+  }
+
+  /**
+   * Clean up expired sessions
+   */
+  cleanupExpiredSessions() {
+    const now = new Date();
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (now > session.expiresAt) {
+        this.sessions.delete(sessionId);
+      }
+    }
   }
 }
 

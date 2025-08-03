@@ -26,11 +26,27 @@ const router = express.Router();
 
 /**
  * Authentication middleware to protect routes
+ * Supports both session-based (cookies) and token-based (Authorization header) authentication
  */
 function requireAuth(req, res, next) {
+  // First, check if user is authenticated via session (for web clients)
   if (req.isAuthenticated()) {
     return next();
   }
+  
+  // If not authenticated via session, check for Authorization header (for VS Code extension)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const user = userStorage.validateSessionToken(token);
+    
+    if (user) {
+      // Set user on request object so other middleware can access it
+      req.user = user;
+      return next();
+    }
+  }
+  
   res.status(401).json({ error: 'Authentication required' });
 }
 
@@ -62,7 +78,14 @@ router.post('/register', async (req, res) => {
 router.post('/login', passport.authenticate('local'), (req, res) => {
   // Check if user has write role for client access
   if (req.user && req.user.roles && req.user.roles.includes('write')) {
-    res.json({ message: 'Login successful', user: req.user });
+    // Generate session token for clients that need it (like VS Code extension)
+    const sessionToken = userStorage.generateSessionToken(req.user.id);
+    
+    res.json({ 
+      message: 'Login successful', 
+      user: req.user, 
+      sessionToken: sessionToken // Include token for header-based authentication
+    });
   } else {
     // Logout the user since they don't have proper permissions
     req.logout((err) => {
@@ -86,11 +109,23 @@ router.post('/logout', (req, res) => {
 
 // Get current user info
 router.get('/me', (req, res) => {
+  // Check session-based auth first
   if (req.isAuthenticated()) {
-    res.json({ user: req.user });
-  } else {
-    res.status(401).json({ error: 'Not authenticated' });
+    return res.json({ user: req.user });
   }
+  
+  // Check token-based auth
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const user = userStorage.validateSessionToken(token);
+    
+    if (user) {
+      return res.json({ user: user });
+    }
+  }
+  
+  res.status(401).json({ error: 'Not authenticated' });
 });
 
 // Get all users (admin function)

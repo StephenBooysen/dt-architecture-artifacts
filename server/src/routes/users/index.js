@@ -1,16 +1,33 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const userStorage = require('../../auth/userStorage');
 
 const router = express.Router();
 
 /**
  * Authentication middleware to protect routes
+ * Supports both session-based (cookies) and token-based (Authorization header) authentication
  */
 function requireAuth(req, res, next) {
+  // First, check if user is authenticated via session (for web clients)
   if (req.isAuthenticated()) {
     return next();
   }
+  
+  // If not authenticated via session, check for Authorization header (for VS Code extension)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const user = userStorage.validateSessionToken(token);
+    
+    if (user) {
+      // Set user on request object so other middleware can access it
+      req.user = user;
+      return next();
+    }
+  }
+  
   res.status(401).json({ error: 'Authentication required' });
 }
 

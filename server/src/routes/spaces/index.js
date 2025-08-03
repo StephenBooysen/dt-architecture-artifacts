@@ -4,6 +4,7 @@ const fs = require('fs');
 const EventEmitter = require('events');
 const multer = require('multer');
 const createFilingService = require('../../services/filing/index.js');
+const userStorage = require('../../auth/userStorage');
 
 const router = express.Router();
 
@@ -161,14 +162,47 @@ async function loadFilingProvider(req, res, next) {
 
 /**
  * Middleware to check space access permissions
+ * Includes authentication checking for both session and token-based auth
  */
 function checkSpaceAccess(operation = 'read') {
   return (req, res, next) => {
-    const { user, spaceConfig, spaceName, filing } = req;
+    console.log(`[Server] checkSpaceAccess called for operation: ${operation}`);
+    console.log(`[Server] Request headers Authorization:`, req.headers.authorization ? 'present' : 'missing');
+    
+    // First, check authentication (similar to requireAuth middleware)
+    let user = null;
+    
+    // Check session-based auth first
+    if (req.isAuthenticated && req.isAuthenticated()) {
+      console.log(`[Server] Session-based auth found`);
+      user = req.user;
+    } else {
+      console.log(`[Server] No session auth, checking token auth`);
+      // Check token-based auth
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        console.log(`[Server] Validating session token`);
+        user = userStorage.validateSessionToken(token);
+        
+        if (user) {
+          console.log(`[Server] Token auth successful for user: ${user.username}`);
+          // Set user on request object so other middleware can access it
+          req.user = user;
+        } else {
+          console.log(`[Server] Token validation failed`);
+        }
+      } else {
+        console.log(`[Server] No Authorization header found`);
+      }
+    }
     
     if (!user) {
+      console.log(`[Server] Authentication failed, returning 401`);
       return res.status(401).json({ error: 'Authentication required' });
     }
+    
+    const { spaceConfig, spaceName, filing } = req;
     
     if (!spaceConfig) {
       return res.status(404).json({ error: 'Space not found' });
