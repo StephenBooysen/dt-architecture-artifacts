@@ -7,11 +7,12 @@ class ArchitectureArtifactsExtension {
     this.isAuthenticated = false;
     this.spaces = [];
     this.currentSpace = null;
+    this.initialAuthCheckComplete = false;
     
     this.initializeElements();
     this.loadSettings();
     this.bindEvents();
-    this.checkAuthStatus();
+    this.initializeApp();
   }
 
   initializeElements() {
@@ -121,7 +122,7 @@ class ArchitectureArtifactsExtension {
       if (this.isAuthenticated) {
         this.performLogout();
       } else {
-        this.showLogin();
+        this.showLoginInterface();
       }
     });
 
@@ -426,6 +427,26 @@ class ArchitectureArtifactsExtension {
     this.settingsPanel.style.display = 'none';
   }
 
+  async initializeApp() {
+    // Show loading state initially
+    this.showInitialLoading();
+    
+    try {
+      await this.checkAuthStatus();
+      this.initialAuthCheckComplete = true;
+      
+      if (this.isAuthenticated) {
+        this.showMainInterface();
+        await this.loadSpaces();
+      } else {
+        this.showLoginInterface();
+      }
+    } catch (error) {
+      console.error('Failed to initialize app:', error);
+      this.showLoginInterface();
+    }
+  }
+
   async checkAuthStatus() {
     try {
       const response = await fetch(`${this.serverUrl}/api/auth/me`, {
@@ -546,10 +567,15 @@ class ArchitectureArtifactsExtension {
         this.currentUser = userData;
         this.isAuthenticated = true;
         this.updateAuthUI();
-        this.hideLogin();
-        this.showMessage('Successfully signed in', 'success');
+        
+        // Clear form
         this.usernameInput.value = '';
         this.passwordInput.value = '';
+        
+        // Show main interface and load spaces
+        this.showMainInterface();
+        await this.loadSpaces();
+        this.showMessage('Successfully signed in', 'success');
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
         this.showAuthMessage(errorData.message || 'Invalid credentials', 'error');
@@ -576,6 +602,7 @@ class ArchitectureArtifactsExtension {
     this.currentUser = null;
     this.isAuthenticated = false;
     this.updateAuthUI();
+    this.showLoginInterface();
     this.showMessage('Successfully signed out', 'success');
   }
 
@@ -594,12 +621,16 @@ class ArchitectureArtifactsExtension {
   }
 
   showLogin() {
-    this.loginPanel.style.display = 'block';
-    this.usernameInput.focus();
+    this.showLoginInterface();
   }
 
   hideLogin() {
-    this.loginPanel.style.display = 'none';
+    // Only hide login panel if we're authenticated
+    if (this.isAuthenticated) {
+      this.showMainInterface();
+    } else {
+      this.loginPanel.style.display = 'none';
+    }
     this.authStatus.innerHTML = '';
   }
 
@@ -676,6 +707,40 @@ class ArchitectureArtifactsExtension {
 
   escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+  }
+
+  showInitialLoading() {
+    // Hide all main sections
+    this.hideAllSections();
+    
+    // Show a loading message in the main area
+    this.resultsSection.style.display = 'block';
+    this.resultsList.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center;">
+        <div class="spinner" style="margin-bottom: 16px;"></div>
+        <p style="margin: 0; color: #6b778c;">Checking authentication...</p>
+      </div>
+    `;
+  }
+
+  showLoginInterface() {
+    this.hideAllSections();
+    this.loginPanel.style.display = 'block';
+    this.usernameInput.focus();
+  }
+
+  showMainInterface() {
+    this.hideAllSections();
+    this.resultsSection.style.display = 'block';
+    this.clearResults();
+    this.searchInput.focus();
+  }
+
+  hideAllSections() {
+    this.resultsSection.style.display = 'none';
+    this.previewSection.style.display = 'none';
+    this.loginPanel.style.display = 'none';
+    this.settingsPanel.style.display = 'none';
   }
 }
 
