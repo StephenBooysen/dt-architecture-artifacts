@@ -10,6 +10,41 @@ const Dashboard = () => {
         </div>
       </div>
       
+      <div className="performance-section">
+        <h2>Server Performance</h2>
+        <div className="performance-grid">
+          <div className="performance-card">
+            <div className="performance-header">
+              <h3>Memory Usage</h3>
+              <span className="current-value" id="memory-current">--</span>
+            </div>
+            <div className="chart-container">
+              <canvas id="memory-chart" width="400" height="200"></canvas>
+            </div>
+          </div>
+          
+          <div className="performance-card">
+            <div className="performance-header">
+              <h3>CPU Usage</h3>
+              <span className="current-value" id="cpu-current">--</span>
+            </div>
+            <div className="chart-container">
+              <canvas id="cpu-chart" width="400" height="200"></canvas>
+            </div>
+          </div>
+          
+          <div className="performance-card">
+            <div className="performance-header">
+              <h3>Active Handles</h3>
+              <span className="current-value" id="handles-current">--</span>
+            </div>
+            <div className="chart-container">
+              <canvas id="handles-chart" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div className="dashboard-overview">
         <div className="overview-section">
           <h2>Quick Actions</h2>
@@ -201,6 +236,78 @@ const Dashboard = () => {
       </div>
       
       <style dangerouslySetInnerHTML={{__html: `
+        .performance-section {
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          padding: 2rem;
+          margin-bottom: 2rem;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        
+        .performance-section h2 {
+          color: #172b4d;
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+        }
+        
+        .performance-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 1.5rem;
+        }
+        
+        .performance-card {
+          background: #f4f5f7;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          padding: 1.5rem;
+          transition: all 0.2s ease;
+        }
+        
+        .performance-card:hover {
+          background: #e4edfc;
+          border-color: #0052cc;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .performance-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+        
+        .performance-header h3 {
+          color: #172b4d;
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 0;
+        }
+        
+        .current-value {
+          color: #0052cc;
+          font-size: 1.125rem;
+          font-weight: 600;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        
+        .chart-container {
+          position: relative;
+          height: 200px;
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 1rem;
+        }
+        
+        .chart-container canvas {
+          width: 100% !important;
+          height: 100% !important;
+        }
+        
         .dashboard-overview {
           display: flex;
           flex-direction: column;
@@ -525,6 +632,172 @@ const Dashboard = () => {
           checkAllServices();
           addServiceClickHandlers();
           setInterval(checkAllServices, 30000);
+        }
+        
+        // Performance monitoring functionality
+        let memoryChart, cpuChart, handlesChart;
+        let performanceData = { memory: [], cpu: [], handles: [], timestamps: [] };
+        
+        // Simple chart drawing function
+        function drawChart(canvas, data, color, label, unit = '') {
+          const ctx = canvas.getContext('2d');
+          const width = canvas.width;
+          const height = canvas.height;
+          
+          // Clear canvas
+          ctx.clearRect(0, 0, width, height);
+          
+          if (data.length === 0) return;
+          
+          // Set up drawing
+          ctx.strokeStyle = color;
+          ctx.fillStyle = color + '20'; // Semi-transparent fill
+          ctx.lineWidth = 2;
+          
+          // Calculate bounds
+          const minValue = Math.min(...data);
+          const maxValue = Math.max(...data);
+          const range = maxValue - minValue || 1;
+          
+          // Draw background grid
+          ctx.strokeStyle = '#e0e0e0';
+          ctx.lineWidth = 1;
+          for (let i = 0; i <= 4; i++) {
+            const y = (height - 40) * i / 4 + 20;
+            ctx.beginPath();
+            ctx.moveTo(30, y);
+            ctx.lineTo(width - 10, y);
+            ctx.stroke();
+          }
+          
+          // Draw vertical grid
+          for (let i = 0; i <= 10; i++) {
+            const x = (width - 40) * i / 10 + 30;
+            ctx.beginPath();
+            ctx.moveTo(x, 20);
+            ctx.lineTo(x, height - 20);
+            ctx.stroke();
+          }
+          
+          // Draw data line
+          ctx.strokeStyle = color;
+          ctx.fillStyle = color + '20';
+          ctx.lineWidth = 2;
+          
+          if (data.length > 1) {
+            ctx.beginPath();
+            
+            // Start path for fill
+            const firstX = 30;
+            const firstY = height - 20 - ((data[0] - minValue) / range) * (height - 40);
+            ctx.moveTo(firstX, height - 20); // Start at bottom
+            ctx.lineTo(firstX, firstY); // Go to first data point
+            
+            // Draw line through all points
+            for (let i = 0; i < data.length; i++) {
+              const x = 30 + (i / (data.length - 1)) * (width - 40);
+              const y = height - 20 - ((data[i] - minValue) / range) * (height - 40);
+              ctx.lineTo(x, y);
+            }
+            
+            // Complete fill path
+            const lastX = 30 + (width - 40);
+            ctx.lineTo(lastX, height - 20); // Go to bottom at end
+            ctx.closePath();
+            
+            // Fill area under curve
+            ctx.fill();
+            
+            // Draw line
+            ctx.beginPath();
+            for (let i = 0; i < data.length; i++) {
+              const x = 30 + (i / (data.length - 1)) * (width - 40);
+              const y = height - 20 - ((data[i] - minValue) / range) * (height - 40);
+              if (i === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+            }
+            ctx.stroke();
+          }
+          
+          // Draw labels
+          ctx.fillStyle = '#666';
+          ctx.font = '10px Arial';
+          ctx.fillText(label, 5, 15);
+          ctx.fillText((maxValue.toFixed(1) + unit), width - 60, 15);
+          ctx.fillText((minValue.toFixed(1) + unit), width - 60, height - 5);
+        }
+        
+        // Format bytes to human readable
+        function formatBytes(bytes) {
+          if (bytes === 0) return '0 B';
+          const k = 1024;
+          const sizes = ['B', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // Update performance charts
+        async function updatePerformanceCharts() {
+          try {
+            const response = await fetch('/api/server/performance');
+            const data = await response.json();
+            
+            if (data.history && data.history.length > 0) {
+              // Extract data for charts
+              const memoryData = data.history.map(h => h.memory.heapUsed / 1024 / 1024); // Convert to MB
+              const cpuData = data.history.map(h => h.cpu.percent || 0);
+              const handlesData = data.history.map(h => h.activeHandles);
+              
+              performanceData.memory = memoryData;
+              performanceData.cpu = cpuData;
+              performanceData.handles = handlesData;
+              
+              // Update current values
+              const current = data.current;
+              document.getElementById('memory-current').textContent = formatBytes(current.memory.heapUsed);
+              document.getElementById('cpu-current').textContent = (current.cpu.percent || 0).toFixed(1) + '%';
+              document.getElementById('handles-current').textContent = current.activeHandles.toString();
+              
+              // Get canvas elements
+              const memoryCanvas = document.getElementById('memory-chart');
+              const cpuCanvas = document.getElementById('cpu-chart');
+              const handlesCanvas = document.getElementById('handles-chart');
+              
+              if (memoryCanvas && cpuCanvas && handlesCanvas) {
+                // Set canvas size
+                const rect = memoryCanvas.parentElement.getBoundingClientRect();
+                [memoryCanvas, cpuCanvas, handlesCanvas].forEach(canvas => {
+                  canvas.width = rect.width - 32; // Account for padding
+                  canvas.height = 160;
+                });
+                
+                // Draw charts
+                drawChart(memoryCanvas, memoryData, '#0052cc', 'Memory', ' MB');
+                drawChart(cpuCanvas, cpuData, '#36b37e', 'CPU', '%');
+                drawChart(handlesCanvas, handlesData, '#ffab00', 'Handles', '');
+              }
+            }
+          } catch (error) {
+            console.error('Error updating performance charts:', error);
+          }
+        }
+        
+        // Initialize performance monitoring
+        function initPerformanceMonitoring() {
+          updatePerformanceCharts();
+          setInterval(updatePerformanceCharts, 5000); // Update every 5 seconds
+        }
+        
+        // Start performance monitoring when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          initPerformanceMonitoring();
+        });
+        
+        if (document.readyState !== 'loading') {
+          initPerformanceMonitoring();
         }
       `}} />
     </>
