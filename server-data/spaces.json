@@ -17,5 +17,16 @@
       "git-branch": "main",
       "git-fetch-interval": "5000"
     }
+  },
+  {
+    "space": "Knowledge",
+    "access": "readonly",
+    "filing": {
+      "type": "git",
+      "localFolder": "./content-readonly",
+      "git": "https://github.com/StephenBooysen/dt-architecture-artifacts-readonly.git",
+      "git-branch": "main",
+      "git-fetch-interval": "5000"
+    }
   }
 ]
