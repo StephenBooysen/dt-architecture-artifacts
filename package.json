@@ -16,7 +16,7 @@
     "electron": "concurrently \"npm run server:dev\" \"cd client-electron && npm run electron-dev\"",
     "build": "npm run client:prod",
     "start": "npm run server:prod",
-    "install-deps": "npm install --legacy-peer-deps && cd client && npm install --legacy-peer-deps && cd client-electron && npm install",
+    "install-deps": "npm install --legacy-peer-deps && cd client && npm install --legacy-peer-deps && cd ../client-electron && npm install --legacy-peer-deps && cd ../client-extensions/vscode && npm install --legacy-peer-deps",
     "test": "jest --config tests/jest.config.js",
     "test:watch": "jest --config tests/jest.config.js --watch",
     "test:coverage": "jest --config tests/jest.config.js --coverage",
