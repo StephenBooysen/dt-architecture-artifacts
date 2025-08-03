@@ -162,7 +162,7 @@ async function loadFilingProvider(req, res, next) {
  */
 function checkSpaceAccess(operation = 'read') {
   return (req, res, next) => {
-    const { user, spaceConfig, spaceName } = req;
+    const { user, spaceConfig, spaceName, filing } = req;
     
     if (!user) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -181,6 +181,11 @@ function checkSpaceAccess(operation = 'read') {
     // Check if the operation is allowed for this space
     if (operation === 'write' && spaceConfig.access === 'readonly') {
       return res.status(403).json({ error: 'Write operations not allowed in this space' });
+    }
+    
+    // Set user context for filing provider (for Personal space user isolation)
+    if (filing && typeof filing.setUserContext === 'function') {
+      filing.setUserContext(user, spaceName);
     }
     
     next();

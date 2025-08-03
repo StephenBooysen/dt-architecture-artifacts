@@ -98,20 +98,26 @@ function AppContent() {
   });
   const [isCurrentSpaceReadonly, setIsCurrentSpaceReadonly] = useState(false);
 
-  // Initialize default space when authenticated
+  // Initialize default space when authenticated - always start with Personal space
   useEffect(() => {
-    if (isAuthenticated && !currentSpace) {
+    if (isAuthenticated) {
       fetchUserSpaces().then(spaces => {
         if (spaces && spaces.length > 0) {
-          const defaultSpace = spaces[0].space;
-          setCurrentSpace(defaultSpace);
-          localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+          // Always prioritize Personal space on login
+          const personalSpace = spaces.find(space => space.space === 'Personal');
+          const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
+          
+          // Only set if it's different from current space to avoid unnecessary re-renders
+          if (currentSpace !== defaultSpace) {
+            setCurrentSpace(defaultSpace);
+            localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+          }
         }
       }).catch(error => {
         console.error('Failed to load user spaces:', error);
       });
     }
-  }, [isAuthenticated, currentSpace]);
+  }, [isAuthenticated]); // Removed currentSpace dependency to ensure this runs on every login
 
   useEffect(() => {
     // Only load data if user is authenticated and has a space selected

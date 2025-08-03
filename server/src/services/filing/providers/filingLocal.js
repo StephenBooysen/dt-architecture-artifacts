@@ -12,25 +12,148 @@ class LocalFilingProvider {
     if (!this.options.localPath) {
       this.options.localPath = "../content"; 
     }
+    this.currentUser = null; // Will be set per-operation for Personal spaces
+    this.spaceName = null;   // Will be set to identify the space type
+  }
+
+  // Set user context for operations (called by middleware)
+  setUserContext(user, spaceName) {
+    this.currentUser = user;
+    this.spaceName = spaceName;
   }
 
   _resolvePath(filePath) {
     // Handle empty or current directory path
     if (!filePath || filePath === '.' || filePath === '') {
-      return this.options.localPath;
+      return this._getBasePath();
     }
     
+    // Get the appropriate base path (with or without username)
+    const basePath = this._getBasePath();
+    
     // Prevent path traversal attacks
-    const resolvedPath = path.resolve(path.join(this.options.localPath, filePath));
-    const basePath = path.resolve(this.options.localPath);
-    if (!resolvedPath.startsWith(basePath)) {
+    const resolvedPath = path.resolve(path.join(basePath, filePath));
+    const resolvedBasePath = path.resolve(basePath);
+    if (!resolvedPath.startsWith(resolvedBasePath)) {
         throw new Error('Access denied: Path traversal detected.');
     }
     return resolvedPath;
   }
 
+  _getBasePath() {
+    // For Personal spaces with a current user, include username in path
+    if (this.spaceName === 'Personal' && this.currentUser && this.currentUser.username) {
+      return path.join(this.options.localPath, this.currentUser.username);
+    }
+    
+    // For all other spaces (Shared, etc.) or when no user context, use original path
+    return this.options.localPath;
+  }
+
+  async _ensureUserDirectories() {
+    // Only for Personal spaces with user context
+    if (this.spaceName === 'Personal' && this.currentUser && this.currentUser.username) {
+      const userBasePath = this._getBasePath();
+      const markdownPath = path.join(userBasePath, 'markdown');
+      const templatesPath = path.join(userBasePath, 'templates');
+      
+      // Ensure user's base directory and subdirectories exist
+      await fs.ensureDir(markdownPath);
+      await fs.ensureDir(templatesPath);
+      
+      // Migrate existing shared files to user directory (one-time migration)
+      await this._migrateSharedFilesToUser(markdownPath, templatesPath);
+      
+      // Create initial welcome file if markdown directory is empty
+      try {
+        const markdownFiles = await fs.readdir(markdownPath);
+        if (markdownFiles.length === 0) {
+          const welcomeFile = path.join(markdownPath, 'Welcome.md');
+          const welcomeContent = `# Welcome to Your Personal Space
+
+Hello ${this.currentUser.username?.trim()}!
+
+This is your personal workspace where you can:
+- Create and organize your markdown documents
+- Use templates to standardize your documentation
+- Keep your files separate from other users
+
+## Getting Started
+
+1. Create new documents using the web interface
+2. Organize your files in folders
+3. Use templates to speed up document creation
+
+Your files are stored in: \`${userBasePath}\`
+
+Happy documenting! 📝
+`;
+          await fs.writeFile(welcomeFile, welcomeContent);
+        }
+      } catch (error) {
+        // Ignore errors when creating welcome file - it's optional
+        console.warn(`Could not create welcome file for user ${this.currentUser.username}:`, error.message);
+      }
+    }
+  }
+
+  async _migrateSharedFilesToUser(userMarkdownPath, userTemplatesPath) {
+    try {
+      // Check if migration has already been done for this user
+      const migrationMarker = path.join(this._getBasePath(), '.migration_completed');
+      if (await fs.pathExists(migrationMarker)) {
+        return; // Migration already completed for this user
+      }
+
+      // Original shared paths
+      const sharedMarkdownPath = path.join(this.options.localPath, 'markdown');
+      const sharedTemplatesPath = path.join(this.options.localPath, 'templates');
+
+      // Copy shared markdown files to user directory
+      if (await fs.pathExists(sharedMarkdownPath)) {
+        const markdownFiles = await fs.readdir(sharedMarkdownPath, { withFileTypes: true });
+        for (const dirent of markdownFiles) {
+          const sourcePath = path.join(sharedMarkdownPath, dirent.name);
+          const destPath = path.join(userMarkdownPath, dirent.name);
+          
+          if (dirent.isDirectory()) {
+            await fs.copy(sourcePath, destPath);
+          } else if (dirent.isFile() && path.extname(dirent.name).toLowerCase() === '.md') {
+            await fs.copy(sourcePath, destPath);
+          }
+        }
+      }
+
+      // Copy shared template files to user directory
+      if (await fs.pathExists(sharedTemplatesPath)) {
+        const templateFiles = await fs.readdir(sharedTemplatesPath, { withFileTypes: true });
+        for (const dirent of templateFiles) {
+          if (dirent.isFile() && path.extname(dirent.name).toLowerCase() === '.json') {
+            const sourcePath = path.join(sharedTemplatesPath, dirent.name);
+            const destPath = path.join(userTemplatesPath, dirent.name);
+            await fs.copy(sourcePath, destPath);
+          }
+        }
+      }
+
+      // Create migration marker
+      await fs.writeFile(migrationMarker, JSON.stringify({
+        migratedAt: new Date().toISOString(),
+        username: this.currentUser.username,
+        note: 'Files migrated from shared Personal space to user-specific directory'
+      }, null, 2));
+
+      console.log(`Migration completed for user: ${this.currentUser.username}`);
+    } catch (error) {
+      console.warn(`Migration failed for user ${this.currentUser.username}:`, error.message);
+      // Don't throw - let the user continue even if migration fails
+    }
+  }
+
   async create(filePath, content) {
+    await this._ensureUserDirectories();
     const absolutePath = this._resolvePath(filePath);
+    await fs.ensureDir(path.dirname(absolutePath)); // Ensure parent directory exists
     await fs.writeFile(absolutePath, content);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:create', { filePath, content, isDraft: false });
@@ -132,6 +255,7 @@ class LocalFilingProvider {
   } 
 
   async listDetailed(dirPath) {
+    await this._ensureUserDirectories();
     const absolutePath = this._resolvePath(dirPath);
     const files = await fs.readdir(absolutePath);
     const detailed = await Promise.all(
@@ -151,6 +275,7 @@ class LocalFilingProvider {
   }
 
   async ensureDir(dirPath) {
+    await this._ensureUserDirectories();
     const absolutePath = this._resolvePath(dirPath);
     await fs.ensureDir(absolutePath);
     if (this.eventEmitter_)
