@@ -28,9 +28,10 @@ import { useTheme } from '../contexts/ThemeContext';
  * @param {Object} props - Component properties.
  * @param {string} props.fileName - The current file name/path.
  * @param {boolean} props.isVisible - Whether the comments section should be visible.
+ * @param {string} props.currentSpace - The current space context.
  * @return {JSX.Element} The CommentsSection component.
  */
-const CommentsSection = ({ fileName, isVisible = true }) => {
+const CommentsSection = ({ fileName, isVisible = true, currentSpace }) => {
   const { user, isAuthenticated } = useAuth();
   const { isDark } = useTheme();
   const [comments, setComments] = useState([]);
@@ -48,7 +49,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
     } else {
       setComments([]);
     }
-  }, [fileName]);
+  }, [fileName, currentSpace]);
 
   /**
    * Loads comments for the current file.
@@ -67,7 +68,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
     setError(null);
     
     try {
-      const response = await getComments(fileName);
+      const response = await getComments(fileName, currentSpace);
       setComments(response.comments || []);
     } catch (error) {
       console.error('Error loading comments:', error);
@@ -95,7 +96,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
     setError(null);
     
     try {
-      const response = await addComment(fileName, newCommentContent.trim());
+      const response = await addComment(fileName, newCommentContent.trim(), currentSpace);
       setComments(response.comments || []);
       setNewCommentContent('');
     } catch (error) {
@@ -117,7 +118,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
     setError(null);
     
     try {
-      const response = await updateComment(fileName, commentId, editingContent.trim());
+      const response = await updateComment(fileName, commentId, editingContent.trim(), currentSpace);
       setComments(response.comments || []);
       setEditingCommentId(null);
       setEditingContent('');
@@ -138,7 +139,7 @@ const CommentsSection = ({ fileName, isVisible = true }) => {
     setError(null);
     
     try {
-      const response = await deleteComment(fileName, commentId);
+      const response = await deleteComment(fileName, commentId, currentSpace);
       setComments(response.comments || []);
     } catch (error) {
       console.error('Error deleting comment:', error);

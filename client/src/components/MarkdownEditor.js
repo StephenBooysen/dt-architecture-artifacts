@@ -410,6 +410,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
               <CommentsSection 
                 fileName={fileName} 
                 isVisible={true}
+                currentSpace={currentSpace}
               />
             </div>
           </>

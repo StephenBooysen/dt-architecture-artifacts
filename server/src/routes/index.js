@@ -243,6 +243,220 @@ router.put('/:space/rename/*', loadFilingProvider, checkSpaceAccess('write'), as
 });
 
 // ========================================
+// SPACE-AWARE COMMENT ROUTES
+// ========================================
+
+// Get comments for a specific file in a space
+router.get('/:space/comments/*', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const filePath = req.params[0] || '';
+    
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    const markdownFilePath = `markdown/${filePath}`;
+    const content = await filing.read(markdownFilePath, 'utf8');
+    
+    const { extractComments, sortCommentsByNewest } = require('../utils/commentParser');
+    const comments = extractComments(content);
+    const sortedComments = sortCommentsByNewest(comments);
+    
+    res.json({
+      filePath,
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.message && error.message.includes('ENOENT')) {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error getting comments for space:', error);
+    res.status(500).json({error: 'Failed to get comments'});
+  }
+});
+
+// Add a new comment to a file in a space
+router.post('/:space/comments/*', loadFilingProvider, checkSpaceAccess('write'), requireAuth, async (req, res) => {
+  try {
+    const filing = req.filing;
+    const filePath = req.params[0] || '';
+    const { content: commentContent } = req.body;
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    if (!commentContent || typeof commentContent !== 'string' || !commentContent.trim()) {
+      return res.status(400).json({error: 'Comment content is required'});
+    }
+
+    const markdownFilePath = `markdown/${filePath}`;
+    const markdownContent = await filing.read(markdownFilePath, 'utf8');
+    
+    const { 
+      extractComments, 
+      getCleanMarkdownContent, 
+      injectComments, 
+      addComment, 
+      sortCommentsByNewest 
+    } = require('../utils/commentParser');
+    
+    const existingComments = extractComments(markdownContent);
+    const cleanContent = getCleanMarkdownContent(markdownContent);
+    
+    const newComment = {
+      author: req.user.username,
+      content: commentContent.trim()
+    };
+    
+    const updatedComments = addComment(existingComments, newComment);
+    const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
+    
+    await filing.update(markdownFilePath, updatedMarkdownContent);
+    
+    const sortedComments = sortCommentsByNewest(updatedComments);
+    const newCommentData = sortedComments.find(c => c.author === req.user.username && c.content === commentContent.trim());
+    
+    res.json({
+      message: 'Comment added successfully',
+      comment: newCommentData,
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.message && error.message.includes('ENOENT')) {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error adding comment for space:', error);
+    res.status(500).json({error: 'Failed to add comment'});
+  }
+});
+
+// Update an existing comment in a space
+router.put('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess('write'), requireAuth, async (req, res) => {
+  try {
+    const filing = req.filing;
+    const filePath = req.params[0] || '';
+    const commentId = req.params.commentId;
+    const { content: commentContent } = req.body;
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    if (!commentContent || typeof commentContent !== 'string' || !commentContent.trim()) {
+      return res.status(400).json({error: 'Comment content is required'});
+    }
+
+    const markdownFilePath = `markdown/${filePath}`;
+    const markdownContent = await filing.read(markdownFilePath, 'utf8');
+    
+    const { 
+      extractComments, 
+      getCleanMarkdownContent, 
+      injectComments, 
+      updateComment, 
+      sortCommentsByNewest 
+    } = require('../utils/commentParser');
+    
+    const existingComments = extractComments(markdownContent);
+    const cleanContent = getCleanMarkdownContent(markdownContent);
+    
+    const commentToUpdate = existingComments.find(c => c.id === commentId);
+    if (!commentToUpdate) {
+      return res.status(404).json({error: 'Comment not found'});
+    }
+
+    if (commentToUpdate.author !== req.user.username) {
+      return res.status(403).json({error: 'You can only update your own comments'});
+    }
+    
+    const updatedComments = updateComment(existingComments, commentId, {
+      content: commentContent.trim()
+    });
+    
+    const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
+    await filing.update(markdownFilePath, updatedMarkdownContent);
+    
+    const sortedComments = sortCommentsByNewest(updatedComments);
+    const updatedComment = sortedComments.find(c => c.id === commentId);
+    
+    res.json({
+      message: 'Comment updated successfully',
+      comment: updatedComment,
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.message && error.message.includes('ENOENT')) {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error updating comment for space:', error);
+    res.status(500).json({error: 'Failed to update comment'});
+  }
+});
+
+// Delete a comment in a space
+router.delete('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess('write'), requireAuth, async (req, res) => {
+  try {
+    const filing = req.filing;
+    const filePath = req.params[0] || '';
+    const commentId = req.params.commentId;
+
+    if (!filePath.endsWith('.md')) {
+      return res.status(400).json({error: 'Comments are only supported for markdown files'});
+    }
+
+    const markdownFilePath = `markdown/${filePath}`;
+    const markdownContent = await filing.read(markdownFilePath, 'utf8');
+    
+    const { 
+      extractComments, 
+      getCleanMarkdownContent, 
+      injectComments, 
+      removeComment, 
+      sortCommentsByNewest 
+    } = require('../utils/commentParser');
+    
+    const existingComments = extractComments(markdownContent);
+    const cleanContent = getCleanMarkdownContent(markdownContent);
+    
+    const commentToDelete = existingComments.find(c => c.id === commentId);
+    if (!commentToDelete) {
+      return res.status(404).json({error: 'Comment not found'});
+    }
+
+    if (commentToDelete.author !== req.user.username) {
+      return res.status(403).json({error: 'You can only delete your own comments'});
+    }
+    
+    const updatedComments = removeComment(existingComments, commentId);
+    
+    const updatedMarkdownContent = updatedComments.length > 0 
+      ? injectComments(cleanContent, updatedComments)
+      : cleanContent;
+    
+    await filing.update(markdownFilePath, updatedMarkdownContent);
+    
+    const sortedComments = sortCommentsByNewest(updatedComments);
+    
+    res.json({
+      message: 'Comment deleted successfully',
+      comments: sortedComments,
+      commentCount: sortedComments.length
+    });
+  } catch (error) {
+    if (error.message && error.message.includes('ENOENT')) {
+      return res.status(404).json({error: 'File not found'});
+    }
+    console.error('Error deleting comment for space:', error);
+    res.status(500).json({error: 'Failed to delete comment'});
+  }
+});
+
+// ========================================
 // ROUTE DELEGATION TO SPECIALIZED MODULES
 // ========================================
 

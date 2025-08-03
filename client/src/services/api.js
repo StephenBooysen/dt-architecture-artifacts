@@ -405,9 +405,10 @@ export const getAllUsers = async () => {
  * @param {string} filePath - The path to the file.
  * @return {Promise<Object>} The comments data.
  */
-export const getComments = async (filePath) => {
+export const getComments = async (filePath, space = null) => {
   try {
-    const response = await api.get(`/comments/${filePath}`);
+    const url = space ? `/${space}/comments/${filePath}` : `/comments/${filePath}`;
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error('Error getting comments:', error);
@@ -421,9 +422,10 @@ export const getComments = async (filePath) => {
  * @param {string} content - The comment content.
  * @return {Promise<Object>} The response with new comment and updated list.
  */
-export const addComment = async (filePath, content) => {
+export const addComment = async (filePath, content, space = null) => {
   try {
-    const response = await api.post(`/comments/${filePath}`, { content });
+    const url = space ? `/${space}/comments/${filePath}` : `/comments/${filePath}`;
+    const response = await api.post(url, { content });
     return response.data;
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -438,9 +440,10 @@ export const addComment = async (filePath, content) => {
  * @param {string} content - The updated comment content.
  * @return {Promise<Object>} The response with updated comment and list.
  */
-export const updateComment = async (filePath, commentId, content) => {
+export const updateComment = async (filePath, commentId, content, space = null) => {
   try {
-    const response = await api.put(`/comments/${commentId}/${filePath}`, { content });
+    const url = space ? `/${space}/comments/${commentId}/${filePath}` : `/comments/${commentId}/${filePath}`;
+    const response = await api.put(url, { content });
     return response.data;
   } catch (error) {
     console.error('Error updating comment:', error);
@@ -454,9 +457,10 @@ export const updateComment = async (filePath, commentId, content) => {
  * @param {string} commentId - The ID of the comment to delete.
  * @return {Promise<Object>} The response with updated comment list.
  */
-export const deleteComment = async (filePath, commentId) => {
+export const deleteComment = async (filePath, commentId, space = null) => {
   try {
-    const response = await api.delete(`/comments/${commentId}/${filePath}`);
+    const url = space ? `/${space}/comments/${commentId}/${filePath}` : `/comments/${commentId}/${filePath}`;
+    const response = await api.delete(url);
     return response.data;
   } catch (error) {
     console.error('Error deleting comment:', error);

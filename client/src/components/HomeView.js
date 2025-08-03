@@ -54,7 +54,7 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
       const [recentData, starredData, templatesData] = await Promise.all([
         getRecentFiles(7).catch(() => ({ files: [] })),
         getStarredFiles().catch(() => ({ files: [] })),
-        fetchTemplates().catch(() => [])
+        fetchTemplates(currentSpace).catch(() => [])
       ]);
       
       // Filter for markdown files only and limit to 6
@@ -159,7 +159,7 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
   };
 
   const handleForceReset = async () => {
-    if (!confirm(`Are you sure you want to force reset "${currentSpace}"? This will discard all local changes.`)) {
+    if (!window.confirm(`Are you sure you want to force reset "${currentSpace}"? This will discard all local changes.`)) {
       return;
     }
 
@@ -188,8 +188,33 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
 
   const handleTemplateClick = (template) => {
     if (onTemplateSelect) {
-      onTemplateSelect(template, 'use');
+      onTemplateSelect(template, 'edit');
     }
+  };
+
+
+  const getTemplateIcon = (template) => {
+    const name = template.name?.toLowerCase() || '';
+    if (name.includes('meeting')) return { icon: 'bi-calendar-event', color: 'text-primary' };
+    if (name.includes('adr') || name.includes('decision')) return { icon: 'bi-clipboard-check', color: 'text-success' };
+    if (name.includes('architecture') || name.includes('software')) return { icon: 'bi-diagram-3', color: 'text-danger' };
+    if (name.includes('project') || name.includes('plan')) return { icon: 'bi-kanban', color: 'text-warning' };
+    if (name.includes('retrospective')) return { icon: 'bi-arrow-clockwise', color: 'text-info' };
+    if (name.includes('roadmap')) return { icon: 'bi-signpost', color: 'text-secondary' };
+    if (name.includes('sprint')) return { icon: 'bi-speedometer2', color: 'text-primary' };
+    if (name.includes('feedback') || name.includes('daily')) return { icon: 'bi-chat-square-text', color: 'text-info' };
+    if (name.includes('note')) return { icon: 'bi-journal-text', color: 'text-muted' };
+    return { icon: 'bi-file-earmark-text', color: 'text-muted' };
+  };
+
+  const getTemplateCategory = (template) => {
+    const name = template.name?.toLowerCase() || '';
+    if (name.includes('meeting')) return 'Meetings';
+    if (name.includes('adr') || name.includes('decision')) return 'Documentation';
+    if (name.includes('architecture')) return 'Software';
+    if (name.includes('project') || name.includes('plan')) return 'Strategy';
+    if (name.includes('retrospective')) return 'Teamwork';
+    return 'Popular';
   };
 
   const formatDate = (dateString) => {
@@ -250,28 +275,42 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
 
   const TemplateCard = ({ template, onClick }) => (
     <div className="col-lg-3 col-md-4 col-6 mb-3">
-      <div
-        className="home-dashboard-block p-3 h-100 cursor-pointer"
-        onClick={() => onClick(template)}
-        style={{ cursor: 'pointer' }}
-      >
-        <div className="d-flex align-items-start mb-2">
-          <i className="bi bi-file-earmark-code text-success me-2 flex-shrink-0" style={{ fontSize: '1.2rem' }}></i>
-          <div className="flex-grow-1 min-width-0">
-            <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={template.name}>
-              {template.name}
-            </h6>
+      <div className="home-dashboard-block p-3 h-100 position-relative">
+        <div 
+          className="h-100 cursor-pointer"
+          onClick={() => onClick(template)}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className="d-flex align-items-start mb-2">
+            <i className={`bi ${getTemplateIcon(template).icon} ${getTemplateIcon(template).color} me-2 flex-shrink-0`} style={{ fontSize: '1.2rem' }}></i>
+            <div className="flex-grow-1 min-width-0">
+              <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={template.name}>
+                {template.name.replace('.md', '')}
+              </h6>
+            </div>
+          </div>
+          <div className="small text-muted">
+            <div className="mb-1">
+              <span className="badge bg-secondary badge-sm">{getTemplateCategory(template)}</span>
+            </div>
+            {template.description && (
+              <div className="mb-2 text-truncate" title={template.description} style={{ fontSize: '0.7rem', opacity: '0.8' }}>
+                {template.description}
+              </div>
+            )}
           </div>
         </div>
-        <div className="small text-muted">
-          {template.description && (
-            <div className="mb-1 text-truncate" style={{ minHeight: '1.2rem' }} title={template.description}>
-              {template.description}
-            </div>
-          )}
-          <div className="d-flex align-items-center justify-content-between">
-            <span className="badge bg-success badge-sm">Template</span>
-          </div>
+        <div className="position-absolute" style={{ top: '0.5rem', right: '0.5rem', zIndex: 10 }}>
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick(template);
+            }}
+            title="Edit Template"
+          >
+            <i className="bi bi-pencil"></i>
+          </button>
         </div>
       </div>
     </div>
