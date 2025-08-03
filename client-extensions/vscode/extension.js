@@ -1,5 +1,6 @@
 const vscode = require('vscode');
 const axios = require('axios');
+const markdownit = require('markdown-it');
 
 // Authentication Manager
 class AuthManager {
@@ -7,7 +8,6 @@ class AuthManager {
         this.context = context;
         this.isAuthenticated = false;
         this.currentUser = null;
-        this.serverUrl = 'http://localhost:5000';
         this.spaces = [];
         this.currentSpace = null;
         this.authStatusChangedEmitter = new vscode.EventEmitter();
@@ -16,6 +16,13 @@ class AuthManager {
         this.onSpacesChanged = this.spacesChangedEmitter.event;
         
         this.loadSettings();
+
+        this.api = axios.create({
+            baseURL: this.serverUrl,
+            withCredentials: true,
+            timeout: 10000,
+        });
+
         this.loadStoredAuth();
     }
 
@@ -88,17 +95,17 @@ class AuthManager {
                 return false;
             }
 
-            const response = await axios.post(`${this.serverUrl}/api/auth/login`, {
+            const response = await this.api.post('/api/auth/login', {
                 username,
                 password
-            }, {
-                withCredentials: true,
-                timeout: 10000
             });
 
+            console.log(response.data);
+
             if (response.status === 200) {
+
                 const userData = response.data;
-                this.currentUser = userData.user || { username };
+                this.currentUser = userData.user || userData;
                 this.isAuthenticated = true;
                 
                 await this.storeAuth(this.currentUser);
@@ -106,6 +113,10 @@ class AuthManager {
                 
                 // Load spaces after successful login
                 await this.loadSpaces();
+
+                if (!this.currentUser) {
+                    throw new Error('Login succeeded, but was immediately logged out. This might be due to a configuration issue or network problem when fetching user spaces.');
+                }
 
                 vscode.window.showInformationMessage(`Successfully signed in as ${this.currentUser.username}`);
                 return true;
@@ -131,10 +142,7 @@ class AuthManager {
     async logout() {
         try {
             // Try to logout from server
-            await axios.post(`${this.serverUrl}/api/auth/logout`, {}, {
-                withCredentials: true,
-                timeout: 5000
-            });
+            await this.api.post('/api/auth/logout', {});
         } catch (error) {
             console.log('Server logout failed (this is okay):', error);
         }
@@ -153,10 +161,7 @@ class AuthManager {
 
     async checkAuthStatus() {
         try {
-            const response = await axios.get(`${this.serverUrl}/api/auth/me`, {
-                withCredentials: true,
-                timeout: 5000
-            });
+            const response = await this.api.get('/api/auth/me');
 
             if (response.status === 200) {
                 const userData = response.data;
@@ -203,6 +208,7 @@ class AuthManager {
 
     updateServerUrl(url) {
         this.serverUrl = url;
+        this.api.defaults.baseURL = url;
         // Clear auth when server URL changes
         this.logout();
     }
@@ -214,7 +220,8 @@ class AuthManager {
             this.spacesChangedEmitter.fire([]);
             return;
         }
-
+        
+        /*
         try {
             const response = await this.makeAuthenticatedRequest('/api/auth/user-spaces');
             this.spaces = response.data;
@@ -233,6 +240,7 @@ class AuthManager {
             this.spaces = [];
             this.spacesChangedEmitter.fire([]);
         }
+        */
     }
     
     async setCurrentSpace(spaceName) {
@@ -261,10 +269,8 @@ class AuthManager {
 
     async makeAuthenticatedRequest(url, options = {}) {
         try {
-            const response = await axios({
-                url: `${this.serverUrl}${url}`,
-                withCredentials: true,
-                timeout: 10000,
+            const response = await this.api({
+                url: url,
                 ...options
             });
             return response;
@@ -418,7 +424,7 @@ class SearchWebview {
             }
         );
 
-        this.panel.webview.html = this.getWebviewContent();
+        this.panel.webview.html = this.getWebviewContent(); // Placeholder for webview content
 
         // Handle messages from the webview
         this.panel.webview.onDidReceiveMessage(
@@ -958,7 +964,6 @@ class SearchWebview {
 <body>
     <div class="header">
         <div class="logo">
-            <span>📚</span>
             <h1>Architecture Artifacts</h1>
         </div>
         <div class="auth-section">
@@ -1125,7 +1130,7 @@ class SearchWebview {
             spaces.forEach(space => {
                 const option = document.createElement('option');
                 option.value = space.space;
-                option.textContent = `${space.space} (${space.access})`;
+                option.textContent = space.space;
                 spaceSelect.appendChild(option);
             });
             
@@ -1154,10 +1159,10 @@ class SearchWebview {
             const searchType = document.querySelector('input[name="searchType"]:checked').value;
             
             showLoading();
-            vscode.postMessage({ 
-                command: 'search', 
-                query: query, 
-                searchType: searchType 
+            vscode.postMessage({
+                command: 'search',
+                query: query,
+                searchType: searchType
             });
         }
 
@@ -1193,14 +1198,14 @@ class SearchWebview {
             // Results count
             const countDiv = document.createElement('div');
             countDiv.className = 'results-count';
-            countDiv.textContent = \`\${results.length} result\${results.length !== 1 ? 's' : ''} found\`;
+            countDiv.textContent = 'none found';
             resultsList.appendChild(countDiv);
 
             // File results
             if (fileResults.length > 0) {
                 const header = document.createElement('div');
                 header.className = 'results-section-header';
-                header.innerHTML = \`<strong>File Names (\${fileResults.length})</strong>\`;
+                header.innerHTML = 'filename';
                 resultsList.appendChild(header);
 
                 fileResults.forEach(result => {
@@ -1212,7 +1217,7 @@ class SearchWebview {
             if (contentResults.length > 0) {
                 const header = document.createElement('div');
                 header.className = 'results-section-header';
-                header.innerHTML = \`<strong>Content Matches (\${contentResults.length})</strong>\`;
+                header.innerHTML = 'Content Matches';
                 resultsList.appendChild(header);
 
                 contentResults.forEach(result => {
@@ -1233,16 +1238,14 @@ class SearchWebview {
             const highlightedSnippet = highlightSearchTerms(snippet, query);
             const highlightedTitle = highlightSearchTerms(title, query);
             
-            div.innerHTML = \`
+            div.innerHTML = 
                 <div class="result-header">
-                    <div class="result-icon">\${icon}</div>
+                    <div class="result-icon"></div>
                     <div class="result-info">
-                        <div class="result-title">\${highlightedTitle}</div>
-                        <div class="result-path">\${escapeHtml(path)}</div>
+                        <div class="result-title"></div>
+                        <div class="result-path"></div>
                     </div>
-                </div>
-                \${snippet ? \`<div class="result-snippet">\${highlightedSnippet}</div>\` : ''}
-            \`;
+                </div>;
 
             div.addEventListener('click', () => {
                 showPreview(result);
@@ -1254,19 +1257,19 @@ class SearchWebview {
         function getFileIcon(filename) {
             const ext = filename.split('.').pop().toLowerCase();
             switch (ext) {
-                case 'md': return '📄';
-                case 'pdf': return '📕';
-                case 'txt': return '📝';
-                case 'json': return '🔧';
+                case 'md': return 'md';
+                case 'pdf': return 'pdf';
+                case 'txt': return 'txt';
+                case 'json': return 'json';
                 case 'js':
-                case 'ts': return '⚡';
-                case 'html': return '🌐';
-                case 'css': return '🎨';
+                case 'ts': return 'javascript';
+                case 'html': return 'html';
+                case 'css': return 'css';
                 case 'png':
                 case 'jpg':
                 case 'jpeg':
-                case 'gif': return '🖼️';
-                default: return '📄';
+                case 'gif': return 'image';
+                default: return 'file';
             }
         }
 
@@ -1274,11 +1277,11 @@ class SearchWebview {
             if (!text || !query) return escapeHtml(text);
 
             const escapedText = escapeHtml(text);
-            const terms = query.toLowerCase().split(/\\s+/).filter(term => term.length > 0);
+            const terms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
             
             let highlightedText = escapedText;
             terms.forEach(term => {
-                const regex = new RegExp(\`(\${escapeRegex(term)})\`, 'gi');
+                const regex = '';
                 highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
             });
 
@@ -1292,9 +1295,9 @@ class SearchWebview {
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('previewSection').style.display = 'block';
             
-            vscode.postMessage({ 
-                command: 'getFile', 
-                filePath: filePath 
+            vscode.postMessage({
+                command: 'getFile',
+                filePath: filePath
             });
         }
 
@@ -1311,83 +1314,18 @@ class SearchWebview {
 
         function handleFileError(error) {
             const previewContent = document.getElementById('previewContent');
-            previewContent.innerHTML = \`
+            previewContent.innerHTML = '
                 <div style="color: var(--vscode-errorForeground); text-align: center; padding: 20px;">
                     <p>Failed to load preview</p>
-                    <small>\${error}</small>
-                </div>
-            \`;
+                    <small></small>
+                </div>'
+            ;
         }
 
         function markdownToHtml(markdown) {
             if (!markdown) return '';
-            
-            let html = markdown;
-            
-            // Code blocks (must be done first)
-            html = html.replace(/\`\`\`(\\w+)?\\n([\\s\\S]*?)\`\`\`/gim, (match, lang, code) => {
-                const language = lang ? \` class="language-\${lang}"\` : '';
-                return \`<pre\${language}><code>\${escapeHtml(code.trim())}</code></pre>\`;
-            });
-            
-            // Headers
-            html = html.replace(/^#{6}\\s+(.*)$/gim, '<h6>$1</h6>');
-            html = html.replace(/^#{5}\\s+(.*)$/gim, '<h5>$1</h5>');
-            html = html.replace(/^#{4}\\s+(.*)$/gim, '<h4>$1</h4>');
-            html = html.replace(/^#{3}\\s+(.*)$/gim, '<h3>$1</h3>');
-            html = html.replace(/^#{2}\\s+(.*)$/gim, '<h2>$1</h2>');
-            html = html.replace(/^#{1}\\s+(.*)$/gim, '<h1>$1</h1>');
-            
-            // Horizontal rules
-            html = html.replace(/^---$/gim, '<hr>');
-            html = html.replace(/^\\*\\*\\*$/gim, '<hr>');
-            
-            // Blockquotes
-            html = html.replace(/^>\\s+(.*)$/gim, '<blockquote>$1</blockquote>');
-            
-            // Lists
-            html = html.replace(/^\\s*\\*\\s+(.*)$/gim, '<li>$1</li>');
-            html = html.replace(/^\\s*-\\s+(.*)$/gim, '<li>$1</li>');
-            html = html.replace(/^\\s*\\+\\s+(.*)$/gim, '<li>$1</li>');
-            html = html.replace(/^\\s*\\d+\\.\\s+(.*)$/gim, '<li>$1</li>');
-            
-            // Wrap consecutive list items
-            html = html.replace(/(<li>.*<\\/li>)/gims, '<ul>$1</ul>');
-            html = html.replace(/<\\/ul>\\s*<ul>/gim, '');
-            
-            // Bold and italic
-            html = html.replace(/\\*\\*\\*(.*?)\\*\\*\\*/gim, '<strong><em>$1</em></strong>');
-            html = html.replace(/\\*\\*(.*?)\\*\\*/gim, '<strong>$1</strong>');
-            html = html.replace(/__(.*?)__/gim, '<strong>$1</strong>');
-            html = html.replace(/\\*(.*?)\\*/gim, '<em>$1</em>');
-            html = html.replace(/_(.*?)_/gim, '<em>$1</em>');
-            
-            // Strikethrough
-            html = html.replace(/~~(.*?)~~/gim, '<s>$1</s>');
-            
-            // Inline code
-            html = html.replace(/\`([^\`\\n]+)\`/gim, '<code>$1</code>');
-            
-            // Links
-            html = html.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/gim, '<a href="$2" target="_blank">$1</a>');
-            
-            // Images
-            html = html.replace(/!\\[([^\\]]*)\\]\\(([^)]+)\\)/gim, '<img src="$2" alt="$1" style="max-width: 100%; height: auto;">');
-            
-            // Line breaks
-            html = html.replace(/\\n\\n/gim, '</p><p>');
-            html = html.replace(/\\n/gim, '<br>');
-            
-            // Wrap in paragraphs
-            if (!html.startsWith('<')) {
-                html = '<p>' + html + '</p>';
-            }
-            
-            // Clean up empty paragraphs
-            html = html.replace(/<p><\\/p>/gim, '');
-            html = html.replace(/<p>\\s*<\\/p>/gim, '');
-            
-            return html;
+            const md = markdownit();
+            return md.render(markdown);
         }
 
         function showLoading() {
@@ -1404,12 +1342,12 @@ class SearchWebview {
         function showError(error) {
             hideLoading();
             const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = \`
+            resultsList.innerHTML = '
                 <div class="error-message">
-                    <p>\${error}</p>
+                    <p></p>
                     <small>Check your connection and authentication status</small>
                 </div>
-            \`;
+            ';
             resultsList.style.display = 'block';
         }
 
@@ -1420,7 +1358,7 @@ class SearchWebview {
         }
 
         function escapeRegex(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return string;
         }
 
         // Enter key search
@@ -1463,22 +1401,22 @@ class SettingsManager {
 
         vscode.window.showQuickPick([
             {
-                label: '$(globe) Server URL',
+                label: 'Server URL',
                 description: currentServerUrl,
                 detail: 'Configure the Architecture Artifacts server URL'
             },
             {
-                label: '$(sign-in) Auto Login',
+                label: 'Auto Login',
                 description: currentAutoLogin ? 'Enabled' : 'Disabled',
                 detail: 'Automatically check authentication status on startup'
             },
             {
-                label: '$(refresh) Test Connection',
+                label: 'Test Connection',
                 description: 'Test connection to the server',
                 detail: 'Verify that the server is accessible'
             },
             {
-                label: '$(info) About',
+                label: 'About',
                 description: 'Architecture Artifacts Extension',
                 detail: 'Version 1.0.0'
             }
@@ -1489,16 +1427,16 @@ class SettingsManager {
             if (!selection) return;
 
             switch (selection.label) {
-                case '$(globe) Server URL':
+                case 'Server URL':
                     await this.configureServerUrl();
                     break;
-                case '$(sign-in) Auto Login':
+                case 'Auto Login':
                     await this.configureAutoLogin();
                     break;
-                case '$(refresh) Test Connection':
+                case 'Test Connection':
                     await this.testConnection();
                     break;
-                case '$(info) About':
+                case 'About':
                     this.showAbout();
                     break;
             }
@@ -1584,50 +1522,61 @@ class SettingsManager {
     async testConnection() {
         const serverUrl = this.authManager.getServerUrl();
         
-        try {
-            const response = await fetch(`${serverUrl}/api/auth/me`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-
-            if (response.ok || response.status === 401) {
-                // 401 is expected if not authenticated, but means server is reachable
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `Connecting to ${serverUrl}...`,
+            cancellable: false
+        }, async (progress) => {
+            try {
+                // Use the authManager's pre-configured axios instance
+                const response = await this.authManager.api.get('/api/auth/me');
+                
+                // If we get here, it's a 2xx response, so connection is good and we are authenticated.
                 vscode.window.showInformationMessage(
-                    `✅ Successfully connected to server at ${serverUrl}`,
-                    response.ok ? 'Sign Out' : 'Sign In'
+                    `Successfully connected to server at ${serverUrl}`,
+                    'Sign Out'
                 ).then((action) => {
-                    if (action === 'Sign In') {
-                        this.authManager.login();
-                    } else if (action === 'Sign Out') {
+                    if (action === 'Sign Out') {
                         this.authManager.logout();
                     }
                 });
-            } else {
-                throw new Error(`Server responded with status: ${response.status}`);
-            }
-        } catch (error) {
-            let errorMessage = 'Connection test failed';
-            
-            if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-                errorMessage = 'Connection timeout - server may be unavailable';
-            } else if (error.code === 'ECONNREFUSED') {
-                errorMessage = 'Connection refused - server may not be running';
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
 
-            vscode.window.showErrorMessage(
-                `❌ ${errorMessage}`,
-                'Check Settings',
-                'Retry'
-            ).then((action) => {
-                if (action === 'Check Settings') {
-                    this.configureServerUrl();
-                } else if (action === 'Retry') {
-                    this.testConnection();
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    // 401 is expected if not authenticated, but means server is reachable
+                    vscode.window.showInformationMessage(
+                        `Successfully connected to server at ${serverUrl}`,
+                        'Sign In'
+                    ).then((action) => {
+                        if (action === 'Sign In') {
+                            this.authManager.login();
+                        }
+                    });
+                } else {
+                    // Handle other errors like network issues
+                    let errorMessage = 'Connection test failed';
+                    if (error.code === 'ECONNREFUSED') {
+                        errorMessage = 'Connection refused - server may not be running or URL is incorrect.';
+                    } else if (error.code === 'ETIMEDOUT' || error.name === 'AbortError') {
+                        errorMessage = 'Connection timeout - server may be unavailable.';
+                    } else if (error.message) {
+                        errorMessage = `Connection failed: ${error.message}`;
+                    }
+
+                    vscode.window.showErrorMessage(
+                        `${errorMessage}`,
+                        'Check Settings',
+                        'Retry'
+                    ).then((action) => {
+                        if (action === 'Check Settings') {
+                            this.configureServerUrl();
+                        } else if (action === 'Retry') {
+                            this.testConnection();
+                        }
+                    });
                 }
-            });
-        }
+            }
+        });
     }
 
     showAbout() {
@@ -1637,16 +1586,16 @@ Version: 1.0.0
 Description: Search and preview architecture documentation from your Architecture Artifacts server directly in VS Code
 
 Features:
-• 🔍 Search documentation content and file names
-• 📖 Preview markdown files with syntax highlighting
-• 🔐 Secure authentication with session management
-• ⚙️ Configurable server settings
-• 🎨 VS Code theme integration
+- Search documentation content and file names
+- Preview markdown files with syntax highlighting
+- Secure authentication with session management
+- Configurable server settings
+- VS Code theme integration
 
 Commands:
-• Architecture Artifacts: Search Documentation
-• Architecture Artifacts: Sign In/Out
-• Architecture Artifacts: Settings
+- Architecture Artifacts: Search Documentation
+- Architecture Artifacts: Sign In/Out
+- Architecture Artifacts: Settings
 
 Created for seamless integration with the Architecture Artifacts platform.`;
 
