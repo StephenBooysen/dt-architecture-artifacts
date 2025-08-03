@@ -1,14 +1,8 @@
 ## This file attempts to manage a todo list in this project
 
 ### Phases
-- Phase 2: Fully functioning wiki for more than me (multiple users)
 - Phase 3: Shoprite enterprise integration
 - Phase 4: AI with ollama
-
-### Phase 2 BUGS
-- VS code extension
-- chrome extensions: make start screen login if not logged in
-- Electron - Be careful
 
 ### Phase 3: Shoprite enterprise integration
 #### Client

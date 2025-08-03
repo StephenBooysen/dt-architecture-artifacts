@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "node-pptx": "^1.0.0"
+    "node-pptx": "^1.0.0",
+    "@anthropic-ai/sdk": "^0.30.1"
   }
 }
