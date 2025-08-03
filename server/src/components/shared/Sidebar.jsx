@@ -4,13 +4,7 @@ const Sidebar = ({ activeSection }) => {
   return (
     <aside className="sidebar" id="sidebar">
       <div className="sidebar-content">
-        <div className="sidebar-header">
-          <h2>
-            <i className="bi bi-building me-2"></i>
-            Navigation
-          </h2>
-        </div>
-        
+
         <nav className="sidebar-nav">
           <div className="nav-section">
             <div className="nav-section-title">Overview</div>
