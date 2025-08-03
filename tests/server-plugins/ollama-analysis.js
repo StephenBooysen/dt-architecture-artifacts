@@ -7,7 +7,14 @@ async function runAnalysis() {
     const model = 'tinyllama:latest'; // Or any other model you have
     const ollama = new OllamaAI(model);
 
-    const prompt = 'what does this file do';
+    const prompt = "As an architect, please summarize what this file does. Focus on:\n" +
+      "1. Main purpose and functionality\n" +
+      "2. Key components and classes\n" +
+      "3. Dependencies and integrations\n" +
+      "4. Architecture patterns used\n" +
+      "5. Potential areas for improvement\n" +
+      "\nProvide a concise but comprehensive summary suitable for technical documentation.";
+
     const fileToAnalyze = path.join(__dirname, 'sample-code.js');
 
     console.log(`Analyzing file: ${fileToAnalyze}`);
