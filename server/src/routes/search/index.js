@@ -1,28 +1,74 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const EventEmitter = require('events');
 const createFilingService = require('../../services/filing/index.js');
 
 const router = express.Router();
 
-// Fallback filing provider (for backwards compatibility and non-space routes)
-var filing = createFilingService('local', {
-  localPath: path.join(__dirname, '../../../../content')
-}, new EventEmitter());
+/**
+ * Authentication middleware to protect routes
+ */
+function requireAuth(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'Authentication required' });
+}
 
-if (process.env.FILING_PROVIDER === 'git') {
-  filing = createFilingService('git', {
-    repo: 'https://github.com/StephenBooysen/dt-architecture-artifacts-testing.git',
-    localPath: path.join(__dirname, '../../../../temp-content'),
-    branch: 'main',
-    fetchInterval: 5000
-  }, new EventEmitter());
-  console.log('Using Git filing provider');
+/**
+ * Get space-aware filing provider for the current user
+ */
+async function getSpaceAwareFiling(req) {
+  // Default to Personal space for search operations
+  const spaceName = req.query.space || 'Personal';
+  const user = req.user;
+  
+  if (!user) {
+    throw new Error('User authentication required');
+  }
+  
+  // Load spaces configuration to get the right provider
+  const spacesPath = path.join(__dirname, '../../../../server-data/spaces.json');
+  const spacesData = fs.readFileSync(spacesPath, 'utf8');
+  const spaces = JSON.parse(spacesData);
+  const spaceConfig = spaces.find(space => space.space === spaceName);
+  
+  if (!spaceConfig) {
+    throw new Error(`Space '${spaceName}' not found`);
+  }
+  
+  // Create filing provider based on space configuration
+  const filingConfig = spaceConfig.filing;
+  let provider;
+
+  if (filingConfig.type === 'local') {
+    provider = createFilingService('local', {
+      localPath: filingConfig.localFolder
+    }, new EventEmitter());
+  } else if (filingConfig.type === 'git') {
+    provider = createFilingService('git', {
+      repo: filingConfig.git,
+      localPath: filingConfig.localFolder,
+      branch: filingConfig['git-branch'] || 'main',
+      fetchInterval: parseInt(filingConfig['git-fetch-interval']) || 5000
+    }, new EventEmitter());
+  } else {
+    throw new Error(`Unsupported filing provider type: ${filingConfig.type}`);
+  }
+  
+  // Set user context for Personal space isolation
+  if (provider.setUserContext && typeof provider.setUserContext === 'function') {
+    provider.setUserContext(user, spaceName);
+  }
+  
+  return provider;
 }
 
 // Search files by name
-router.get('/files', async (req, res) => {
+router.get('/files', requireAuth, async (req, res) => {
   try {
+    const filing = await getSpaceAwareFiling(req);
     const query = req.query.q;
     if (!query) {
       return res.json([]);
@@ -69,8 +115,9 @@ router.get('/files', async (req, res) => {
 });
 
 // Search content within files
-router.get('/content', async (req, res) => {
+router.get('/content', requireAuth, async (req, res) => {
   try {
+    const filing = await getSpaceAwareFiling(req);
     const query = req.query.q;
     if (!query) {
       return res.json([]);

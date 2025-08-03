@@ -61,13 +61,15 @@ class UserStorage {
       id: Date.now().toString(),
       username,
       password: hashedPassword,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      roles: ['read', 'write'], // Default roles for all new users (write required for client login)
+      spaces: 'Personal' // Default space access for all new users
     };
 
     this.users.push(user);
     await this.saveUsers();
     
-    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [], spaces: user.spaces };
+    return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles, spaces: user.spaces };
   }
 
   findUserByUsername(username) {
@@ -75,9 +77,7 @@ class UserStorage {
   }
 
   findUserById(id) {
-    console.log('Finding user by ID:', id, 'Users loaded:', this.users.length);
     const user = this.users.find(user => user.id === id);
-    console.log('Found user:', user ? user.username : 'Not found');
     return user;
   }
 

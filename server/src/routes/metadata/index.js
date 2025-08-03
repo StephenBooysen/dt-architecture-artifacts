@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const EventEmitter = require('events');
 const createFilingService = require('../../services/filing/index.js');
 
@@ -15,19 +16,53 @@ function requireAuth(req, res, next) {
   res.status(401).json({ error: 'Authentication required' });
 }
 
-// Fallback filing provider (for backwards compatibility and non-space routes)
-var filing = createFilingService('local', {
-  localPath: path.join(__dirname, '../../../../content')
-}, new EventEmitter());
+/**
+ * Get space-aware filing provider for the current user
+ */
+async function getSpaceAwareFiling(req) {
+  // Default to Personal space for metadata operations
+  const spaceName = req.query.space || 'Personal';
+  const user = req.user;
+  
+  if (!user) {
+    throw new Error('User authentication required');
+  }
+  
+  // Load spaces configuration to get the right provider
+  const spacesPath = path.join(__dirname, '../../../../server-data/spaces.json');
+  const spacesData = fs.readFileSync(spacesPath, 'utf8');
+  const spaces = JSON.parse(spacesData);
+  const spaceConfig = spaces.find(space => space.space === spaceName);
+  
+  if (!spaceConfig) {
+    throw new Error(`Space '${spaceName}' not found`);
+  }
+  
+  // Create filing provider based on space configuration
+  const filingConfig = spaceConfig.filing;
+  let provider;
 
-if (process.env.FILING_PROVIDER === 'git') {
-  filing = createFilingService('git', {
-    repo: 'https://github.com/StephenBooysen/dt-architecture-artifacts-testing.git',
-    localPath: path.join(__dirname, '../../../../temp-content'),
-    branch: 'main',
-    fetchInterval: 5000
-  }, new EventEmitter());
-  console.log('Using Git filing provider');
+  if (filingConfig.type === 'local') {
+    provider = createFilingService('local', {
+      localPath: filingConfig.localFolder
+    }, new EventEmitter());
+  } else if (filingConfig.type === 'git') {
+    provider = createFilingService('git', {
+      repo: filingConfig.git,
+      localPath: filingConfig.localFolder,
+      branch: filingConfig['git-branch'] || 'main',
+      fetchInterval: parseInt(filingConfig['git-fetch-interval']) || 5000
+    }, new EventEmitter());
+  } else {
+    throw new Error(`Unsupported filing provider type: ${filingConfig.type}`);
+  }
+  
+  // Set user context for Personal space isolation
+  if (provider.setUserContext && typeof provider.setUserContext === 'function') {
+    provider.setUserContext(user, spaceName);
+  }
+  
+  return provider;
 }
 
 // Import metadata utilities
@@ -47,8 +82,9 @@ const {
  * Get recent files (edited in the last 7 days)
  * GET /api/metadata/recent
  */
-router.get('/recent', async (req, res) => {
+router.get('/recent', requireAuth, async (req, res) => {
   try {
+    const filing = await getSpaceAwareFiling(req);
     const days = parseInt(req.query.days) || 7;
     const recentFiles = [];
     
@@ -108,8 +144,9 @@ router.get('/recent', async (req, res) => {
  * Get starred files
  * GET /api/metadata/starred
  */
-router.get('/starred', async (req, res) => {
+router.get('/starred', requireAuth, async (req, res) => {
   try {
+    const filing = await getSpaceAwareFiling(req);
     const starredFiles = [];
     
     async function processDir(relativePath = '') {
@@ -168,6 +205,7 @@ router.get('/starred', async (req, res) => {
  */
 router.post('/starred/*', requireAuth, async (req, res) => {
   try {
+    const filing = await getSpaceAwareFiling(req);
     const filePath = req.params[0] || '';
     const { starred } = req.body;
     
@@ -225,8 +263,9 @@ router.post('/starred/*', requireAuth, async (req, res) => {
  * Get metadata for a specific file
  * GET /api/metadata/*
  */
-router.get('/*', async (req, res) => {
+router.get('/*', requireAuth, async (req, res) => {
   try {
+    const filing = await getSpaceAwareFiling(req);
     const filePath = req.params[0] || '';
 
     if (!filePath) {

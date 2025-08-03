@@ -1,35 +1,24 @@
 [
   {
-    "id": "1721350800000",
-    "username": "admin",
-    "password": "$2b$10$9RkWO9Ahp5c1XE2fQv1VKOgafYd7Z774o2ppa1/RDB22PhK.vLQj.",
-    "createdAt": "2025-07-29T01:00:00.000Z",
+    "id": "1754197615560",
+    "username": "architect",
+    "password": "$2b$10$DD95WAduaxbcAfmGuckwFuIUeVsZl2k.yFUT17y04kNdKal.nKHE6",
+    "createdAt": "2025-08-03T05:06:55.560Z",
     "roles": [
       "read",
-      "write",
-      "admin"
-    ],
-    "spaces": "Personal,Shared"
-  },
-  {
-    "id": "1753752776557",
-    "username": " Stephen Booysen",
-    "password": "$2b$10$d75bBGMgRdpfMWHRXza90uMcmSVGaAmhFKl68fplgyxMFG0ONwODi",
-    "createdAt": "2025-07-29T01:32:56.557Z",
-    "roles": [
-      "read",
-      "write",
-      "admin"
+      "write"
     ],
     "spaces": "Personal"
   },
   {
-    "id": "1753870118270",
-    "username": "testusers",
-    "password": "$2b$10$XK3Wsvl7rFy3gwX1DD9a8O/4f3eUD3PsYMxPZMbaLk6RwKROozH/e",
-    "createdAt": "2025-07-30T10:08:38.270Z",
+    "id": "1754197851458",
+    "username": "admin",
+    "password": "$2b$10$pZ1jKsUGNMswkFJ6/0UYXe7HCE7JVYM5x1/WPKI8OwPdRG2I3.u7i",
+    "createdAt": "2025-08-03T05:10:51.458Z",
     "roles": [
-      "read"
+      "read",
+      "write",
+      "admin"
     ],
     "spaces": "Personal"
   }

@@ -137,7 +137,6 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) {
-      console.log('CORS: Allowing request with no origin');
       return callback(null, true);
     }
     
@@ -146,10 +145,8 @@ app.use(cors({
       ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim())
       : [process.env.CLIENT_URL || 'http://localhost:3000'];
     
-    console.log(`CORS: Checking origin "${origin}" against allowed origins:`, allowedOrigins);
     
     if (allowedOrigins.includes(origin)) {
-      console.log(`CORS: Allowing origin: ${origin}`);
       return callback(null, true);
     } else {
       console.warn(`CORS blocked origin: ${origin}`);
