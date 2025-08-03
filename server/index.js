@@ -2033,17 +2033,7 @@ app.delete('/api/spaces/:index', requireServerAuth, (req, res) => {
   }
 });
 
-// Note: Static file serving is disabled to allow server-side routing
-// If you need to serve the React client in production, uncomment below:
-// if (process.env.NODE_ENV === 'production') {
-//   app.use(express.static(path.join(__dirname, '../client/build')));
-//   
-//   app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../client/build/index.html'));
-//   });
-// }
-
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT,  () => {
   console.log('🚀 Architecture Artifacts Server Started');
   console.log('=====================================');
   console.log(`📡 Server running on port: ${PORT}`);
