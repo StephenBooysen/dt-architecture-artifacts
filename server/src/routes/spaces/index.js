@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const EventEmitter = require('events');
+const multer = require('multer');
 const createFilingService = require('../../services/filing/index.js');
 
 const router = express.Router();
@@ -81,7 +82,8 @@ async function getFilingProviderForSpace(spaceName) {
         repo: filingConfig.git,
         localPath: filingConfig.localFolder,
         branch: filingConfig['git-branch'] || 'main',
-        fetchInterval: parseInt(filingConfig['git-fetch-interval']) || 5000
+        fetchInterval: parseInt(filingConfig['git-fetch-interval']) || 5000,
+        isReadonly: spaceConfig.access === 'readonly'
       }, new EventEmitter());
     } else {
       throw new Error(`Unsupported filing provider type: ${filingConfig.type}`);
@@ -266,6 +268,29 @@ function detectFileType(fileName) {
   return 'unknown';
 }
 
+/**
+ * Helper function to get file path based on space type (readonly vs writable)
+ */
+function getSpaceFilePath(relativePath, isReadonly) {
+  return isReadonly ? relativePath : `markdown/${relativePath}`;
+}
+
+/**
+ * Configure multer storage for space-aware file uploads.
+ */
+const upload = multer({
+  storage: multer.memoryStorage(), // Store in memory temporarily
+  limits: {
+    fileSize: 105 * 1024 * 1024, // 105MB limit
+    fieldSize: 105 * 1024 * 1024,
+    parts: 50,
+    fields: 50
+  },
+  fileFilter: (req, file, cb) => {
+    cb(null, true); // Accept all file types
+  }
+});
+
 // Get files tree for a specific space
 router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
   try {
@@ -338,6 +363,121 @@ router.post('/:space/templates', loadFilingProvider, checkSpaceAccess('write'), 
   } catch (error) {
     console.error('Error creating template for space:', error);
     res.status(500).json({ error: 'Failed to create template' });
+  }
+});
+
+// File upload endpoint for a specific space
+router.post('/:space/upload', loadFilingProvider, checkSpaceAccess('write'), upload.single('file'), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const folderPath = req.body.folderPath || '';
+    const fileName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_'); // Sanitize filename
+    const finalFilePath = folderPath ? path.join(folderPath, fileName) : fileName;
+    
+    // Use space-aware file path
+    const fullSpacePath = getSpaceFilePath(finalFilePath, isReadonly);
+    
+    console.log(`Upload to space ${req.params.space}:`, {
+      folderPath,
+      fileName,
+      finalFilePath,
+      fullSpacePath,
+      isReadonly
+    });
+    
+    // Create the target directory if it doesn't exist
+    if (folderPath) {
+      const dirPath = getSpaceFilePath(folderPath, isReadonly);
+      await filing.ensureDir(dirPath);
+    }
+    
+    // Write file using filing provider
+    await filing.create(fullSpacePath, req.file.buffer);
+
+    res.json({
+      message: 'File uploaded successfully',
+      filePath: finalFilePath,
+      fileName: fileName,
+      size: req.file.size
+    });
+  } catch (error) {
+    console.error('Error uploading file to space:', error);
+    res.status(500).json({ error: 'Failed to upload file' });
+  }
+});
+
+// Download endpoint for files in a specific space
+router.get('/:space/download/*', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const filePath = req.params[0] || '';
+    
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+
+    // Use space-aware file path
+    const fullSpacePath = getSpaceFilePath(filePath, isReadonly);
+    const fileName = path.basename(filePath);
+    
+    console.log(`Download from space ${req.params.space}:`, {
+      filePath,
+      fullSpacePath,
+      isReadonly
+    });
+    
+    // Get file stats
+    const stats = await filing.stat(fullSpacePath);
+    
+    // Set appropriate headers for download
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', stats.size);
+    
+    // Determine content type based on extension
+    const extension = path.extname(fileName).toLowerCase();
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+      '.txt': 'text/plain',
+      '.json': 'application/json',
+      '.xml': 'application/xml',
+      '.csv': 'text/csv',
+      '.log': 'text/plain',
+      '.js': 'application/javascript',
+      '.ts': 'application/typescript',
+      '.css': 'text/css',
+      '.html': 'text/html',
+      '.md': 'text/markdown',
+      '.markdown': 'text/markdown',
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    };
+    
+    const contentType = mimeTypes[extension] || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    
+    // Stream the file
+    const fileBuffer = await filing.read(fullSpacePath);
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error('Error downloading file from space:', error);
+    res.status(404).json({ error: 'File not found' });
   }
 });
 

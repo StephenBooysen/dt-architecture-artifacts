@@ -130,7 +130,7 @@ const FileTree = ({
 
   const loadTemplates = async () => {
     try {
-      const templatesData = await fetchTemplates();
+      const templatesData = await fetchTemplates(currentSpace);
       setTemplates(templatesData);
     } catch (error) {
       console.error('Error loading templates:', error);
@@ -245,7 +245,8 @@ const FileTree = ({
     formData.append('file', file);
     formData.append('folderPath', folderPath);
 
-    const response = await fetch('/api/upload', {
+    const uploadUrl = currentSpace ? `/api/${currentSpace}/upload` : '/api/upload';
+    const response = await fetch(uploadUrl, {
       method: 'POST',
       body: formData,
     });

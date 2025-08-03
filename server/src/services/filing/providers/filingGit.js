@@ -31,6 +31,45 @@ class FilingGitProvider {
     const remoteUrl = this._getAuthenticatedRepoUrl();
     const dirExists = await fs.pathExists(this.options.localPath);
 
+    // For readonly spaces, check if we have a valid repo before re-cloning
+    if (this.options.isReadonly) {
+      if (dirExists) {
+        // Check if it's already a valid git repository with the correct remote
+        const tempGit = simpleGit(this.options.localPath);
+        try {
+          const isRepo = await tempGit.checkIsRepo();
+          if (isRepo) {
+            const remotes = await tempGit.getRemotes(true);
+            const originRemote = remotes.find(r => r.name === 'origin');
+            if (originRemote && (originRemote.refs.fetch === this.options.repo || originRemote.refs.fetch === remoteUrl)) {
+              console.log(`Using existing readonly space directory: ${this.options.localPath}`);
+              this.git = tempGit;
+              await this.git.checkout(this.options.branch);
+              return;
+            }
+          }
+        } catch (error) {
+          console.log(`Invalid repository at ${this.options.localPath}, will re-clone:`, error.message);
+        }
+        
+        // If we get here, the directory exists but doesn't have the right repo
+        console.log(`Removing existing readonly space directory: ${this.options.localPath}`);
+        await fs.remove(this.options.localPath);
+      }
+      
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('FilingGitProvider:Cloning', { repo: this.options.repo, localPath: this.options.localPath });
+      }
+      await fs.ensureDir(path.dirname(this.options.localPath));
+      await simpleGit().clone(remoteUrl, this.options.localPath);
+      
+      // Initialize git instance after cloning
+      this.git = simpleGit(this.options.localPath);
+      await this.git.checkout(this.options.branch);
+      return;
+    }
+
+    // For writable spaces, use existing logic
     if (dirExists) {
         // Initialize git instance for existing directory
         this.git = simpleGit(this.options.localPath);
@@ -67,20 +106,50 @@ class FilingGitProvider {
 
   async _handleDivergentBranches(remote) {
     try {
+      // For readonly spaces, use aggressive strategy to overwrite everything
+      if (this.options.isReadonly) {
+        console.log(`Aggressively updating readonly space: ${this.options.localPath}`);
+        // Fetch all remote changes
+        await this.git.fetch(remote, this.options.branch);
+        // Hard reset to remote state, discarding all local changes
+        await this.git.reset(['--hard', `${remote}/${this.options.branch}`]);
+        // Clean untracked files
+        await this.git.clean('f', ['-d']);
+        return;
+      }
+      
+      // For writable spaces, use the existing gentle approach
       // First, try to pull with merge strategy
       await this.git.pull(remote, this.options.branch, ['--no-rebase']);
     } catch (error) {
-      if (error.message.includes('divergent branches')) {
-        // Configure Git to use merge as default strategy
-        await this.git.raw(['config', 'pull.rebase', 'false']);
-        
-        // Try again with explicit merge
-        try {
-          await this.git.pull(remote, this.options.branch, ['--strategy=recursive', '--strategy-option=ours']);
-        } catch (secondError) {
-          // If still failing, try a more aggressive approach
-          await this.git.fetch(remote, this.options.branch);
-          await this.git.merge([`${remote}/${this.options.branch}`, '--strategy=recursive', '--strategy-option=ours']);
+      if (error.message.includes('divergent branches') || error.message.includes('unrelated histories')) {
+        if (this.options.isReadonly) {
+          // For readonly spaces that are in a bad state, just reset everything
+          try {
+            await this.git.fetch(remote, this.options.branch);
+            await this.git.reset(['--hard', `${remote}/${this.options.branch}`]);
+            await this.git.clean('f', ['-d']);
+          } catch (resetError) {
+            // If reset fails, remove and re-clone
+            console.log(`Reset failed for readonly space, re-cloning: ${this.options.localPath}`);
+            await fs.remove(this.options.localPath);
+            const remoteUrl = this._getAuthenticatedRepoUrl();
+            await simpleGit().clone(remoteUrl, this.options.localPath);
+            this.git = simpleGit(this.options.localPath);
+            await this.git.checkout(this.options.branch);
+          }
+        } else {
+          // For writable spaces, configure Git to use merge as default strategy
+          await this.git.raw(['config', 'pull.rebase', 'false']);
+          
+          // Try again with explicit merge
+          try {
+            await this.git.pull(remote, this.options.branch, ['--strategy=recursive', '--strategy-option=ours']);
+          } catch (secondError) {
+            // If still failing, try a more aggressive approach
+            await this.git.fetch(remote, this.options.branch);
+            await this.git.merge([`${remote}/${this.options.branch}`, '--strategy=recursive', '--strategy-option=ours']);
+          }
         }
       } else {
         throw error;
@@ -105,7 +174,9 @@ class FilingGitProvider {
           if (this.eventEmitter_) {
             this.eventEmitter_.emit('FilingGitProvider:PulledChanges', { 
               changesPulled: behind,
-              message: `Pulled ${behind} remote changes`,
+              message: this.options.isReadonly 
+                ? `Aggressively synced ${behind} remote changes (readonly space)`
+                : `Pulled ${behind} remote changes`,
               syncTime: this.lastRemoteSync
             });
           }

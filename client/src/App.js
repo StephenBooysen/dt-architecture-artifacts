@@ -575,7 +575,7 @@ function AppContent() {
       // Handle downloadable files
       if (data.downloadable) {
         try {
-          await downloadFile(filePath);
+          await downloadFile(filePath, currentSpace);
         } catch (downloadError) {
           toast.error('Failed to download file');
         }
@@ -585,7 +585,7 @@ function AppContent() {
     } finally {
       setIsFileLoading(false);
     }
-  }, [selectedFile]);
+  }, [selectedFile, currentSpace]);
 
   const handleContentChange = useCallback((newContent) => {
     setFileContent(newContent);

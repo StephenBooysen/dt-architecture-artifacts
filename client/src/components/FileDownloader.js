@@ -19,12 +19,13 @@ import { downloadFile } from '../services/api';
  * @param {string} props.filePath - The path to the file.
  * @param {string} props.fileName - The file name.
  * @param {number} props.fileSize - The file size in bytes.
+ * @param {string} props.currentSpace - The current space name.
  * @return {JSX.Element} The FileDownloader component.
  */
-const FileDownloader = ({ filePath, fileName, fileSize }) => {
+const FileDownloader = ({ filePath, fileName, fileSize, currentSpace }) => {
   const handleDownload = async () => {
     try {
-      await downloadFile(filePath);
+      await downloadFile(filePath, currentSpace);
     } catch (error) {
       console.error('Error downloading file:', error);
       alert('Failed to download file');

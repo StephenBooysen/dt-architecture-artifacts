@@ -79,23 +79,25 @@ export const fetchFile = async (filePath, space = null) => {
 /**
  * Downloads a file from the server.
  * @param {string} filePath - The path to the file.
+ * @param {string} [space] - Optional space name for space-aware requests.
  * @return {Promise<void>} Downloads the file.
  */
-export const downloadFile = async (filePath) => {
+export const downloadFile = async (filePath, space = null) => {
   try {
-    const response = await api.get(`/download/${filePath}`, {
+    const url = space ? `/${space}/download/${filePath}` : `/download/${filePath}`;
+    const response = await api.get(url, {
       responseType: 'blob'
     });
     
     // Create a download link
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
-    link.href = url;
+    link.href = downloadUrl;
     link.setAttribute('download', filePath.split('/').pop());
     document.body.appendChild(link);
     link.click();
     link.remove();
-    window.URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
     console.error('Error downloading file:', error);
     throw error;

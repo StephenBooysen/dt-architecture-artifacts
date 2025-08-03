@@ -270,6 +270,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
         filePath={fileName}
         fileName={fileName.split('/').pop()}
         fileSize={fileData?.size || 0}
+        currentSpace={currentSpace}
       />
     );
   }
