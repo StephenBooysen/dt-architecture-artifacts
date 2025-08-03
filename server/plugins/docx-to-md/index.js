@@ -1,3 +1,23 @@
+/**
+ * @fileoverview DOCX to Markdown converter plugin for Architecture Artifacts.
+ * 
+ * This plugin provides robust conversion of Microsoft Word (.docx) documents
+ * to Markdown format with multiple fallback mechanisms. It supports various
+ * conversion libraries including mammoth and textract, with graceful degradation
+ * when dependencies are not available.
+ * 
+ * Key features:
+ * - Multi-library fallback conversion system
+ * - Image preservation and extraction
+ * - Comprehensive error handling and validation
+ * - Metadata extraction and formatting
+ * - Configurable output options
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 const fs = require('fs-extra');
 const path = require('path');
 
