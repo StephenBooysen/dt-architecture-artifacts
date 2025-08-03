@@ -39,7 +39,7 @@ class FilingGitProvider {
             if (this.eventEmitter_) {
               this.eventEmitter_.emit('FilingGitProvider:Pulling', { localPath: this.options.localPath });
             }
-            await this.git.pull(remoteUrl, this.options.branch);
+            await this._handleDivergentBranches(remoteUrl);
             return;
         }
     }
@@ -65,6 +65,29 @@ class FilingGitProvider {
     return this.options.repo;
   }
 
+  async _handleDivergentBranches(remote) {
+    try {
+      // First, try to pull with merge strategy
+      await this.git.pull(remote, this.options.branch, ['--no-rebase']);
+    } catch (error) {
+      if (error.message.includes('divergent branches')) {
+        // Configure Git to use merge as default strategy
+        await this.git.raw(['config', 'pull.rebase', 'false']);
+        
+        // Try again with explicit merge
+        try {
+          await this.git.pull(remote, this.options.branch, ['--strategy=recursive', '--strategy-option=ours']);
+        } catch (secondError) {
+          // If still failing, try a more aggressive approach
+          await this.git.fetch(remote, this.options.branch);
+          await this.git.merge([`${remote}/${this.options.branch}`, '--strategy=recursive', '--strategy-option=ours']);
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+
   async _periodicFetch() {
     try {
       if (this.git) {
@@ -77,7 +100,7 @@ class FilingGitProvider {
         
         if (behind > 0) {
           // Pull changes if we're behind
-          await this.git.pull('origin', this.options.branch);
+          await this._handleDivergentBranches('origin');
           this.lastRemoteSync = new Date().toISOString(); // Record sync time
           if (this.eventEmitter_) {
             this.eventEmitter_.emit('FilingGitProvider:PulledChanges', { 

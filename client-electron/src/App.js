@@ -1147,6 +1147,7 @@ function AppContent() {
               onFileSelect={handleFileSelect}
               onTemplateSelect={handleTemplateSelect}
               isVisible={currentView === 'home'}
+              currentSpace={currentSpace}
             />
           )}
           

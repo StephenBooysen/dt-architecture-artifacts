@@ -1870,6 +1870,15 @@ app.get('/spaces', requireServerAuth, (req, res) => {
   res.send(html);
 });
 
+// Git status page
+app.get('/git-status', requireServerAuth, (req, res) => {
+  const html = renderComponent('gitstatus', {
+    activeSection: 'git-status',
+    title: 'Git Status & Space Management - Architecture Artifacts'
+  });
+  res.send(html);
+});
+
 // Spaces management API endpoints
 app.get('/api/spaces', requireServerAuth, (req, res) => {
   try {

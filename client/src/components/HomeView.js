@@ -26,19 +26,24 @@ import { useTheme } from '../contexts/ThemeContext';
  * @param {boolean} props.isVisible - Whether the component is currently visible.
  * @return {JSX.Element} The HomeView component.
  */
-const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = false }) => {
+const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = false, currentSpace }) => {
   const { isDark } = useTheme();
   const [recentFiles, setRecentFiles] = useState([]);
   const [starredFiles, setStarredFiles] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [gitStatus, setGitStatus] = useState(null);
+  const [gitLoading, setGitLoading] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
       loadHomeData();
+      if (currentSpace) {
+        loadGitStatus();
+      }
     }
-  }, [isVisible]);
+  }, [isVisible, currentSpace]);
 
   const loadHomeData = async () => {
     try {
@@ -71,6 +76,107 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
       setError('Failed to load dashboard data');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadGitStatus = async () => {
+    if (!currentSpace) return;
+    
+    try {
+      setGitLoading(true);
+      const response = await fetch('/api/spaces/git-status');
+      if (response.ok) {
+        const allSpaceStatus = await response.json();
+        setGitStatus(allSpaceStatus[currentSpace] || null);
+      }
+    } catch (error) {
+      console.error('Error loading git status:', error);
+    } finally {
+      setGitLoading(false);
+    }
+  };
+
+  const showToast = (message, type = 'success') => {
+    // Simple toast notification for Git actions
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem;
+      background: ${type === 'success' ? '#36b37e' : '#de350b'};
+      color: white;
+      border-radius: 4px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
+  };
+
+  const handleResyncSpace = async () => {
+    try {
+      const response = await fetch(`/api/spaces/${currentSpace}/resync`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        showToast(`Space "${currentSpace}" resynced successfully`, 'success');
+        loadGitStatus(); // Refresh Git status
+      } else {
+        const error = await response.text();
+        showToast(`Failed to resync: ${error}`, 'error');
+      }
+    } catch (err) {
+      showToast('Error resyncing space', 'error');
+    }
+  };
+
+  const handleCommitChanges = async () => {
+    const commitMessage = prompt('Enter commit message:');
+    if (!commitMessage) return;
+
+    try {
+      const response = await fetch(`/api/spaces/${currentSpace}/commit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: commitMessage })
+      });
+      
+      if (response.ok) {
+        showToast(`Changes committed successfully`, 'success');
+        loadGitStatus(); // Refresh Git status
+      } else {
+        const error = await response.text();
+        showToast(`Failed to commit: ${error}`, 'error');
+      }
+    } catch (err) {
+      showToast('Error committing changes', 'error');
+    }
+  };
+
+  const handleForceReset = async () => {
+    if (!confirm(`Are you sure you want to force reset "${currentSpace}"? This will discard all local changes.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/spaces/${currentSpace}/force-reset`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        showToast(`Space "${currentSpace}" reset successfully`, 'success');
+        loadGitStatus(); // Refresh Git status
+      } else {
+        const error = await response.text();
+        showToast(`Failed to reset: ${error}`, 'error');
+      }
+    } catch (err) {
+      showToast('Error resetting space', 'error');
     }
   };
 
@@ -180,6 +286,127 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
     </div>
   );
 
+  const GitStatusSection = () => {
+    if (!currentSpace || !gitStatus) return null;
+
+    const isGitSpace = gitStatus.repo && gitStatus.branch;
+    if (!isGitSpace) return null;
+
+    const hasChanges = gitStatus.gitStatus && 
+      (gitStatus.gitStatus.modified?.length > 0 || gitStatus.gitStatus.not_added?.length > 0);
+    const hasIssues = !gitStatus.healthy;
+    const needsSync = gitStatus.gitStatus && 
+      (gitStatus.gitStatus.ahead > 0 || gitStatus.gitStatus.behind > 0);
+
+    return (
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className={`card shadow-sm border-0 ${hasIssues ? 'border-danger' : hasChanges ? 'border-warning' : 'border-success'}`}>
+            <div className="card-body p-3">
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div className="d-flex align-items-center">
+                  <i className={`bi ${hasIssues ? 'bi-exclamation-triangle-fill text-danger' : hasChanges ? 'bi-pencil-square text-warning' : 'bi-check-circle-fill text-success'} me-2`}></i>
+                  <div>
+                    <h6 className="mb-0 text-confluence-text">
+                      Space Sync Status
+                      <span className={`badge ms-2 ${hasIssues ? 'bg-danger' : hasChanges ? 'bg-warning' : 'bg-success'}`}>
+                        {hasIssues ? 'Needs Attention' : hasChanges ? 'Changes Pending' : 'Up to Date'}
+                      </span>
+                    </h6>
+                    <small className="text-muted">
+                      {gitStatus.branch} • {gitStatus.repo}
+                    </small>
+                  </div>
+                </div>
+                <button 
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={loadGitStatus}
+                  disabled={gitLoading}
+                >
+                  <i className={`bi ${gitLoading ? 'bi-arrow-clockwise spinner-border spinner-border-sm' : 'bi-arrow-clockwise'} me-1`}></i>
+                  Refresh
+                </button>
+              </div>
+
+              {gitStatus.gitStatus && (
+                <div className="row mb-3">
+                  <div className="col-3">
+                    <div className="text-center">
+                      <div className="badge bg-primary fs-6">{gitStatus.gitStatus.ahead || 0}</div>
+                      <div className="small text-muted">Ahead</div>
+                    </div>
+                  </div>
+                  <div className="col-3">
+                    <div className="text-center">
+                      <div className="badge bg-info fs-6">{gitStatus.gitStatus.behind || 0}</div>
+                      <div className="small text-muted">Behind</div>
+                    </div>
+                  </div>
+                  <div className="col-3">
+                    <div className="text-center">
+                      <div className="badge bg-warning fs-6">{gitStatus.gitStatus.modified?.length || 0}</div>
+                      <div className="small text-muted">Modified</div>
+                    </div>
+                  </div>
+                  <div className="col-3">
+                    <div className="text-center">
+                      <div className="badge bg-secondary fs-6">{gitStatus.gitStatus.not_added?.length || 0}</div>
+                      <div className="small text-muted">Untracked</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {hasIssues && gitStatus.error && (
+                <div className="alert alert-danger py-2 mb-3">
+                  <small>
+                    <i className="bi bi-exclamation-triangle me-1"></i>
+                    {gitStatus.error}
+                    {gitStatus.error.includes('divergent branches') && (
+                      <div className="mt-1">
+                        <strong>Solution:</strong> Click "Sync Changes" to automatically resolve divergent branches using merge strategy.
+                      </div>
+                    )}
+                  </small>
+                </div>
+              )}
+
+              <div className="d-flex gap-2 flex-wrap">
+                <button 
+                  className="btn btn-primary btn-sm"
+                  onClick={handleResyncSpace}
+                >
+                  <i className="bi bi-arrow-clockwise me-1"></i>
+                  Sync Changes
+                </button>
+                
+                {hasChanges && (
+                  <button 
+                    className="btn btn-success btn-sm"
+                    onClick={handleCommitChanges}
+                  >
+                    <i className="bi bi-check-circle me-1"></i>
+                    Commit Changes
+                  </button>
+                )}
+                
+                {hasIssues && (
+                  <button 
+                    className="btn btn-danger btn-sm"
+                    onClick={handleForceReset}
+                  >
+                    <i className="bi bi-arrow-counterclockwise me-1"></i>
+                    Force Reset
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="home-view p-4 confluence-bg">
@@ -216,6 +443,9 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
           </button>
         </div>
       )}
+
+      {/* Git Status Section */}
+      <GitStatusSection />
 
       {/* Recent Files Section */}
       <div className="row mb-4">

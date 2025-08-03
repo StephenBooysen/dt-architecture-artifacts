@@ -320,6 +320,151 @@ router.post('/:space/templates', loadFilingProvider, checkSpaceAccess('write'), 
   }
 });
 
+// Get Git status for all spaces
+router.get('/git-status', async (req, res) => {
+  try {
+    const spaces = JSON.parse(await fs.readFile(path.join(__dirname, '../../../server-data/spaces.json'), 'utf8'));
+    const spaceStatus = {};
+
+    for (const space of spaces) {
+      try {
+        const filing = await getFilingProviderForSpace(space.space);
+        if (filing && filing.git) {
+          const gitStatus = await filing.git.status();
+          spaceStatus[space.space] = {
+            healthy: true,
+            repo: space.filing?.git,
+            branch: space.filing?.['git-branch'],
+            localPath: space.filing?.localFolder,
+            lastSync: filing.lastRemoteSync,
+            gitStatus: {
+              ahead: gitStatus.ahead,
+              behind: gitStatus.behind,
+              modified: gitStatus.modified,
+              not_added: gitStatus.not_added,
+              current: gitStatus.current
+            }
+          };
+        } else {
+          spaceStatus[space.space] = {
+            healthy: false,
+            repo: space.filing?.git,
+            branch: space.filing?.['git-branch'],
+            localPath: space.filing?.localFolder,
+            error: 'Git provider not initialized'
+          };
+        }
+      } catch (error) {
+        spaceStatus[space.space] = {
+          healthy: false,
+          repo: space.filing?.git,
+          branch: space.filing?.['git-branch'],
+          localPath: space.filing?.localFolder,
+          error: error.message
+        };
+      }
+    }
+
+    res.json(spaceStatus);
+  } catch (error) {
+    console.error('Error getting git status:', error);
+    res.status(500).json({ error: 'Failed to get git status' });
+  }
+});
+
+// Resync a specific space (force pull)
+router.post('/:space/resync', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceName = req.params.space;
+    
+    if (!filing || !filing.git) {
+      return res.status(400).json({ error: 'Git provider not available for this space' });
+    }
+
+    // Force fetch and pull latest changes using the new divergent branch handler
+    await filing.git.fetch();
+    const status = await filing.git.status();
+    
+    if (status.behind > 0 || status.ahead > 0) {
+      await filing._handleDivergentBranches('origin');
+      filing.lastRemoteSync = new Date().toISOString();
+    }
+
+    res.json({ 
+      message: `Space "${spaceName}" resynced successfully`,
+      syncTime: filing.lastRemoteSync,
+      status: await filing.git.status()
+    });
+  } catch (error) {
+    console.error(`Error resyncing space ${req.params.space}:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Commit changes in a specific space
+router.post('/:space/commit', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceName = req.params.space;
+    const { message } = req.body;
+    
+    if (!filing || !filing.git) {
+      return res.status(400).json({ error: 'Git provider not available for this space' });
+    }
+
+    if (!message) {
+      return res.status(400).json({ error: 'Commit message is required' });
+    }
+
+    // Add all changes and commit
+    await filing.git.add('.');
+    const commit = await filing.git.commit(message);
+    
+    // Try to push to remote
+    try {
+      await filing.git.push('origin', filing.options.branch);
+    } catch (pushError) {
+      console.warn('Failed to push, but commit was successful:', pushError.message);
+    }
+
+    res.json({ 
+      message: `Changes committed successfully in space "${spaceName}"`,
+      commit: commit.commit,
+      status: await filing.git.status()
+    });
+  } catch (error) {
+    console.error(`Error committing changes in space ${req.params.space}:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Force reset a specific space (discard all local changes)
+router.post('/:space/force-reset', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceName = req.params.space;
+    
+    if (!filing || !filing.git) {
+      return res.status(400).json({ error: 'Git provider not available for this space' });
+    }
+
+    // Reset to remote state
+    await filing.git.fetch();
+    await filing.git.reset(['--hard', `origin/${filing.options.branch}`]);
+    filing.lastRemoteSync = new Date().toISOString();
+
+    res.json({ 
+      message: `Space "${spaceName}" force reset successfully`,
+      syncTime: filing.lastRemoteSync,
+      status: await filing.git.status()
+    });
+  } catch (error) {
+    console.error(`Error force resetting space ${req.params.space}:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Debug endpoint to clear filing provider cache
 router.post('/debug/clear-cache/:space?', (req, res) => {
   const spaceName = req.params.space;

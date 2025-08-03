@@ -1365,6 +1365,7 @@ function AppContent() {
               onTemplateSelect={handleTemplateSelect}
               isVisible={currentView === 'home'}
               isReadonly={isCurrentSpaceReadonly}
+              currentSpace={currentSpace}
             />
           ) : currentView === 'templates' ? (
             <TemplatesList
