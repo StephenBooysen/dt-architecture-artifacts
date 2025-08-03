@@ -33,6 +33,18 @@ const renameRoutes = require('./rename');
 const router = express.Router();
 const git = simpleGit();
 
+/**
+ * Helper function to get the correct file path based on space type
+ * @param {string} filePath - The relative file path
+ * @param {boolean} isReadonly - Whether this is a readonly space
+ * @returns {string} The correct file path for the filing provider
+ */
+function getSpaceFilePath(filePath, isReadonly) {
+  // For readonly spaces, use files directly from repository root
+  // For writable spaces, use the markdown subfolder structure
+  return isReadonly ? filePath : `markdown/${filePath}`;
+}
+
 // Fallback filing provider (for backwards compatibility and non-space routes)
 var filing = createFilingService('local', {
   localPath: path.join(__dirname, '../../../content')
@@ -67,8 +79,10 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
   try {
     const filing = req.filing;
     const spaceName = req.params.space;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
-    const markdownFilePath = `markdown/${filePath}`;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
     
     const fileName = path.basename(filePath);
     
@@ -92,7 +106,7 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
     // Handle different file types
     if (fileType === 'markdown' || fileType === 'text') {
       // Read as text
-      const content = await filing.read(markdownFilePath, 'utf8');
+      const content = await filing.read(actualFilePath, 'utf8');
       
       // For markdown files, return both full content and clean content
       if (fileType === 'markdown') {
@@ -113,12 +127,12 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
       }
     } else if (fileType === 'image' || fileType === 'pdf') {
       // Read as binary and convert to base64
-      const buffer = await filing.read(markdownFilePath);
+      const buffer = await filing.read(actualFilePath);
       const base64Content = buffer.toString('base64');
       res.json({content: base64Content, path: filePath, fileType, encoding: 'base64'});
     } else {
       // Unknown file type - return file info for download
-      const stats = await filing.stat(markdownFilePath);
+      const stats = await filing.stat(actualFilePath);
       res.json({
         path: filePath,
         fileType,
@@ -141,11 +155,13 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
 router.post('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     const { content } = req.body;
-    const markdownFilePath = `markdown/${filePath}`;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
     
-    await filing.create(markdownFilePath, content || '');
+    await filing.create(actualFilePath, content || '');
     res.json({ message: 'File created successfully', path: filePath });
   } catch (error) {
     console.error('Error creating file for space:', error);
@@ -157,11 +173,13 @@ router.post('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), as
 router.put('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     const { content } = req.body;
-    const markdownFilePath = `markdown/${filePath}`;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
     
-    await filing.update(markdownFilePath, content);
+    await filing.update(actualFilePath, content);
     res.json({ message: 'File updated successfully', path: filePath });
   } catch (error) {
     console.error('Error updating file for space:', error);
@@ -173,10 +191,12 @@ router.put('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), asy
 router.delete('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
-    const markdownFilePath = `markdown/${filePath}`;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
     
-    await filing.delete(markdownFilePath);
+    await filing.delete(actualFilePath);
     res.json({ message: 'File deleted successfully', path: filePath });
   } catch (error) {
     console.error('Error deleting file for space:', error);
@@ -188,14 +208,16 @@ router.delete('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), 
 router.post('/:space/folders', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const { folderPath } = req.body;
     
     if (!folderPath) {
       return res.status(400).json({ error: 'Folder path is required' });
     }
     
-    const markdownFolderPath = `markdown/${folderPath}`;
-    await filing.mkdir(markdownFolderPath, { recursive: true });
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFolderPath = getSpaceFilePath(folderPath, isReadonly);
+    await filing.mkdir(actualFolderPath, { recursive: true });
     res.json({ message: 'Folder created successfully', path: folderPath });
   } catch (error) {
     console.error('Error creating folder for space:', error);
@@ -207,10 +229,12 @@ router.post('/:space/folders', loadFilingProvider, checkSpaceAccess('write'), as
 router.delete('/:space/folders/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const folderPath = req.params[0] || '';
-    const markdownFolderPath = `markdown/${folderPath}`;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFolderPath = getSpaceFilePath(folderPath, isReadonly);
     
-    await filing.delete(markdownFolderPath);
+    await filing.delete(actualFolderPath);
     res.json({ message: 'Folder deleted successfully', path: folderPath });
   } catch (error) {
     console.error('Error deleting folder for space:', error);
@@ -222,6 +246,7 @@ router.delete('/:space/folders/*', loadFilingProvider, checkSpaceAccess('write')
 router.put('/:space/rename/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const oldPath = req.params[0] || '';
     const { newName } = req.body;
     
@@ -229,13 +254,15 @@ router.put('/:space/rename/*', loadFilingProvider, checkSpaceAccess('write'), as
       return res.status(400).json({ error: 'New name is required' });
     }
     
-    const oldMarkdownPath = `markdown/${oldPath}`;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const oldActualPath = getSpaceFilePath(oldPath, isReadonly);
     const pathParts = oldPath.split('/');
     pathParts[pathParts.length - 1] = newName;
-    const newMarkdownPath = `markdown/${pathParts.join('/')}`;
+    const newPath = pathParts.join('/');
+    const newActualPath = getSpaceFilePath(newPath, isReadonly);
     
-    await filing.move(oldMarkdownPath, newMarkdownPath);
-    res.json({ message: 'Item renamed successfully', oldPath, newPath: pathParts.join('/') });
+    await filing.move(oldActualPath, newActualPath);
+    res.json({ message: 'Item renamed successfully', oldPath, newPath });
   } catch (error) {
     console.error('Error renaming item for space:', error);
     res.status(500).json({ error: 'Failed to rename item' });
@@ -250,14 +277,16 @@ router.put('/:space/rename/*', loadFilingProvider, checkSpaceAccess('write'), as
 router.get('/:space/comments/*', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     
     if (!filePath.endsWith('.md')) {
       return res.status(400).json({error: 'Comments are only supported for markdown files'});
     }
 
-    const markdownFilePath = `markdown/${filePath}`;
-    const content = await filing.read(markdownFilePath, 'utf8');
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
+    const content = await filing.read(actualFilePath, 'utf8');
     
     const { extractComments, sortCommentsByNewest } = require('../utils/commentParser');
     const comments = extractComments(content);
@@ -281,6 +310,7 @@ router.get('/:space/comments/*', loadFilingProvider, checkSpaceAccess('read'), a
 router.post('/:space/comments/*', loadFilingProvider, checkSpaceAccess('write'), requireAuth, async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     const { content: commentContent } = req.body;
 
@@ -292,8 +322,9 @@ router.post('/:space/comments/*', loadFilingProvider, checkSpaceAccess('write'),
       return res.status(400).json({error: 'Comment content is required'});
     }
 
-    const markdownFilePath = `markdown/${filePath}`;
-    const markdownContent = await filing.read(markdownFilePath, 'utf8');
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
+    const markdownContent = await filing.read(actualFilePath, 'utf8');
     
     const { 
       extractComments, 
@@ -314,7 +345,7 @@ router.post('/:space/comments/*', loadFilingProvider, checkSpaceAccess('write'),
     const updatedComments = addComment(existingComments, newComment);
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
     
-    await filing.update(markdownFilePath, updatedMarkdownContent);
+    await filing.update(actualFilePath, updatedMarkdownContent);
     
     const sortedComments = sortCommentsByNewest(updatedComments);
     const newCommentData = sortedComments.find(c => c.author === req.user.username && c.content === commentContent.trim());
@@ -338,6 +369,7 @@ router.post('/:space/comments/*', loadFilingProvider, checkSpaceAccess('write'),
 router.put('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess('write'), requireAuth, async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     const commentId = req.params.commentId;
     const { content: commentContent } = req.body;
@@ -350,8 +382,9 @@ router.put('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess
       return res.status(400).json({error: 'Comment content is required'});
     }
 
-    const markdownFilePath = `markdown/${filePath}`;
-    const markdownContent = await filing.read(markdownFilePath, 'utf8');
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
+    const markdownContent = await filing.read(actualFilePath, 'utf8');
     
     const { 
       extractComments, 
@@ -378,7 +411,7 @@ router.put('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess
     });
     
     const updatedMarkdownContent = injectComments(cleanContent, updatedComments);
-    await filing.update(markdownFilePath, updatedMarkdownContent);
+    await filing.update(actualFilePath, updatedMarkdownContent);
     
     const sortedComments = sortCommentsByNewest(updatedComments);
     const updatedComment = sortedComments.find(c => c.id === commentId);
@@ -402,6 +435,7 @@ router.put('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess
 router.delete('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAccess('write'), requireAuth, async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
     const filePath = req.params[0] || '';
     const commentId = req.params.commentId;
 
@@ -409,8 +443,9 @@ router.delete('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAcc
       return res.status(400).json({error: 'Comments are only supported for markdown files'});
     }
 
-    const markdownFilePath = `markdown/${filePath}`;
-    const markdownContent = await filing.read(markdownFilePath, 'utf8');
+    const isReadonly = spaceConfig.access === 'readonly';
+    const actualFilePath = getSpaceFilePath(filePath, isReadonly);
+    const markdownContent = await filing.read(actualFilePath, 'utf8');
     
     const { 
       extractComments, 
@@ -438,7 +473,7 @@ router.delete('/:space/comments/:commentId/*', loadFilingProvider, checkSpaceAcc
       ? injectComments(cleanContent, updatedComments)
       : cleanContent;
     
-    await filing.update(markdownFilePath, updatedMarkdownContent);
+    await filing.update(actualFilePath, updatedMarkdownContent);
     
     const sortedComments = sortCommentsByNewest(updatedComments);
     

@@ -196,12 +196,18 @@ function checkSpaceAccess(operation = 'read') {
  * Space-aware version of getDirectoryTree.
  * Recursively builds a directory tree structure for markdown files using a specific filing provider.
  * @param {Object} filing - The filing provider instance to use.
- * @param {string} relativePath - The relative path from the markdown root to scan.
+ * @param {string} relativePath - The relative path from the root to scan.
+ * @param {boolean} isReadonly - Whether this is a readonly space (affects path structure).
  * @return {Promise<Array>} The directory tree structure.
  */
-async function getDirectoryTreeForSpace(filing, relativePath = '') {
-  const markdownBasePath = relativePath ? `markdown/${relativePath}` : 'markdown';
-  const items = await filing.listDetailed(markdownBasePath);
+async function getDirectoryTreeForSpace(filing, relativePath = '', isReadonly = false) {
+  // For readonly spaces, access files directly from repository root
+  // For writable spaces, use the markdown subfolder structure
+  const basePath = isReadonly 
+    ? (relativePath || '') 
+    : (relativePath ? `markdown/${relativePath}` : 'markdown');
+  
+  const items = await filing.listDetailed(basePath);
   const tree = [];
 
   for (const item of items) {
@@ -213,7 +219,7 @@ async function getDirectoryTreeForSpace(filing, relativePath = '') {
     const relPath = relativePath ? path.join(relativePath, item.name) : item.name;
 
     if (item.isDirectory) {
-      const children = await getDirectoryTreeForSpace(filing, relPath);
+      const children = await getDirectoryTreeForSpace(filing, relPath, isReadonly);
       tree.push({
         name: item.name,
         type: 'directory',
@@ -264,7 +270,9 @@ function detectFileType(fileName) {
 router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
   try {
     const filing = req.filing;
-    const tree = await getDirectoryTreeForSpace(filing);
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const tree = await getDirectoryTreeForSpace(filing, '', isReadonly);
     res.json(tree);
   } catch (error) {
     console.error('Error getting files for space:', error);
@@ -276,8 +284,16 @@ router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), async 
 router.get('/:space/templates', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
   try {
     const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
     
-    // Create templates directory if it doesn't exist
+    // Readonly spaces don't have templates - return empty array
+    if (isReadonly) {
+      console.log(`Skipping templates for readonly space: ${req.params.space}`);
+      return res.json([]);
+    }
+    
+    // For writable spaces, create templates directory if it doesn't exist
     await filing.ensureDir('templates');
     
     const files = await filing.list('templates');
