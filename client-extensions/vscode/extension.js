@@ -221,7 +221,6 @@ class AuthManager {
             return;
         }
         
-        /*
         try {
             const response = await this.makeAuthenticatedRequest('/api/auth/user-spaces');
             this.spaces = response.data;
@@ -240,7 +239,6 @@ class AuthManager {
             this.spaces = [];
             this.spacesChangedEmitter.fire([]);
         }
-        */
     }
     
     async setCurrentSpace(spaceName) {
@@ -319,6 +317,17 @@ class ArchitectureArtifactsProvider {
                     }
                 ));
                 
+                // Show current space if available
+                const currentSpace = this.authManager.getCurrentSpace();
+                if (currentSpace) {
+                    items.push(new ArchitectureArtifactsItem(
+                        `Space: ${currentSpace}`,
+                        vscode.TreeItemCollapsibleState.None,
+                        'space',
+                        null
+                    ));
+                }
+                
                 items.push(new ArchitectureArtifactsItem(
                     'Search Documentation',
                     vscode.TreeItemCollapsibleState.None,
@@ -373,6 +382,8 @@ class ArchitectureArtifactsItem extends vscode.TreeItem {
         switch (this.contextValue) {
             case 'user':
                 return 'Click to sign out';
+            case 'space':
+                return 'Current space for documentation search';
             case 'search':
                 return 'Search architecture documentation';
             case 'login':
@@ -388,6 +399,8 @@ class ArchitectureArtifactsItem extends vscode.TreeItem {
         switch (this.contextValue) {
             case 'user':
                 return new vscode.ThemeIcon('account');
+            case 'space':
+                return new vscode.ThemeIcon('database');
             case 'search':
                 return new vscode.ThemeIcon('search');
             case 'login':
@@ -1198,14 +1211,14 @@ class SearchWebview {
             // Results count
             const countDiv = document.createElement('div');
             countDiv.className = 'results-count';
-            countDiv.textContent = 'none found';
+            countDiv.textContent = \`\${results.length} result\${results.length !== 1 ? 's' : ''} found\`;
             resultsList.appendChild(countDiv);
 
             // File results
             if (fileResults.length > 0) {
                 const header = document.createElement('div');
                 header.className = 'results-section-header';
-                header.innerHTML = 'filename';
+                header.innerHTML = \`<strong>File Names (\${fileResults.length})</strong>\`;
                 resultsList.appendChild(header);
 
                 fileResults.forEach(result => {
@@ -1217,7 +1230,7 @@ class SearchWebview {
             if (contentResults.length > 0) {
                 const header = document.createElement('div');
                 header.className = 'results-section-header';
-                header.innerHTML = 'Content Matches';
+                header.innerHTML = \`<strong>Content Matches (\${contentResults.length})</strong>\`;
                 resultsList.appendChild(header);
 
                 contentResults.forEach(result => {
@@ -1238,14 +1251,16 @@ class SearchWebview {
             const highlightedSnippet = highlightSearchTerms(snippet, query);
             const highlightedTitle = highlightSearchTerms(title, query);
             
-            div.innerHTML = 
+            div.innerHTML = \`
                 <div class="result-header">
-                    <div class="result-icon"></div>
+                    <div class="result-icon">\${icon}</div>
                     <div class="result-info">
-                        <div class="result-title"></div>
-                        <div class="result-path"></div>
+                        <div class="result-title">\${highlightedTitle}</div>
+                        <div class="result-path">\${escapeHtml(path)}</div>
                     </div>
-                </div>;
+                </div>
+                \${snippet ? \`<div class="result-snippet">\${highlightedSnippet}</div>\` : ''}
+            \`;
 
             div.addEventListener('click', () => {
                 showPreview(result);
@@ -1281,7 +1296,7 @@ class SearchWebview {
             
             let highlightedText = escapedText;
             terms.forEach(term => {
-                const regex = '';
+                const regex = new RegExp(\`(\${escapeRegex(term)})\`, 'gi');
                 highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
             });
 
@@ -1314,12 +1329,12 @@ class SearchWebview {
 
         function handleFileError(error) {
             const previewContent = document.getElementById('previewContent');
-            previewContent.innerHTML = '
+            previewContent.innerHTML = \\`
                 <div style="color: var(--vscode-errorForeground); text-align: center; padding: 20px;">
                     <p>Failed to load preview</p>
-                    <small></small>
-                </div>'
-            ;
+                    <small>\\${error}</small>
+                </div>
+            \\`;
         }
 
         function markdownToHtml(markdown) {
@@ -1342,12 +1357,12 @@ class SearchWebview {
         function showError(error) {
             hideLoading();
             const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = '
+            resultsList.innerHTML = \\`
                 <div class="error-message">
-                    <p></p>
+                    <p>\\${error}</p>
                     <small>Check your connection and authentication status</small>
                 </div>
-            ';
+            \\`;
             resultsList.style.display = 'block';
         }
 
@@ -1358,7 +1373,7 @@ class SearchWebview {
         }
 
         function escapeRegex(string) {
-            return string;
+            return string.replace(/[.*+?^${}()|[\\\\]\\\\\\\\]/g, '\\\\\\\\\\$&');
         }
 
         // Enter key search
