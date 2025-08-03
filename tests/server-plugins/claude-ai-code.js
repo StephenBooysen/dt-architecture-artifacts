@@ -1,3 +1,4 @@
+// node tests/server-plugins/claude-ai-code.js
 const { analyzeArchitecture } = require('../../server/plugins/claude-ai');
 const fs = require('fs').promises;
 const path = require('path');
