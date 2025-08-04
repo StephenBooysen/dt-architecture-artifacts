@@ -31,13 +31,15 @@ passport.use(new LocalStrategy(
 ));
 
 /**
- * Implement the passport Google OAuth2.0 strategy
+ * Implement the passport Google OAuth2.0 strategy (only if credentials are provided)
  */
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
-  },
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && 
+    process.env.GOOGLE_CLIENT_ID !== '1111' && process.env.GOOGLE_CLIENT_SECRET !== '1111') {
+  passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/auth/google/callback"
+    },
   async (accessToken, refreshToken, profile, done) => {
     try {
       // Check if user already exists by Google ID
@@ -71,7 +73,10 @@ passport.use(new GoogleStrategy({
       return done(error);
     }
   }
-));
+  ));
+} else {
+  console.log('Google OAuth not configured - using placeholder credentials. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable Google authentication.');
+}
 
 /**
  * Serialize a user

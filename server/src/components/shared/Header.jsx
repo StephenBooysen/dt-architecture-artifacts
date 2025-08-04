@@ -7,7 +7,8 @@ const Header = () => {
         <div className="container-fluid">
           <div className="d-flex align-items-center w-100">
             
-            <a className="navbar-brand fw-medium me-3" href="/">
+            <a className="navbar-brand fw-medium me-3 d-flex align-items-center" href="/">
+              <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" className="me-2" />
               Architecture Artifacts Server
             </a>
             
