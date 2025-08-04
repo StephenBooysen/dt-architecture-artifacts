@@ -97,6 +97,58 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   }
 });
 
+// Google OAuth routes
+router.get('/google', (req, res, next) => {
+  // Use OAuth state parameter to track the source
+  const source = req.query.source || 'client';
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    state: source
+  })(req, res, next);
+});
+
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login?error=google_auth_failed' }),
+  (req, res) => {
+    // Check if user has write role for client access
+    if (req.user && req.user.roles && req.user.roles.includes('write')) {
+      // Generate session token for clients that need it
+      const sessionToken = userStorage.generateSessionToken(req.user.id);
+      
+      // Check if the login came from the server admin interface using OAuth state parameter
+      const authSource = req.query.state || 'client';
+      const isServerAdmin = authSource === 'server';
+      
+      if (isServerAdmin) {
+        // Redirect to server dashboard
+        res.redirect('/?auth=success');
+      } else {
+        // Redirect to client with success parameter
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        res.redirect(`${clientUrl}?auth=success&token=${sessionToken}`);
+      }
+    } else {
+      // Logout the user since they don't have proper permissions
+      req.logout((err) => {
+        if (err) {
+          console.error('Error logging out user:', err);
+        }
+      });
+      
+      // Check if the login came from the server admin interface using OAuth state parameter
+      const authSource = req.query.state || 'client';
+      const isServerAdmin = authSource === 'server';
+      
+      if (isServerAdmin) {
+        res.redirect('/login?error=access_denied');
+      } else {
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        res.redirect(`${clientUrl}?auth=error&message=access_denied`);
+      }
+    }
+  }
+);
+
 // Logout user
 router.post('/logout', (req, res) => {
   req.logout((err) => {

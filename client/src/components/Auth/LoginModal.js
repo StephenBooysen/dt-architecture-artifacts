@@ -48,6 +48,12 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister }) => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    // Redirect to Google OAuth on the server
+    const serverUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    window.location.href = `${serverUrl}/api/auth/google?source=client`;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -111,6 +117,20 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister }) => {
               )}
             </button>
           </form>
+          
+          <div className="auth-divider text-center my-3">
+            <span className="text-muted">or</span>
+          </div>
+          
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+            disabled={loading}
+          >
+            <i className="bi bi-google me-2"></i>
+            Continue with Google
+          </button>
           
           <div className="auth-switch text-center mt-3">
             <p className="text-muted mb-0">

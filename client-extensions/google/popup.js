@@ -138,6 +138,14 @@ class ArchitectureArtifactsExtension {
       this.performLogout();
     });
 
+    // Google Login button
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    if (googleLoginBtn) {
+      googleLoginBtn.addEventListener('click', () => {
+        this.performGoogleLogin();
+      });
+    }
+
     this.passwordInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -586,6 +594,17 @@ class ArchitectureArtifactsExtension {
     } finally {
       this.loginBtn.disabled = false;
       this.loginBtn.textContent = 'Sign In';
+    }
+  }
+
+  async performGoogleLogin() {
+    try {
+      // Open Google OAuth in a new tab
+      const authUrl = `${this.serverUrl}/api/auth/google?source=client`;
+      chrome.tabs.create({ url: authUrl });
+    } catch (error) {
+      console.error('Google login failed:', error);
+      this.showAuthMessage('Failed to initiate Google login', 'error');
     }
   }
 

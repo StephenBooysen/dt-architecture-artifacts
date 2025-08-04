@@ -18,19 +18,9 @@
  * @since 2024-01-01
  */
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const EventEmitter = require('events');
-const session = require('express-session');
-const passport = require('./src/auth/passport');
-const { renderComponent } = require('./src/utils/reactRenderer');
-const apiRoutes = require('./src/routes/index');
-
-// Load environment configuration
+// Load environment configuration FIRST before other modules
 const dotenv = require('dotenv');
+const path = require('path');
 
 // Determine which environment file to load
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -41,6 +31,17 @@ dotenv.config({ path: envFile });
 
 // Load the base .env file as fallback (if it exists)
 dotenv.config();
+
+// Now load other modules that depend on environment variables
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const EventEmitter = require('events');
+const session = require('express-session');
+const passport = require('./src/auth/passport');
+const { renderComponent } = require('./src/utils/reactRenderer');
+const apiRoutes = require('./src/routes/index');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -352,6 +353,54 @@ function getSharedStyles() {
       --bs-btn-hover-color: var(--confluence-text);
       --bs-btn-active-bg: var(--confluence-border-subtle);
       --bs-btn-active-border-color: var(--confluence-border);
+    }
+
+    .auth-divider {
+      position: relative;
+      margin: 1.5rem 0;
+    }
+
+    .auth-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--confluence-border);
+    }
+
+    .auth-divider span {
+      background: var(--confluence-bg-card);
+      padding: 0 1rem;
+      font-size: 0.875rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-outline-danger {
+      color: #dc3545;
+      border-color: #dc3545;
+      background-color: transparent;
+      font-weight: 500;
+      padding: 0.75rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-outline-danger:hover:not(:disabled) {
+      color: white;
+      background-color: #dc3545;
+      border-color: #dc3545;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-outline-danger:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .form-control, .form-select {
@@ -1716,11 +1765,34 @@ app.get('/server-login', (req, res) => {
             <span class="login-spinner spinner-border spinner-border-sm d-none" role="status"></span>
           </button>
         </form>
+        
+        <div class="auth-divider text-center my-3">
+          <span class="text-muted">or</span>
+        </div>
+        
+        <button
+          type="button"
+          class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+          id="googleLoginBtn"
+        >
+          <i class="bi bi-google me-2"></i>
+          Continue with Google
+        </button>
       </div>
     </div>
   </div>
 
   <script>
+    // Add event listener for Google login button
+    document.addEventListener('DOMContentLoaded', function() {
+      const googleLoginBtn = document.getElementById('googleLoginBtn');
+      if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', function() {
+          window.location.href = '/api/auth/google?source=server';
+        });
+      }
+    });
+    
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       

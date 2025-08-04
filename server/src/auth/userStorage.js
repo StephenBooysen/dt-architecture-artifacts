@@ -74,6 +74,43 @@ class UserStorage {
     return { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles, spaces: user.spaces };
   }
 
+  async createGoogleUser(googleUserData) {
+    // Ensure username is unique
+    let username = googleUserData.username;
+    let counter = 1;
+    while (this.findUserByUsername(username)) {
+      username = `${googleUserData.username}_${counter}`;
+      counter++;
+    }
+
+    const user = {
+      id: Date.now().toString(),
+      username,
+      googleId: googleUserData.googleId,
+      email: googleUserData.email,
+      name: googleUserData.name,
+      picture: googleUserData.picture,
+      createdAt: new Date().toISOString(),
+      roles: ['read', 'write'], // Default roles for all new users (write required for client login)
+      spaces: 'Personal' // Default space access for all new users
+    };
+
+    this.users.push(user);
+    await this.saveUsers();
+    
+    return { id: user.id, username: user.username, email: user.email, name: user.name, picture: user.picture, createdAt: user.createdAt, roles: user.roles, spaces: user.spaces };
+  }
+
+  linkGoogleAccount(userId, googleId) {
+    const user = this.findUserById(userId);
+    if (user) {
+      user.googleId = googleId;
+      this.saveUsers();
+      return true;
+    }
+    return false;
+  }
+
   findUserByUsername(username) {
     return this.users.find(user => user.username === username);
   }
@@ -81,6 +118,14 @@ class UserStorage {
   findUserById(id) {
     const user = this.users.find(user => user.id === id);
     return user;
+  }
+
+  findUserByGoogleId(googleId) {
+    return this.users.find(user => user.googleId === googleId);
+  }
+
+  findUserByEmail(email) {
+    return this.users.find(user => user.email === email);
   }
 
   async validatePassword(username, password) {

@@ -48,6 +48,13 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister }) => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    // For Electron, open Google OAuth in external browser
+    const { shell } = window.require('electron');
+    const serverUrl = 'http://localhost:5000'; // Default server URL for Electron
+    shell.openExternal(`${serverUrl}/api/auth/google?source=client`);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -91,6 +98,20 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister }) => {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
+        
+        <div className="auth-divider">
+          <span>or</span>
+        </div>
+        
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="google-auth-button"
+          disabled={loading}
+        >
+          <span className="google-icon">G</span>
+          Continue with Google
+        </button>
         
         <div className="auth-switch">
           <p>

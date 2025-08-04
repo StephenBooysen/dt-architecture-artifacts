@@ -21,5 +21,20 @@
       "admin"
     ],
     "spaces": "Personal,Knowledge"
+  },
+  {
+    "id": "1754282733591",
+    "username": "Stephen Booysen",
+    "googleId": "102485568677486795850",
+    "email": "stephenrbooysen@gmail.com",
+    "name": "Stephen Booysen",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocLSdsoNngpbiSdgeE4GV91-5GG5XX6kb2USAmJLzG2yi_d8YzV1=s96-c",
+    "createdAt": "2025-08-04T04:45:33.591Z",
+    "roles": [
+      "read",
+      "write",
+      "admin"
+    ],
+    "spaces": "Personal"
   }
 ]
