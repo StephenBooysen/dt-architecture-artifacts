@@ -37,6 +37,8 @@ import SearchResultsView from './components/SearchResultsView';
 import HomeView from './components/HomeView';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
+import KnowledgeSearchPane from './components/KnowledgeSearchPane';
+import KnowledgeContentPane from './components/KnowledgeContentPane';
 import {
   fetchFiles,
   fetchFile,
@@ -97,6 +99,12 @@ function AppContent() {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
   });
   const [isCurrentSpaceReadonly, setIsCurrentSpaceReadonly] = useState(false);
+  
+  // Knowledge View state management
+  const [isKnowledgeView, setIsKnowledgeView] = useState(false);
+  const [knowledgeViewContent, setKnowledgeViewContent] = useState('');
+  const [knowledgeViewSelectedFile, setKnowledgeViewSelectedFile] = useState(null);
+  const [knowledgeSearchResults, setKnowledgeSearchResults] = useState([]);
 
   // Initialize default space when authenticated - always start with Personal space
   useEffect(() => {
@@ -174,6 +182,27 @@ function AppContent() {
 
     checkSpaceAccess();
   }, [isAuthenticated, currentSpace]);
+
+  // Knowledge View mode management - automatically switch based on readonly status
+  useEffect(() => {
+    if (isCurrentSpaceReadonly) {
+      // Switch to knowledge view for readonly spaces
+      setIsKnowledgeView(true);
+      setCurrentView('knowledge');
+      setKnowledgeViewContent(''); // Clear previous content
+      setKnowledgeViewSelectedFile(null);
+      setKnowledgeSearchResults([]);
+    } else {
+      // Switch back to normal view for writable spaces
+      if (isKnowledgeView) {
+        setIsKnowledgeView(false);
+        setCurrentView('home'); // Reset to home view
+        setKnowledgeViewContent('');
+        setKnowledgeViewSelectedFile(null);
+        setKnowledgeSearchResults([]);
+      }
+    }
+  }, [isCurrentSpaceReadonly, isKnowledgeView]);
 
   // Provider info is set to default values - no API call needed
 
@@ -984,25 +1013,87 @@ function AppContent() {
     }
   }, []);
 
-  const handleSearchSubmit = useCallback(async () => {
+  // Knowledge View search handlers (defined first to avoid hoisting issues)
+  const handleKnowledgeSearchSubmit = useCallback(async () => {
     if (searchQuery.trim().length === 0) return;
     
     try {
-      // Get more comprehensive results when explicitly searching
+      // Get search results for knowledge view
       const [fileSuggestions, contentResults] = await Promise.all([
         searchFiles(searchQuery),
         searchContent(searchQuery)
       ]);
       
-      setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
-      setSearchResults(contentResults.slice(0, 20)); // More content results on submit
-      setShowSearchResults(false); // Hide dropdown
-      setCurrentView('search'); // Switch to search results view
+      // Combine and format results for knowledge view
+      const combinedResults = [
+        ...fileSuggestions.map(file => ({
+          ...file,
+          type: 'file',
+          title: file.fileName,
+          path: file.filePath
+        })),
+        ...contentResults.map(content => ({
+          ...content,
+          type: 'content',
+          title: content.fileName,
+          path: content.filePath
+        }))
+      ];
+      
+      setKnowledgeSearchResults(combinedResults);
+    } catch (error) {
+      console.error('Error searching in knowledge view:', error);
+      toast.error('Search failed');
+    }
+  }, [searchQuery]);
+
+  const handleKnowledgeResultSelect = useCallback(async (result) => {
+    try {
+      // Load the file content for knowledge view
+      const data = await fetchFile(result.path, currentSpace);
+      setKnowledgeViewContent(data.content || '');
+      setKnowledgeViewSelectedFile({
+        path: result.path,
+        title: result.title,
+        type: result.type
+      });
+    } catch (error) {
+      console.error('Error loading file for knowledge view:', error);
+      toast.error('Failed to load file content');
+    }
+  }, [currentSpace]);
+
+  const handleKnowledgeSearchResultClick = useCallback(async (result) => {
+    // For autocomplete suggestions, load content directly
+    await handleKnowledgeResultSelect(result);
+    setShowSearchResults(false);
+  }, [handleKnowledgeResultSelect]);
+
+  const handleSearchSubmit = useCallback(async () => {
+    if (searchQuery.trim().length === 0) return;
+    
+    try {
+      if (isKnowledgeView) {
+        // Use knowledge view search handler
+        await handleKnowledgeSearchSubmit();
+        setShowSearchResults(false); // Hide autocomplete dropdown
+      } else {
+        // Get more comprehensive results when explicitly searching
+        const [fileSuggestions, contentResults] = await Promise.all([
+          searchFiles(searchQuery),
+          searchContent(searchQuery)
+        ]);
+        
+        setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
+        setSearchResults(contentResults.slice(0, 20)); // More content results on submit
+        setShowSearchResults(false); // Hide dropdown
+        setCurrentView('search'); // Switch to search results view
+      }
     } catch (error) {
       console.error('Error searching:', error);
       toast.error('Search failed');
     }
-  }, [searchQuery]);
+  }, [searchQuery, isKnowledgeView, handleKnowledgeSearchSubmit]);
 
   const handleSearchKeyDown = useCallback((e) => {
     if (e.key === 'Enter') {
@@ -1025,21 +1116,26 @@ function AppContent() {
   }, [searchSuggestions.length, handleSearchSubmit]);
 
   const handleSearchResultClick = useCallback(async (result) => {
-    await handleFileSelect(result.filePath);
-    setShowSearchResults(false);
-    setSearchQuery('');
-    setSearchSuggestions([]);
-    setSearchResults([]);
-    
-    // Expand folders to show the selected file
-    const pathParts = result.filePath.split('/');
-    const newExpanded = new Set(expandedFolders);
-    for (let i = 0; i < pathParts.length - 1; i++) {
-      const parentPath = pathParts.slice(0, i + 1).join('/');
-      newExpanded.add(parentPath);
+    if (isKnowledgeView) {
+      // Use knowledge view result handler for autocomplete selections
+      await handleKnowledgeSearchResultClick(result);
+    } else {
+      await handleFileSelect(result.filePath);
+      setShowSearchResults(false);
+      setSearchQuery('');
+      setSearchSuggestions([]);
+      setSearchResults([]);
+      
+      // Expand folders to show the selected file
+      const pathParts = result.filePath.split('/');
+      const newExpanded = new Set(expandedFolders);
+      for (let i = 0; i < pathParts.length - 1; i++) {
+        const parentPath = pathParts.slice(0, i + 1).join('/');
+        newExpanded.add(parentPath);
+      }
+      setExpandedFolders(newExpanded);
     }
-    setExpandedFolders(newExpanded);
-  }, [handleFileSelect, expandedFolders]);
+  }, [handleFileSelect, expandedFolders, isKnowledgeView, handleKnowledgeSearchResultClick]);
 
   // Auth handlers
   const handleAuthSuccess = (userData) => {
@@ -1337,35 +1433,51 @@ function AppContent() {
         {!sidebarCollapsed && (
           <aside className="sidebar" style={{ width: `${sidebarWidth}px` }}>
             <div className="sidebar-content">
-              <FileTree
-                files={files}
-                onFileSelect={handleFileSelect}
-                selectedFile={selectedFile}
-                isLoading={isLoading}
-                onCreateFolder={handleCreateFolder}
-                onCreateFile={handleCreateFile}
-                onDeleteItem={handleDeleteItem}
-                onRenameItem={handleRenameItem}
-                onFileUpload={handleFileUpload}
-                expandedFolders={expandedFolders}
-                onFolderToggle={handleFolderToggle}
-                onPublish={() => setShowPublishModal(true)}
-                hasChanges={hasChanges}
-                draftFiles={draftFiles}
-                providerInfo={providerInfo}
-                onViewChange={handleViewChange}
-                currentSpace={currentSpace}
-                onSpaceChange={handleSpaceChange}
-                isAuthenticated={isAuthenticated}
-                isReadonly={isCurrentSpaceReadonly}
-              />
+              {isKnowledgeView ? (
+                <KnowledgeSearchPane
+                  searchResults={knowledgeSearchResults}
+                  onResultSelect={handleKnowledgeResultSelect}
+                  searchQuery={searchQuery}
+                  selectedFile={knowledgeViewSelectedFile}
+                  isLoading={isLoading}
+                />
+              ) : (
+                <FileTree
+                  files={files}
+                  onFileSelect={handleFileSelect}
+                  selectedFile={selectedFile}
+                  isLoading={isLoading}
+                  onCreateFolder={handleCreateFolder}
+                  onCreateFile={handleCreateFile}
+                  onDeleteItem={handleDeleteItem}
+                  onRenameItem={handleRenameItem}
+                  onFileUpload={handleFileUpload}
+                  expandedFolders={expandedFolders}
+                  onFolderToggle={handleFolderToggle}
+                  onPublish={() => setShowPublishModal(true)}
+                  hasChanges={hasChanges}
+                  draftFiles={draftFiles}
+                  providerInfo={providerInfo}
+                  onViewChange={handleViewChange}
+                  currentSpace={currentSpace}
+                  onSpaceChange={handleSpaceChange}
+                  isAuthenticated={isAuthenticated}
+                  isReadonly={isCurrentSpaceReadonly}
+                />
+              )}
             </div>
             <div className="sidebar-resizer" onMouseDown={handleMouseDown}></div>
           </aside>
         )}
 
         <section className="editor-section">
-          {currentView === 'home' ? (
+          {isKnowledgeView ? (
+            <KnowledgeContentPane
+              content={knowledgeViewContent}
+              selectedFile={knowledgeViewSelectedFile}
+              isLoading={isLoading}
+            />
+          ) : currentView === 'home' ? (
             <HomeView
               onFileSelect={handleFileSelect}
               onTemplateSelect={handleTemplateSelect}

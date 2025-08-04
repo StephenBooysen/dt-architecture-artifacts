@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { getStarredFiles, toggleStarredFile } from '../services/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * StarredFilesView component for displaying starred/favorited files.
@@ -22,15 +23,16 @@ import { toast } from 'react-toastify';
  * @return {JSX.Element} The StarredFilesView component.
  */
 const StarredFilesView = ({ onFileSelect, isVisible }) => {
+  const { isAuthenticated } = useAuth();
   const [starredFiles, setStarredFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && isAuthenticated) {
       loadStarredFiles();
     }
-  }, [isVisible]);
+  }, [isVisible, isAuthenticated]);
 
   const loadStarredFiles = async () => {
     try {

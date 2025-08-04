@@ -17,6 +17,7 @@
 import React, { useState, useEffect } from 'react';
 import { getRecentFiles, getStarredFiles, fetchTemplates } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * HomeView component for displaying the main dashboard.
@@ -28,6 +29,7 @@ import { useTheme } from '../contexts/ThemeContext';
  */
 const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = false, currentSpace }) => {
   const { isDark } = useTheme();
+  const { isAuthenticated } = useAuth();
   const [recentFiles, setRecentFiles] = useState([]);
   const [starredFiles, setStarredFiles] = useState([]);
   const [templates, setTemplates] = useState([]);
@@ -37,13 +39,13 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
   const [gitLoading, setGitLoading] = useState(false);
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && isAuthenticated) {
       loadHomeData();
       if (currentSpace) {
         loadGitStatus();
       }
     }
-  }, [isVisible, currentSpace]);
+  }, [isVisible, isAuthenticated, currentSpace]);
 
   const loadHomeData = async () => {
     try {

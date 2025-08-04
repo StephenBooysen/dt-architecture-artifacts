@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getRecentFiles } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * RecentFilesView component for displaying recently edited files.
@@ -21,16 +22,17 @@ import { getRecentFiles } from '../services/api';
  * @return {JSX.Element} The RecentFilesView component.
  */
 const RecentFilesView = ({ onFileSelect, isVisible }) => {
+  const { isAuthenticated } = useAuth();
   const [recentFiles, setRecentFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDays, setSelectedDays] = useState(7);
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && isAuthenticated) {
       loadRecentFiles();
     }
-  }, [isVisible, selectedDays]);
+  }, [isVisible, isAuthenticated, selectedDays]);
 
   const loadRecentFiles = async () => {
     try {
