@@ -60,66 +60,87 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister }) => {
   return (
     <div className="auth-modal-overlay" onClick={onClose}>
       <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="auth-modal-header">
-          <h2>Sign In</h2>
-          <button className="close-button" onClick={onClose}>×</button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="auth-form">
-          {error && <div className="error-message">{error}</div>}
-          
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-          </div>
-          
-          <button type="submit" className="auth-submit-button" disabled={loading}>
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
-        
-        <div className="auth-divider">
-          <span>or</span>
-        </div>
-        
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="google-auth-button"
-          disabled={loading}
-        >
-          <span className="google-icon">G</span>
-          Continue with Google
+        <button className="auth-close-button" onClick={onClose} aria-label="Close">
+          <i className="bi bi-x-lg"></i>
         </button>
         
-        <div className="auth-switch">
-          <p>
-            Don't have an account?{' '}
-            <button type="button" onClick={onSwitchToRegister} className="switch-button">
-              Create Account
+        <div className="auth-modal-content">
+          <div className="text-center mb-4">
+            <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-3" />
+            <h2 className="auth-title">Architecture Artifacts</h2>
+            <p className="auth-subtitle">Please sign in to access your workspace.</p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="auth-form">
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">Username</label>
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+            
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+            </div>
+            
+            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
-          </p>
+          </form>
+          
+          <div className="auth-divider text-center my-3">
+            <span className="text-muted">or</span>
+          </div>
+          
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+            disabled={loading}
+          >
+            <i className="bi bi-google me-2"></i>
+            Continue with Google
+          </button>
+          
+          <div className="auth-switch text-center mt-3">
+            <p className="text-muted mb-0">
+              Don't have an account?{' '}
+              <button type="button" onClick={onSwitchToRegister} className="btn btn-link p-0">
+                Create Account
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
