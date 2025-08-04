@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Folder operations API routes
+ * 
+ * Provides comprehensive folder management functionality including:
+ * - Folder creation and deletion operations
+ * - Directory listing and navigation
+ * - Authentication middleware for secure access
+ * - Integration with filing service providers
+ * - Support for space-based folder organization
+ * - Backwards compatibility with legacy folder structures
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const EventEmitter = require('events');

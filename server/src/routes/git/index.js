@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Git operations routes
+ * 
+ * Provides Git version control functionality including:
+ * - Repository initialization and cloning
+ * - Commit, push, and pull operations
+ * - Branch management and merging
+ * - File status and diff tracking
+ * - Integration with filing service providers
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const simpleGit = require('simple-git');

@@ -1,3 +1,18 @@
+/**
+ * @fileoverview PowerPoint to Markdown converter plugin
+ * 
+ * Provides PPTX file conversion functionality including:
+ * - PPTX file extraction and parsing
+ * - Slide content extraction and conversion
+ * - Text formatting preservation
+ * - Image extraction and linking
+ * - Structured Markdown output generation
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const fs = require('fs-extra');
 const fsPromises = require('fs').promises;
 const path = require('path');

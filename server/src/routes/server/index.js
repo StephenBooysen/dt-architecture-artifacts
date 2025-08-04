@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Server management routes
+ * 
+ * Provides server administration and monitoring functionality including:
+ * - Server status and health checks
+ * - Configuration management
+ * - System information and diagnostics
+ * - Integration with filing service providers
+ * - Administrative operations and maintenance
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const EventEmitter = require('events');

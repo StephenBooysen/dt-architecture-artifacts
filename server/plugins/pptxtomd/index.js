@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Alternative PPTX to Markdown converter plugin
+ * 
+ * Provides alternative PowerPoint conversion functionality including:
+ * - PPTX file processing and conversion
+ * - Simplified slide extraction
+ * - Basic Markdown output generation
+ * - File validation and error handling
+ * - Lightweight conversion processing
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const fs = require('fs-extra');
 const path = require('path');
 

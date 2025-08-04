@@ -1,3 +1,18 @@
+/**
+ * @fileoverview File and folder rename routes
+ * 
+ * Provides rename functionality for files and directories including:
+ * - Safe file and folder renaming operations
+ * - Path validation and conflict resolution
+ * - Integration with filing service providers
+ * - Support for batch rename operations
+ * - Backwards compatibility with legacy structures
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const EventEmitter = require('events');

@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Electron main process entry point
+ * 
+ * Provides the main Electron application process including:
+ * - Application window creation and management
+ * - Menu bar and application lifecycle handling
+ * - Security configuration and context isolation
+ * - Development and production environment handling
+ * - Inter-process communication setup
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');

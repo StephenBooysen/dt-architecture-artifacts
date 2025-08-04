@@ -1,3 +1,18 @@
+/**
+ * @fileoverview User management routes
+ * 
+ * Provides user administration functionality including:
+ * - User registration and profile management
+ * - Authentication and session handling
+ * - User role and permission management
+ * - Support for both session and token-based authentication
+ * - User data persistence and retrieval
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');

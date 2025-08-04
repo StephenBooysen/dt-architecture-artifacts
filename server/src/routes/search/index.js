@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Search functionality API routes
+ * 
+ * Provides comprehensive search capabilities including:
+ * - Full-text search across file contents
+ * - File name and metadata search
+ * - Authentication middleware for secure access
+ * - Support for both session and token-based authentication
+ * - Integration with filing service providers
+ * - Advanced search filtering and result ranking
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');

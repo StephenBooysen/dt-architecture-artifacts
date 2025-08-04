@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Metadata operations routes
+ * 
+ * Provides file metadata management functionality including:
+ * - Metadata extraction and parsing from various file types
+ * - Metadata storage and retrieval operations
+ * - File property analysis and indexing
+ * - Integration with filing service providers
+ * - Support for custom metadata schemas
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');

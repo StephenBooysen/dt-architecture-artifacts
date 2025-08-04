@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Space selection component for Electron app
+ * 
+ * Provides space/workspace selection functionality including:
+ * - Space listing and selection interface
+ * - User space management and switching
+ * - Integration with authentication system
+ * - Real-time space data fetching
+ * - Error handling and loading states
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 import React, { useState, useEffect } from 'react';
 import { fetchUserSpaces } from '../services/api';
 

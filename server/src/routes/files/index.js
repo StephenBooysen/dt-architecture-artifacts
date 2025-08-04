@@ -1,3 +1,19 @@
+/**
+ * @fileoverview File operations API routes
+ * 
+ * Provides comprehensive file management functionality including:
+ * - File upload with multipart form data support
+ * - CRUD operations (create, read, update, delete) for files
+ * - File metadata retrieval and manipulation
+ * - Authentication middleware for secure access
+ * - Support for both session and token-based authentication
+ * - Integration with filing service providers (local, S3, Git)
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const multer = require('multer');

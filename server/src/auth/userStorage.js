@@ -1,3 +1,19 @@
+/**
+ * @fileoverview User storage and session management system
+ * 
+ * Provides comprehensive user management functionality including:
+ * - User registration and authentication with bcrypt password hashing
+ * - Google OAuth integration for social login
+ * - Session token generation and validation
+ * - File-based user persistence with JSON storage
+ * - Role-based access control and space management
+ * - Session cleanup and security management
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const fs = require('fs').promises;
 const path = require('path');
 const bcrypt = require('bcryptjs');

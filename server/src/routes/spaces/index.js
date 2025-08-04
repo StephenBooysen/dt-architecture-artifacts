@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Space/workspace management routes
+ * 
+ * Provides comprehensive workspace management functionality including:
+ * - Space creation, configuration, and deletion
+ * - User access control and permissions management
+ * - Filing provider configuration per space
+ * - Space-specific file and folder operations
+ * - Provider caching and lifecycle management
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');

@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Template management routes
+ * 
+ * Provides template system functionality including:
+ * - Template creation, retrieval, and management
+ * - File-based template storage and organization
+ * - Template categorization and metadata
+ * - Integration with filing service providers
+ * - Support for multiple template formats
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const EventEmitter = require('events');

@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Word document to Markdown converter plugin
+ * 
+ * Provides DOCX file conversion functionality including:
+ * - Word document parsing and extraction
+ * - Content conversion to Markdown format
+ * - Image preservation and extraction
+ * - Formatting and structure preservation
+ * - Error handling and validation
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const mammoth = require('mammoth');
 const fs = require('fs-extra');
 const path = require('path');

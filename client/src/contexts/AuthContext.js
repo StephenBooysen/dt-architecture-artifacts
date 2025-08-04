@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Authentication context provider
+ * 
+ * Provides application-wide authentication management including:
+ * - User authentication state management
+ * - Login and logout functionality
+ * - Session persistence and validation
+ * - React context for global auth state
+ * - Authentication hooks for components
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();

@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Google Chrome extension popup interface
+ * 
+ * Provides Chrome extension functionality for Architecture Artifacts including:
+ * - Search interface and file preview
+ * - User authentication and session management
+ * - Space selection and workspace integration
+ * - Direct integration with Architecture Artifacts server
+ * - Chrome-specific API utilization
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 class ArchitectureArtifactsExtension {
   constructor() {
     this.serverUrl = 'http://localhost:5000';

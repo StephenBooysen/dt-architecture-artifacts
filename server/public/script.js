@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Client-side API monitoring dashboard script
+ * 
+ * Provides browser-based API monitoring functionality including:
+ * - Real-time API call tracking and display
+ * - Request/response monitoring and statistics
+ * - Auto-refresh and filtering capabilities
+ * - Performance metrics and analytics
+ * - Interactive dashboard interface
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 let allCalls = [];
 let autoRefreshInterval;
 

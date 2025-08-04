@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Comments management routes
+ * 
+ * Provides comprehensive comment system functionality including:
+ * - Create, read, update, delete operations for comments
+ * - File-based comment associations
+ * - User authentication and authorization
+ * - Comment threading and replies support
+ * - Integration with filing service providers
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const EventEmitter = require('events');

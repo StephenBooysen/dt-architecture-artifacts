@@ -1,3 +1,18 @@
+/**
+ * @fileoverview File download handling routes
+ * 
+ * Provides secure file download functionality including:
+ * - Direct file download with proper content types
+ * - Authentication and authorization checks
+ * - Support for multiple filing providers (local, S3, Git)
+ * - Streaming downloads for large files
+ * - Error handling and logging
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const express = require('express');
 const path = require('path');
 const EventEmitter = require('events');

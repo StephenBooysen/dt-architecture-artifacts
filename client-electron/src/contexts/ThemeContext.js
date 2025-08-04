@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Electron theme management context provider
+ * 
+ * Provides Electron-specific theme management functionality including:
+ * - Light and dark theme switching for Electron app
+ * - Theme persistence in localStorage
+ * - System theme detection and integration
+ * - React context for global theme state
+ * - Electron-specific theme hooks and utilities
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();

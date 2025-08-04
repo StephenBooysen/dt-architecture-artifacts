@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Theme management context provider
+ * 
+ * Provides application-wide theme management functionality including:
+ * - Light and dark theme switching
+ * - Theme persistence in localStorage
+ * - React context for global theme state
+ * - Theme-aware component hooks
+ * - Automatic theme detection and application
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();

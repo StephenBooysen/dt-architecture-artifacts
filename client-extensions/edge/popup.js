@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Edge browser extension popup interface
+ * 
+ * Provides browser extension functionality for Architecture Artifacts including:
+ * - Search interface and file preview
+ * - User authentication and session management
+ * - Space selection and workspace integration
+ * - Direct integration with Architecture Artifacts server
+ * - Cross-browser compatibility for Edge
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 class ArchitectureArtifactsExtension {
   constructor() {
     this.serverUrl = 'http://localhost:5000';

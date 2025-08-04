@@ -1,3 +1,18 @@
+/**
+ * @fileoverview VS Code extension main module
+ * 
+ * Provides VS Code integration for Architecture Artifacts including:
+ * - Authentication manager for secure access
+ * - File search and preview functionality
+ * - Space and workspace management
+ * - Markdown rendering and file operations
+ * - Real-time sync with Architecture Artifacts server
+ * 
+ * @author Architecture Artifacts Team
+ * @version 1.0.0
+ * @since 2025-08-04
+ */
+
 const vscode = require('vscode');
 const axios = require('axios');
 const markdownit = require('markdown-it');
