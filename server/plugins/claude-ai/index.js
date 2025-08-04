@@ -16,13 +16,13 @@ class ClaudeAI {
       temperature: 0.7,
       ...options
     };
-    
+
     // Initialize Anthropic client
     const apiKey = process.env.ANTHROPIC_API_KEY || options.apiKey;
     if (!apiKey) {
       throw new Error('ANTHROPIC_API_KEY environment variable or apiKey option is required');
     }
-    
+
     this.anthropic = new Anthropic({
       apiKey: apiKey,
     });
@@ -40,10 +40,13 @@ class ClaudeAI {
       if (!content || typeof content !== 'string') {
         throw new Error('Content must be a non-empty string');
       }
-      
+
       if (!prompt || typeof prompt !== 'string') {
         throw new Error('Prompt must be a non-empty string');
       }
+
+      // Clean the content to remove comments and unnecessary whitespace
+      content = await this.cleanText(content);
 
       const systemMessage = options.systemMessage || 'You are a helpful AI assistant specialized in code and document analysis.';
       const userMessage = `${prompt}\n\nContent to analyze:\n\n${content}`;
@@ -77,6 +80,47 @@ class ClaudeAI {
   }
 
   /**
+ * Cleans the provided code by removing comments and unnecessary whitespace.
+ * This method is useful for preparing code snippets for analysis
+ * or display by removing single-line and multi-line comments,
+ * as well as excessive whitespace.
+ * @param {string} code - The code content to clean.
+ * @return {Promise<string>} The cleaned code content.
+ * @throws {Error} When an error occurs during the cleaning process.
+ */
+  async cleanText(text) {
+    try {
+
+      var originalLength = text.length;
+
+      // Remove single-line comments (//)
+      text = text.replace(/\/\/.*$/gm, '');
+
+      // Remove multi-line comments (/* ... */)
+      text = text.replace(/\/\*[\s\S]*?\*\//g, '');
+
+      // Remove leading/trailing whitespace on each line
+      text = text.replace(/^\s+|\s+$/gm, '');
+
+
+      // Replace multiple spaces/tabs with a single space
+      text = text.replace(/[ \t]+/g, ' ');
+
+      // Remove empty lines
+      text = text.replace(/^\s*[\r\n]/gm, '');
+
+      // calculate file size reduction
+      console.log(`Cleaned: (${(100 - ((text.length / originalLength) * 100)).toFixed(2)}%)`);
+
+      return text;
+
+    } catch (error) {
+      console.error(`Error cleaning text from ${filePath}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Analyze a file with a given prompt
    * @param {string} filePath - Path to the file to analyze
    * @param {string} prompt - The prompt/question to ask about the file
@@ -87,21 +131,21 @@ class ClaudeAI {
     try {
       // Validate file exists and is readable
       await this.validateFile(filePath);
-      
+
       // Read file content
       const content = await this.readFileContent(filePath, options);
-      
+
       // Enhance prompt with file information
       const fileName = path.basename(filePath);
       const fileExtension = path.extname(filePath);
       const enhancedPrompt = `${prompt}\n\nFile: ${fileName} (${fileExtension})`;
-      
+
       // Analyze with Claude
       const result = await this.analyzeText(content, enhancedPrompt, {
         ...options,
         systemMessage: options.systemMessage || `You are a helpful AI assistant specialized in analyzing files and code. You are currently analyzing a ${fileExtension} file named ${fileName}.`
       });
-      
+
       return {
         ...result,
         fileName: fileName,
@@ -123,9 +167,9 @@ class ClaudeAI {
    */
   async analyzeArchitecture(contentOrPath, options = {}) {
     let isFilePath = false;
-    
-    if (typeof contentOrPath === 'string' && 
-        (contentOrPath.includes('/') || contentOrPath.includes('\\'))) {
+
+    if (typeof contentOrPath === 'string' &&
+      (contentOrPath.includes('/') || contentOrPath.includes('\\'))) {
       try {
         // Check if path exists using fs.access which is more reliable
         await fs.access(contentOrPath, fs.constants.F_OK);
@@ -135,14 +179,14 @@ class ClaudeAI {
         isFilePath = false;
       }
     }
-    
+
     const architectPrompt = "As an architect, please summarize what this file does. Focus on:\n" +
-                           "1. Main purpose and functionality\n" +
-                           "2. Key components and classes\n" +
-                           "3. Dependencies and integrations\n" +
-                           "4. Architecture patterns used\n" +
-                           "5. Potential areas for improvement\n" +
-                           "\nProvide a concise but comprehensive summary suitable for technical documentation.";
+      "1. Main purpose and functionality\n" +
+      "2. Key components and classes\n" +
+      "3. Dependencies and integrations\n" +
+      "4. Architecture patterns used\n" +
+      "5. Potential areas for improvement\n" +
+      "\nProvide a concise but comprehensive summary suitable for technical documentation.";
 
     const analysisOptions = {
       ...options,
@@ -179,18 +223,18 @@ class ClaudeAI {
     try {
       const stats = await fs.stat(filePath);
       const maxFileSize = options.maxFileSize || 1024 * 1024; // 1MB default
-      
+
       if (stats.size > maxFileSize) {
         throw new Error(`File too large: ${stats.size} bytes (max: ${maxFileSize} bytes)`);
       }
-      
+
       const encoding = options.encoding || 'utf8';
       const content = await fs.readFile(filePath, encoding);
-      
+
       if (!content || content.trim().length === 0) {
         throw new Error('File is empty or contains no readable content');
       }
-      
+
       return content;
     } catch (error) {
       throw new Error(`Failed to read file content: ${error.message}`);
@@ -247,23 +291,23 @@ class ClaudeAI {
 
 module.exports = {
   ClaudeAI,
-  
+
   // Convenience functions
   analyzeText: async (content, prompt, options = {}) => {
     const claude = new ClaudeAI(options);
     return await claude.analyzeText(content, prompt, options);
   },
-  
+
   analyzeFile: async (filePath, prompt, options = {}) => {
     const claude = new ClaudeAI(options);
     return await claude.analyzeFile(filePath, prompt, options);
   },
-  
+
   analyzeArchitecture: async (contentOrPath, options = {}) => {
     const claude = new ClaudeAI(options);
     return await claude.analyzeArchitecture(contentOrPath, options);
   },
-  
+
   validateConnection: async (options = {}) => {
     const claude = new ClaudeAI(options);
     return await claude.validateConnection();

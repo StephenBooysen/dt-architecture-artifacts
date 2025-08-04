@@ -358,6 +358,12 @@ router.get('/:space/templates', loadFilingProvider, checkSpaceAccess('read'), as
     const files = await filing.list('templates');
     const templates = [];
     
+    // Ensure files is iterable
+    if (!Array.isArray(files)) {
+      console.warn('filing.list returned non-array for templates:', files);
+      return res.json({ templates: [] });
+    }
+    
     for (const file of files) {
       if (file.endsWith('.json')) {
         const filePath = `templates/${file}`;

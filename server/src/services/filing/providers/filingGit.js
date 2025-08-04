@@ -1,6 +1,7 @@
 
 const simpleGit = require('simple-git');
 const fs = require('fs-extra');
+const fsPromises = require('fs').promises;
 const path = require('path');
 
 class FilingGitProvider {
@@ -27,9 +28,19 @@ class FilingGitProvider {
     }
   }
 
+  // Helper method to check if path exists
+  async _pathExists(path) {
+    try {
+      await fsPromises.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async _initializeRepo() {
     const remoteUrl = this._getAuthenticatedRepoUrl();
-    const dirExists = await fs.pathExists(this.options.localPath);
+    const dirExists = await this._pathExists(this.options.localPath);
 
     // For readonly spaces, check if we have a valid repo before re-cloning
     if (this.options.isReadonly) {
@@ -320,7 +331,7 @@ class FilingGitProvider {
 
   async exists(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    const exists = await fs.pathExists(absolutePath);
+    const exists = await this._pathExists(absolutePath);
     if (this.eventEmitter_) {
       this.eventEmitter_.emit('filing:exists', { 
         filePath, 

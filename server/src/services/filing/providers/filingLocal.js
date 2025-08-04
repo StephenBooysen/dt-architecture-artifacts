@@ -3,7 +3,14 @@
  */
 
 const fs = require('fs-extra');
+const fsPromises = require('fs').promises;
 const path = require('path');
+const { promisify } = require('util');
+
+// Promisify fs-extra methods for old version compatibility
+const fsEnsureDir = promisify(fs.ensureDir);
+const fsCopy = promisify(fs.copy);
+const fsRemove = promisify(fs.remove);
 
 class LocalFilingProvider {
   constructor(options, eventEmitter) {
@@ -14,6 +21,16 @@ class LocalFilingProvider {
     }
     this.currentUser = null; // Will be set per-operation for Personal spaces
     this.spaceName = null;   // Will be set to identify the space type
+  }
+
+  // Helper method to check if path exists
+  async _pathExists(path) {
+    try {
+      await fsPromises.access(path);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // Set user context for operations (called by middleware)
@@ -58,16 +75,16 @@ class LocalFilingProvider {
       const templatesPath = path.join(userBasePath, 'templates');
       
       // Ensure user's base directory and subdirectories exist
-      await fs.ensureDir(markdownPath);
-      await fs.ensureDir(templatesPath);
+      await fsEnsureDir(markdownPath);
+      await fsEnsureDir(templatesPath);
       
       // Migrate existing shared files to user directory (one-time migration)
       await this._migrateSharedFilesToUser(markdownPath, templatesPath);
       
       // Create initial welcome file if markdown directory is empty
       try {
-        const markdownFiles = await fs.readdir(markdownPath);
-        if (markdownFiles.length === 0) {
+        const markdownFiles = await fsPromises.readdir(markdownPath);
+        if (Array.isArray(markdownFiles) && markdownFiles.length === 0) {
           const welcomeFile = path.join(markdownPath, 'Welcome.md');
           const welcomeContent = `# Welcome to Your Personal Space
 
@@ -88,11 +105,11 @@ Your files are stored in: \`${userBasePath}\`
 
 Happy documenting! 📝
 `;
-          await fs.writeFile(welcomeFile, welcomeContent);
+          await fsPromises.writeFile(welcomeFile, welcomeContent);
         }
       } catch (error) {
         // Ignore errors when creating welcome file - it's optional
-        console.warn(`Could not create welcome file for user ${this.currentUser.username}:`, error.message);
+        console.warn(`Could not create welcome file for user ${this.currentUser?.username || 'unknown'}:`, error.message);
       }
     }
   }
@@ -101,7 +118,7 @@ Happy documenting! 📝
     try {
       // Check if migration has already been done for this user
       const migrationMarker = path.join(this._getBasePath(), '.migration_completed');
-      if (await fs.pathExists(migrationMarker)) {
+      if (await this._pathExists(migrationMarker)) {
         return; // Migration already completed for this user
       }
 
@@ -110,34 +127,34 @@ Happy documenting! 📝
       const sharedTemplatesPath = path.join(this.options.localPath, 'templates');
 
       // Copy shared markdown files to user directory
-      if (await fs.pathExists(sharedMarkdownPath)) {
-        const markdownFiles = await fs.readdir(sharedMarkdownPath, { withFileTypes: true });
+      if (await this._pathExists(sharedMarkdownPath)) {
+        const markdownFiles = await fsPromises.readdir(sharedMarkdownPath, { withFileTypes: true });
         for (const dirent of markdownFiles) {
           const sourcePath = path.join(sharedMarkdownPath, dirent.name);
           const destPath = path.join(userMarkdownPath, dirent.name);
           
           if (dirent.isDirectory()) {
-            await fs.copy(sourcePath, destPath);
+            await fsCopy(sourcePath, destPath);
           } else if (dirent.isFile() && path.extname(dirent.name).toLowerCase() === '.md') {
-            await fs.copy(sourcePath, destPath);
+            await fsCopy(sourcePath, destPath);
           }
         }
       }
 
       // Copy shared template files to user directory
-      if (await fs.pathExists(sharedTemplatesPath)) {
-        const templateFiles = await fs.readdir(sharedTemplatesPath, { withFileTypes: true });
+      if (await this._pathExists(sharedTemplatesPath)) {
+        const templateFiles = await fsPromises.readdir(sharedTemplatesPath, { withFileTypes: true });
         for (const dirent of templateFiles) {
           if (dirent.isFile() && path.extname(dirent.name).toLowerCase() === '.json') {
             const sourcePath = path.join(sharedTemplatesPath, dirent.name);
             const destPath = path.join(userTemplatesPath, dirent.name);
-            await fs.copy(sourcePath, destPath);
+            await fsCopy(sourcePath, destPath);
           }
         }
       }
 
       // Create migration marker
-      await fs.writeFile(migrationMarker, JSON.stringify({
+      await fsPromises.writeFile(migrationMarker, JSON.stringify({
         migratedAt: new Date().toISOString(),
         username: this.currentUser.username,
         note: 'Files migrated from shared Personal space to user-specific directory'
@@ -153,15 +170,15 @@ Happy documenting! 📝
   async create(filePath, content) {
     await this._ensureUserDirectories();
     const absolutePath = this._resolvePath(filePath);
-    await fs.ensureDir(path.dirname(absolutePath)); // Ensure parent directory exists
-    await fs.writeFile(absolutePath, content);
+    await fsEnsureDir(path.dirname(absolutePath)); // Ensure parent directory exists
+    await fsPromises.writeFile(absolutePath, content);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:create', { filePath, content, isDraft: false });
   }
 
   async read(filePath,encoding) {
     const absolutePath = this._resolvePath(filePath);
-    const content = await fs.readFile(absolutePath, encoding);
+    const content = await fsPromises.readFile(absolutePath, encoding);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:read', { filePath, content, isDraft: false });
     return content;
@@ -169,22 +186,40 @@ Happy documenting! 📝
 
   async delete(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    await fs.remove(absolutePath);
+    await fsRemove(absolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:delete', { filePath, isDraft: false });
   }
 
   async list(dirPath) {
     const absolutePath = this._resolvePath(dirPath);
-    const files = await fs.readdir(absolutePath);
-    if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:list', { dirPath, files });
-    return files;
+    
+    // Check if directory exists
+    if (!await this._pathExists(absolutePath)) {
+      return [];
+    }
+    
+    try {
+      const files = await fsPromises.readdir(absolutePath);
+      
+      // Ensure files is an array
+      if (!Array.isArray(files)) {
+        console.warn(`fs.readdir returned non-array for ${absolutePath}:`, files);
+        return [];
+      }
+      
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:list', { dirPath, files });
+      return files;
+    } catch (error) {
+      console.error(`Error reading directory ${absolutePath}:`, error.message);
+      return [];
+    }
   }
 
   async update(filePath, content) {
     const absolutePath = this._resolvePath(filePath);
-    await fs.writeFile(absolutePath, content);
+    await fsPromises.writeFile(absolutePath, content);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:update', { filePath, content, isDraft: false });
   }
@@ -203,7 +238,7 @@ Happy documenting! 📝
 
   async exists(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    const exists = await fs.pathExists(absolutePath);
+    const exists = await this._pathExists(absolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:exists', { filePath, exists, isDraft: false });
     return exists;
@@ -211,7 +246,7 @@ Happy documenting! 📝
 
   async mkdir(dirPath, options = { recursive: true }) {
     const absolutePath = this._resolvePath(dirPath);
-    await fs.mkdir(absolutePath, options);
+    await fsPromises.mkdir(absolutePath, options);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:mkdir', { dirPath, options });
   }
@@ -227,14 +262,14 @@ Happy documenting! 📝
   async move(sourcePath, destPath) {
     const sourceAbsolutePath = this._resolvePath(sourcePath);
     const destAbsolutePath = this._resolvePath(destPath);
-    await fs.rename(sourceAbsolutePath, destAbsolutePath);
+    await fsPromises.rename(sourceAbsolutePath, destAbsolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:move', { sourcePath, destPath, isDraft: false });
   }
 
   async stat(filePath) {
     const absolutePath = this._resolvePath(filePath);
-    const stats = await fs.stat(absolutePath);
+    const stats = await fsPromises.stat(absolutePath);
     const result = {
       size: stats.size,
       isFile: stats.isFile(),
@@ -257,27 +292,45 @@ Happy documenting! 📝
   async listDetailed(dirPath) {
     await this._ensureUserDirectories();
     const absolutePath = this._resolvePath(dirPath);
-    const files = await fs.readdir(absolutePath);
-    const detailed = await Promise.all(
-      files.map(async (file) => {
-        const filePath = path.join(dirPath, file);
-        const stats = await this.stat(filePath);
-        return {
-          name: file,
-          path: filePath,
-          ...stats
-        };
-      })
-    );
-    if (this.eventEmitter_)
-      this.eventEmitter_.emit('filing:listDetailed', { dirPath, files: detailed });
-    return detailed;
+    
+    // Check if directory exists
+    if (!await this._pathExists(absolutePath)) {
+      return [];
+    }
+    
+    try {
+      const files = await fsPromises.readdir(absolutePath);
+      
+      // Ensure files is an array
+      if (!Array.isArray(files)) {
+        console.warn(`fs.readdir returned non-array for ${absolutePath}:`, files);
+        return [];
+      }
+      
+      const detailed = await Promise.all(
+        files.map(async (file) => {
+          const filePath = path.join(dirPath, file);
+          const stats = await this.stat(filePath);
+          return {
+            name: file,
+            path: filePath,
+            ...stats
+          };
+        })
+      );
+      if (this.eventEmitter_)
+        this.eventEmitter_.emit('filing:listDetailed', { dirPath, files: detailed });
+      return detailed;
+    } catch (error) {
+      console.error(`Error reading directory ${absolutePath}:`, error.message);
+      return [];
+    }
   }
 
   async ensureDir(dirPath) {
     await this._ensureUserDirectories();
     const absolutePath = this._resolvePath(dirPath);
-    await fs.ensureDir(absolutePath);
+    await fsEnsureDir(absolutePath);
     if (this.eventEmitter_)
       this.eventEmitter_.emit('filing:ensureDir', { dirPath });
   }

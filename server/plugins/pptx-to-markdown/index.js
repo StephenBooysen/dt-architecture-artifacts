@@ -1,9 +1,20 @@
 const fs = require('fs-extra');
+const fsPromises = require('fs').promises;
 const path = require('path');
 const AdmZip = require('adm-zip');
 const { DOMParser } = require('xmldom');
 
 class PptxToMarkdownConverter {
+  // Helper method to check if path exists
+  async _pathExists(path) {
+    try {
+      await fsPromises.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   constructor(options = {}) {
     this.options = {
       includeSlideNumbers: true,
@@ -22,7 +33,7 @@ class PptxToMarkdownConverter {
   async convertFile(inputPath, outputPath = null) {
     try {
       // Verify input file exists
-      if (!await fs.pathExists(inputPath)) {
+      if (!await this._pathExists(inputPath)) {
         throw new Error(`Input file does not exist: ${inputPath}`);
       }
 
