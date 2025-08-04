@@ -378,22 +378,24 @@ function getSharedStyles() {
       z-index: 1;
     }
 
+    /* Unified Google Button Styles */
     .btn-outline-danger {
-      color: #dc3545;
-      border-color: #dc3545;
-      background-color: transparent;
+      background-color: var(--confluence-bg-card);
+      border-color: var(--confluence-border);
+      color: var(--confluence-text);
       font-weight: 500;
       padding: 0.75rem;
       border-radius: 6px;
       transition: all 0.2s ease;
+      min-height: 44px;
     }
 
     .btn-outline-danger:hover:not(:disabled) {
-      color: white;
-      background-color: #dc3545;
-      border-color: #dc3545;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+      background-color: var(--confluence-bg);
+      border-color: var(--confluence-border);
+      color: var(--confluence-text);
+      box-shadow: 0 1px 2px rgba(9, 30, 66, 0.08);
+      transform: none;
     }
 
     .btn-outline-danger:disabled {

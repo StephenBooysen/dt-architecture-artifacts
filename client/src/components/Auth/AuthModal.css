@@ -1,147 +1,129 @@
-/* Auth Modal Styles - Server-inspired styling with Bootstrap integration */
-:root {
-  --confluence-primary: #0052cc;
-  --confluence-primary-hover: #0747a6;
-  --confluence-text: #172b4d;
-  --confluence-text-subtle: #6b778c;
-  --confluence-bg: #f7f8fa;
-  --confluence-bg-card: #ffffff;
-  --confluence-border: #e5e8ec;
-  --confluence-danger: #de350b;
-}
+/* Import unified auth styles */
+@import url('../../shared-auth-styles.css');
 
-[data-theme="dark"] {
-  --confluence-primary: #4c9aff;
-  --confluence-primary-hover: #2684ff;
-  --confluence-text: #f4f5f7;
-  --confluence-text-subtle: #b3bac5;
-  --confluence-bg: #0d1117;
-  --confluence-bg-card: #161b22;
-  --confluence-border: #30363d;
-  --confluence-danger: #f85149;
-}
-
+/* Legacy class aliases for React client compatibility */
 .auth-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--aa-bg-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  animation: aa-fadeIn 0.2s ease-out;
 }
 
 .auth-modal {
-  background: var(--confluence-bg-card);
-  border: 1px solid var(--confluence-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--aa-bg-card);
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius-lg);
+  box-shadow: var(--aa-shadow-md);
   width: 100%;
   max-width: 420px;
-  margin: 1rem;
+  margin: var(--aa-space-lg);
   position: relative;
-  animation: slideIn 0.3s ease-out;
+  animation: aa-slideIn 0.3s ease-out;
 }
 
 .auth-close-button {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: var(--aa-space-lg);
+  right: var(--aa-space-lg);
   background: none;
   border: none;
   font-size: 1.25rem;
-  color: var(--confluence-text-subtle);
+  color: var(--aa-text-subtle);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: var(--aa-space-sm);
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--aa-radius-sm);
+  transition: var(--aa-transition);
   z-index: 1;
 }
 
 .auth-close-button:hover {
-  background: var(--confluence-border);
-  color: var(--confluence-text);
+  background: var(--aa-border-subtle);
+  color: var(--aa-text);
 }
 
 .auth-modal-content {
-  padding: 2rem;
+  padding: var(--aa-space-xxl);
 }
 
 .auth-title {
-  color: var(--confluence-text);
+  color: var(--aa-text);
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--aa-space-sm);
 }
 
 .auth-subtitle {
-  color: var(--confluence-text-subtle);
+  color: var(--aa-text-subtle);
   font-size: 0.9rem;
   margin-bottom: 0;
 }
 
 .auth-form {
-  margin-top: 1.5rem;
+  margin-top: var(--aa-space-xl);
 }
 
-/* Bootstrap overrides for consistency */
+/* Bootstrap overrides using unified variables */
 .auth-modal .form-label {
-  color: var(--confluence-text);
+  color: var(--aa-text);
   font-weight: 500;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--aa-space-sm);
 }
 
 .auth-modal .form-control {
-  background-color: var(--confluence-bg-card);
-  border: 1px solid var(--confluence-border);
-  color: var(--confluence-text);
+  background-color: var(--aa-bg-card);
+  border: 1px solid var(--aa-border);
+  color: var(--aa-text);
   font-size: 1rem;
-  padding: 0.75rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  padding: var(--aa-space-md);
+  border-radius: var(--aa-radius-md);
+  transition: var(--aa-transition);
 }
 
 .auth-modal .form-control:focus {
-  border-color: var(--confluence-primary);
-  box-shadow: 0 0 0 0.2rem rgba(0, 82, 204, 0.25);
-  background-color: var(--confluence-bg-card);
+  border-color: var(--aa-border-focus);
+  box-shadow: var(--aa-focus-ring);
+  background-color: var(--aa-bg-card);
 }
 
 .auth-modal .form-control:disabled {
-  background-color: var(--confluence-border);
+  background-color: var(--aa-border-subtle);
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .auth-modal .btn-primary {
-  background-color: var(--confluence-primary);
-  border-color: var(--confluence-primary);
+  background-color: var(--aa-primary);
+  border-color: var(--aa-primary);
+  color: var(--aa-text-inverse);
   font-weight: 600;
-  padding: 0.75rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  padding: var(--aa-space-md);
+  border-radius: var(--aa-radius-md);
+  transition: var(--aa-transition);
 }
 
 .auth-modal .btn-primary:hover:not(:disabled) {
-  background-color: var(--confluence-primary-hover);
-  border-color: var(--confluence-primary-hover);
+  background-color: var(--aa-primary-hover);
+  border-color: var(--aa-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 82, 204, 0.3);
 }
 
 .auth-modal .btn-primary:disabled {
-  background-color: var(--confluence-primary);
-  border-color: var(--confluence-primary);
+  background-color: var(--aa-primary);
+  border-color: var(--aa-primary);
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -151,38 +133,38 @@
 .auth-modal .alert-danger {
   background-color: rgba(222, 53, 11, 0.1);
   border-color: rgba(222, 53, 11, 0.2);
-  color: var(--confluence-danger);
-  border-radius: 6px;
+  color: var(--aa-danger);
+  border-radius: var(--aa-radius-md);
   font-size: 0.9rem;
 }
 
 .auth-modal .btn-link {
-  color: var(--confluence-primary);
+  color: var(--aa-primary);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9rem;
-  transition: color 0.2s ease;
+  transition: var(--aa-transition);
 }
 
 .auth-modal .btn-link:hover {
-  color: var(--confluence-primary-hover);
+  color: var(--aa-primary-hover);
   text-decoration: underline;
 }
 
 .auth-modal .text-muted {
-  color: var(--confluence-text-subtle) !important;
+  color: var(--aa-text-subtle) !important;
   font-size: 0.9rem;
 }
 
 .auth-modal .form-text {
-  color: var(--confluence-text-subtle);
+  color: var(--aa-text-subtle);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
 .auth-divider {
   position: relative;
-  margin: 1.5rem 0;
+  margin: var(--aa-space-xl) 0;
 }
 
 .auth-divider::before {
@@ -192,33 +174,34 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--confluence-border);
+  background: var(--aa-border);
 }
 
 .auth-divider span {
-  background: var(--confluence-bg-card);
-  padding: 0 1rem;
+  background: var(--aa-bg-card);
+  padding: 0 var(--aa-space-lg);
   font-size: 0.875rem;
   position: relative;
   z-index: 1;
 }
 
+/* Updated Google button using unified styles */
 .auth-modal .btn-outline-danger {
-  color: var(--confluence-text);
-  border-color: var(--confluence-border);
-  background-color: transparent;
+  background-color: var(--aa-bg-card);
+  border-color: var(--aa-border);
+  color: var(--aa-text);
   font-weight: 500;
-  padding: 0.75rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  padding: var(--aa-space-md);
+  border-radius: var(--aa-radius-md);
+  transition: var(--aa-transition);
 }
 
 .auth-modal .btn-outline-danger:hover:not(:disabled) {
-  color: var(--confluence-text);
-  background-color: var(--confluence-bg);
-  border-color: var(--confluence-border);
+  background-color: var(--aa-bg);
+  border-color: var(--aa-border);
+  color: var(--aa-text);
+  box-shadow: var(--aa-shadow-sm);
   transform: none;
-  box-shadow: none;
 }
 
 .auth-modal .btn-outline-danger:disabled {
@@ -229,44 +212,24 @@
 }
 
 .auth-switch {
-  border-top: 1px solid var(--confluence-border);
-  padding-top: 1rem;
-  margin-top: 1.5rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  border-top: 1px solid var(--aa-border);
+  padding-top: var(--aa-space-lg);
+  margin-top: var(--aa-space-xl);
 }
 
 @media (max-width: 480px) {
   .auth-modal {
-    margin: 0.5rem;
+    margin: var(--aa-space-sm);
     max-width: 100%;
   }
   
   .auth-modal-content {
-    padding: 1.5rem;
+    padding: var(--aa-space-xl);
   }
   
   .auth-close-button {
-    top: 0.75rem;
-    right: 0.75rem;
+    top: var(--aa-space-md);
+    right: var(--aa-space-md);
   }
   
   .auth-title {
