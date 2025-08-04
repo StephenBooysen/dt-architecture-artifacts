@@ -537,9 +537,9 @@ router.get('/:space/download/*', loadFilingProvider, checkSpaceAccess('read'), a
 });
 
 // Get Git status for all spaces
-router.get('/git-status', async (req, res) => {
+router.get('/spaces/git-status', async (req, res) => {
   try {
-    const spaces = JSON.parse(await fs.readFile(path.join(__dirname, '../../../server-data/spaces.json'), 'utf8'));
+    const spaces = JSON.parse(await fs.promises.readFile(path.join(__dirname, '../../../../server-data/spaces.json'), 'utf8'));
     const spaceStatus = {};
 
     for (const space of spaces) {
@@ -584,7 +584,8 @@ router.get('/git-status', async (req, res) => {
     res.json(spaceStatus);
   } catch (error) {
     console.error('Error getting git status:', error);
-    res.status(500).json({ error: 'Failed to get git status' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to get git status', details: error.message });
   }
 });
 

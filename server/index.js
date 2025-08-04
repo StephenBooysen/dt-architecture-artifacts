@@ -1553,7 +1553,7 @@ app.get('/server-landing', (req, res) => {
   <script>
     setTimeout(function() {
       window.location.href = '/server-login';
-    }, 5000);
+    }, 3000);
   </script>
   ${getThemeToggleScript()}
 </body>
@@ -1566,6 +1566,13 @@ app.get('/server-landing', (req, res) => {
 app.get('/server-login', (req, res) => {
   if (req.isAuthenticated()) {
     return res.redirect('/server-dashboard');
+  }
+  
+  // Check for error messages
+  const error = req.query.error;
+  let errorMessage = '';
+  if (error === 'google_not_configured') {
+    errorMessage = 'Google OAuth is not configured. Please use username/password login or contact an administrator.';
   }
   
   const html = `<!DOCTYPE html>
@@ -1736,6 +1743,7 @@ app.get('/server-login', (req, res) => {
         
         <form id="loginForm" class="server-auth-form">
           <div id="error-message" class="alert alert-danger d-none"></div>
+          ${errorMessage ? `<div class="alert alert-warning">${errorMessage}</div>` : ''}
           
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>
@@ -1766,6 +1774,7 @@ app.get('/server-login', (req, res) => {
           </button>
         </form>
         
+        ${!errorMessage ? `
         <div class="auth-divider text-center my-3">
           <span class="text-muted">or</span>
         </div>
@@ -1778,6 +1787,7 @@ app.get('/server-login', (req, res) => {
           <i class="bi bi-google me-2"></i>
           Continue with Google
         </button>
+        ` : ''}
       </div>
     </div>
   </div>

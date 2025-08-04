@@ -381,6 +381,7 @@ function AppContent() {
         setFiles(updatedTree);
       }
     } catch (error) {
+      console.error('Failed to load files:', error);
       toast.error('Failed to load files');
     } finally {
       setIsLoading(false);
@@ -581,6 +582,7 @@ function AppContent() {
         }
       }
     } catch (error) {
+      console.error('Failed to load file:', error);
       toast.error('Failed to load file');
     } finally {
       setIsFileLoading(false);

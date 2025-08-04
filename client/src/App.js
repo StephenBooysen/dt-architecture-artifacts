@@ -93,7 +93,7 @@ function AppContent() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
-  const [setIsEditingTemplate] = useState(false);
+  const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
   });
@@ -155,7 +155,7 @@ function AppContent() {
         const timer = setTimeout(() => {
           setShowLandingPage(false);
           setShowLoginModal(true);
-        }, 5000);
+        }, 3000);
 
         return () => clearTimeout(timer);
       }
@@ -248,7 +248,7 @@ function AppContent() {
   // Function to check for remote sync status
   const checkSyncStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/sync-status', {
+      const response = await fetch('/api/git/sync-status', {
         method: 'GET',
         credentials: 'include'
       });
@@ -409,6 +409,7 @@ function AppContent() {
         setFiles(updatedTree);
       }
     } catch (error) {
+      console.error('Failed to load files:', error);
       toast.error('Failed to load files');
     } finally {
       setIsLoading(false);
@@ -609,6 +610,7 @@ function AppContent() {
         }
       }
     } catch (error) {
+      console.error('Failed to load file:', error);
       toast.error('Failed to load file');
     } finally {
       setIsFileLoading(false);

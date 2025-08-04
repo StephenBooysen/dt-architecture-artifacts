@@ -6,14 +6,13 @@
 
 ### Phase 3: Shoprite enterprise integration
 #### Client
-- Readonly Space
-- View: Have a knowledge view that has no editing (Copy to clipboard, commets)
+-
 
 #### Server
-- View: Knowledge View 
+-
 
 #### Extensions
-- View: Apply Knowledge View (Clipboard)
+-
 
 #### Plugins
 - Import ARIS items

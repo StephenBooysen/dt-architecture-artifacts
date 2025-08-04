@@ -99,6 +99,20 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 
 // Google OAuth routes
 router.get('/google', (req, res, next) => {
+  // Check if Google OAuth is configured
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || 
+      process.env.GOOGLE_CLIENT_ID === '1111' || process.env.GOOGLE_CLIENT_SECRET === '1111') {
+    const source = req.query.source || 'client';
+    
+    if (source === 'server') {
+      return res.redirect('/server-login?error=google_not_configured');
+    } else {
+      return res.status(400).json({ 
+        error: 'Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.' 
+      });
+    }
+  }
+  
   // Use OAuth state parameter to track the source
   const source = req.query.source || 'client';
   passport.authenticate('google', { 
@@ -219,6 +233,19 @@ router.get('/user-spaces', requireAuth, (req, res) => {
     console.error('Error loading user spaces:', error);
     res.status(500).json({ error: 'Failed to load user spaces' });
   }
+});
+
+// Google OAuth configuration status endpoint
+router.get('/google/status', (req, res) => {
+  const isConfigured = process.env.GOOGLE_CLIENT_ID && 
+                      process.env.GOOGLE_CLIENT_SECRET && 
+                      process.env.GOOGLE_CLIENT_ID !== '1111' && 
+                      process.env.GOOGLE_CLIENT_SECRET !== '1111';
+  
+  res.json({ 
+    configured: isConfigured,
+    message: isConfigured ? 'Google OAuth is configured' : 'Google OAuth is not configured'
+  });
 });
 
 module.exports = router;
