@@ -12,7 +12,8 @@
  * @since 2025-08-04
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchUserSpaces } from '../services/api';
 
 /**
  * KnowledgeSearchPane component for displaying search results in knowledge view.
@@ -22,6 +23,9 @@ import React from 'react';
  * @param {string} props.searchQuery - Current search query.
  * @param {Object} props.selectedFile - Currently selected file info.
  * @param {boolean} props.isLoading - Whether search is in progress.
+ * @param {string} props.currentSpace - Currently selected space.
+ * @param {Function} props.onSpaceChange - Callback for space changes.
+ * @param {boolean} props.isAuthenticated - Whether user is authenticated.
  * @return {JSX.Element} The KnowledgeSearchPane component.
  */
 const KnowledgeSearchPane = ({
@@ -29,8 +33,36 @@ const KnowledgeSearchPane = ({
   onResultSelect,
   searchQuery = '',
   selectedFile = null,
-  isLoading = false
+  isLoading = false,
+  currentSpace,
+  onSpaceChange,
+  isAuthenticated
 }) => {
+  const [spaces, setSpaces] = useState([]);
+
+  // Load spaces when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSpaces();
+    }
+  }, [isAuthenticated]);
+
+  const loadSpaces = async () => {
+    try {
+      const userSpaces = await fetchUserSpaces();
+      setSpaces(userSpaces);
+    } catch (error) {
+      console.error('Error loading spaces:', error);
+      setSpaces([]);
+    }
+  };
+
+  const getSpaceIcon = (space) => {
+    if (space.space === 'Personal') return 'bi-person';
+    if (space.filing?.type === 'git') return 'bi-git';
+    if (space.access === 'readonly') return 'bi-eye';
+    return 'bi-collection';
+  };
   
   const handleResultClick = (result) => {
     if (onResultSelect) {
@@ -62,6 +94,54 @@ const KnowledgeSearchPane = ({
             </div>
           </div>
         </div>
+        
+        {/* Spaces Navigation */}
+        {isAuthenticated && spaces.length > 0 && (
+          <div className="knowledge-spaces-nav">
+            <div className="spaces-nav-header">
+              <h6 className="mb-0 text-confluence-text">
+                <i className="bi bi-collection me-2"></i>
+                Spaces
+              </h6>
+            </div>
+            <div className="spaces-nav-content">
+              {spaces.map((space) => (
+                <div 
+                  key={space.space}
+                  className={`nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1 ${currentSpace === space.space ? 'active' : ''}`}
+                  onClick={() => onSpaceChange && onSpaceChange(space.space)}
+                  style={{
+                    cursor: 'pointer', 
+                    backgroundColor: currentSpace === space.space 
+                      ? 'var(--confluence-primary-light, rgba(0, 82, 204, 0.1))' 
+                      : 'var(--nav-option-bg, transparent)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentSpace !== space.space) {
+                      e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentSpace !== space.space) {
+                      e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)';
+                    }
+                  }}
+                >
+                  <div className="d-flex align-items-center">
+                    <i className={`bi ${getSpaceIcon(space)} me-2 text-muted`}></i>
+                    <span className={`text-confluence-text ${currentSpace === space.space ? 'fw-medium' : ''}`}>
+                      {space.space}
+                    </span>
+                    <small className="ms-2 text-muted">({space.access})</small>
+                  </div>
+                  {currentSpace === space.space && (
+                    <i className="bi bi-check-circle text-primary"></i>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         <style jsx>{`
           .knowledge-search-pane {
@@ -111,6 +191,54 @@ const KnowledgeSearchPane = ({
             </div>
           </div>
         </div>
+        
+        {/* Spaces Navigation */}
+        {isAuthenticated && spaces.length > 0 && (
+          <div className="knowledge-spaces-nav">
+            <div className="spaces-nav-header">
+              <h6 className="mb-0 text-confluence-text">
+                <i className="bi bi-collection me-2"></i>
+                Spaces
+              </h6>
+            </div>
+            <div className="spaces-nav-content">
+              {spaces.map((space) => (
+                <div 
+                  key={space.space}
+                  className={`nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1 ${currentSpace === space.space ? 'active' : ''}`}
+                  onClick={() => onSpaceChange && onSpaceChange(space.space)}
+                  style={{
+                    cursor: 'pointer', 
+                    backgroundColor: currentSpace === space.space 
+                      ? 'var(--confluence-primary-light, rgba(0, 82, 204, 0.1))' 
+                      : 'var(--nav-option-bg, transparent)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentSpace !== space.space) {
+                      e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentSpace !== space.space) {
+                      e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)';
+                    }
+                  }}
+                >
+                  <div className="d-flex align-items-center">
+                    <i className={`bi ${getSpaceIcon(space)} me-2 text-muted`}></i>
+                    <span className={`text-confluence-text ${currentSpace === space.space ? 'fw-medium' : ''}`}>
+                      {space.space}
+                    </span>
+                    <small className="ms-2 text-muted">({space.access})</small>
+                  </div>
+                  {currentSpace === space.space && (
+                    <i className="bi bi-check-circle text-primary"></i>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         <style jsx>{`
           .knowledge-search-pane {
@@ -206,6 +334,54 @@ const KnowledgeSearchPane = ({
           </div>
         )}
       </div>
+      
+      {/* Spaces Navigation */}
+      {isAuthenticated && spaces.length > 0 && (
+        <div className="knowledge-spaces-nav">
+          <div className="spaces-nav-header">
+            <h6 className="mb-0 text-confluence-text">
+              <i className="bi bi-collection me-2"></i>
+              Spaces
+            </h6>
+          </div>
+          <div className="spaces-nav-content">
+            {spaces.map((space) => (
+              <div 
+                key={space.space}
+                className={`nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1 ${currentSpace === space.space ? 'active' : ''}`}
+                onClick={() => onSpaceChange && onSpaceChange(space.space)}
+                style={{
+                  cursor: 'pointer', 
+                  backgroundColor: currentSpace === space.space 
+                    ? 'var(--confluence-primary-light, rgba(0, 82, 204, 0.1))' 
+                    : 'var(--nav-option-bg, transparent)'
+                }}
+                onMouseEnter={(e) => {
+                  if (currentSpace !== space.space) {
+                    e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentSpace !== space.space) {
+                    e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)';
+                  }
+                }}
+              >
+                <div className="d-flex align-items-center">
+                  <i className={`bi ${getSpaceIcon(space)} me-2 text-muted`}></i>
+                  <span className={`text-confluence-text ${currentSpace === space.space ? 'fw-medium' : ''}`}>
+                    {space.space}
+                  </span>
+                  <small className="ms-2 text-muted">({space.access})</small>
+                </div>
+                {currentSpace === space.space && (
+                  <i className="bi bi-check-circle text-primary"></i>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <style jsx>{`
         .knowledge-search-pane {
@@ -309,6 +485,35 @@ const KnowledgeSearchPane = ({
         
         .result-type .badge {
           font-size: 0.7rem;
+        }
+        
+        .knowledge-spaces-nav {
+          border-top: 1px solid var(--confluence-border);
+          background: var(--confluence-bg-card);
+        }
+        
+        .spaces-nav-header {
+          padding: 1rem;
+          background: var(--confluence-border-subtle);
+          border-bottom: 1px solid var(--confluence-border);
+        }
+        
+        .spaces-nav-content {
+          padding: 1rem;
+        }
+        
+        .nav-option {
+          transition: background-color 0.2s ease;
+          border: 1px solid transparent;
+        }
+        
+        .nav-option:hover {
+          border-color: var(--confluence-border);
+        }
+        
+        .nav-option.active {
+          border-color: var(--confluence-primary);
+          background-color: var(--confluence-primary-light, rgba(0, 82, 204, 0.1));
         }
       `}</style>
     </div>

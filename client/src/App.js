@@ -29,7 +29,6 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
-import TemplateManager from './components/TemplateManager';
 import TemplatesList from './components/TemplatesList';
 import RecentFilesView from './components/RecentFilesView';
 import StarredFilesView from './components/StarredFilesView';
@@ -64,7 +63,7 @@ import './App.css';
  */
 function AppContent() {
   const { user, login, logout, isAuthenticated, loading } = useAuth();
-  const { theme, toggleTheme, isDark } = useTheme();
+  const {toggleTheme, isDark } = useTheme();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
@@ -74,7 +73,7 @@ function AppContent() {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [draftFiles, setDraftFiles] = useState([]);
-  const [providerInfo, setProviderInfo] = useState({ provider: 'local', supportsDrafts: false });
+  const [providerInfo] = useState({ provider: 'local', supportsDrafts: false });
   const [lastSyncCheck, setLastSyncCheck] = useState(null);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('architecture-artifacts-sidebar-width');
@@ -89,12 +88,12 @@ function AppContent() {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [setHighlightedIndex] = useState(-1);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
-  const [isEditingTemplate, setIsEditingTemplate] = useState(false);
+  const [setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
   });
@@ -270,20 +269,20 @@ function AppContent() {
   // Set up periodic sync to catch external changes and check for drafts
   useEffect(() => {
     if (isAuthenticated && files.length > 0) {
-      // Temporarily disabled to reduce error noise
-      // const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
-      // const syncStatusInterval = setInterval(checkSyncStatus, 5000); // Check for remote changes every 5 seconds
+      
+      const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
+      const syncStatusInterval = setInterval(checkSyncStatus, 5000); // Check for remote changes every 5 seconds
       
       // Only set up draft polling if provider supports drafts
       let draftInterval;
       if (providerInfo.supportsDrafts) {
-        // draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
+        draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
       }
       
       return () => {
-        // clearInterval(syncInterval);
-        // clearInterval(syncStatusInterval);
-        // if (draftInterval) clearInterval(draftInterval);
+        clearInterval(syncInterval);
+        clearInterval(syncStatusInterval);
+        if (draftInterval) clearInterval(draftInterval);
       };
     }
   }, [isAuthenticated, files.length, providerInfo.supportsDrafts, checkForDrafts, checkSyncStatus]);
@@ -1440,6 +1439,9 @@ function AppContent() {
                   searchQuery={searchQuery}
                   selectedFile={knowledgeViewSelectedFile}
                   isLoading={isLoading}
+                  currentSpace={currentSpace}
+                  onSpaceChange={handleSpaceChange}
+                  isAuthenticated={isAuthenticated}
                 />
               ) : (
                 <FileTree
