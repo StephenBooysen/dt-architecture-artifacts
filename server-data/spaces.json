@@ -8,6 +8,14 @@
     }
   },
   {
+    "space": "local-shared",
+    "access": "write",
+    "filing": {
+      "type": "local",
+      "localFolder": "./content-local-shared"
+    }
+  },
+  {
     "space": "Shared",
     "access": "write",
     "filing": {

@@ -204,8 +204,8 @@
 }
 
 .auth-modal .btn-outline-danger {
-  color: #dc3545;
-  border-color: #dc3545;
+  color: var(--confluence-text);
+  border-color: var(--confluence-border);
   background-color: transparent;
   font-weight: 500;
   padding: 0.75rem;
@@ -214,11 +214,11 @@
 }
 
 .auth-modal .btn-outline-danger:hover:not(:disabled) {
-  color: white;
-  background-color: #dc3545;
-  border-color: #dc3545;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  color: var(--confluence-text);
+  background-color: var(--confluence-bg);
+  border-color: var(--confluence-border);
+  transform: none;
+  box-shadow: none;
 }
 
 .auth-modal .btn-outline-danger:disabled {
