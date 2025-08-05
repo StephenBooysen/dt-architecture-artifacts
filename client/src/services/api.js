@@ -227,9 +227,10 @@ export const fetchTemplate = async (templateName) => {
  * @param {string} templateData.description - The template description.
  * @return {Promise<Object>} The create response.
  */
-export const createTemplate = async (templateData) => {
+export const createTemplate = async (templateData, space = null) => {
   try {
-    const response = await api.post('/templates', templateData);
+    const url = space ? `/${space}/templates` : '/templates';
+    const response = await api.post(url, templateData);
     return response.data;
   } catch (error) {
     console.error('Error creating template:', error);
@@ -243,9 +244,10 @@ export const createTemplate = async (templateData) => {
  * @param {Object} templateData - The updated template data.
  * @return {Promise<Object>} The update response.
  */
-export const updateTemplate = async (templateName, templateData) => {
+export const updateTemplate = async (templateName, templateData, space = null) => {
   try {
-    const response = await api.put(`/templates/${templateName}`, templateData);
+    const url = space ? `/${space}/templates/${templateName}` : `/templates/${templateName}`;
+    const response = await api.put(url, templateData);
     return response.data;
   } catch (error) {
     console.error('Error updating template:', error);
@@ -258,9 +260,10 @@ export const updateTemplate = async (templateName, templateData) => {
  * @param {string} templateName - The name of the template to delete.
  * @return {Promise<Object>} The delete response.
  */
-export const deleteTemplate = async (templateName) => {
+export const deleteTemplate = async (templateName, space = null) => {
   try {
-    const response = await api.delete(`/templates/${templateName}`);
+    const url = space ? `/${space}/templates/${templateName}` : `/templates/${templateName}`;
+    const response = await api.delete(url);
     return response.data;
   } catch (error) {
     console.error('Error deleting template:', error);
@@ -545,6 +548,38 @@ export const fetchUserSpaces = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching user spaces:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches all available spaces (for settings page).
+ * @return {Promise<Array>} All available spaces data.
+ */
+export const fetchAllSpaces = async () => {
+  try {
+    const response = await api.get('/spaces/all');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all spaces:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates user settings including password and space access.
+ * @param {Object} settingsData - The settings data to update.
+ * @param {string} [settingsData.currentPassword] - Current password for verification.
+ * @param {string} [settingsData.newPassword] - New password to set.
+ * @param {string} settingsData.spaces - Comma-separated list of spaces.
+ * @return {Promise<Object>} The update response.
+ */
+export const updateUserSettings = async (settingsData) => {
+  try {
+    const response = await api.put('/users/settings', settingsData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user settings:', error);
     throw error;
   }
 };

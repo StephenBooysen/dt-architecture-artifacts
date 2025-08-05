@@ -48,9 +48,11 @@ import { toast } from 'react-toastify';
  * @param {Function} props.onSave - Callback for saving the file.
  * @param {boolean} props.hasChanges - Whether the file has unsaved changes.
  * @param {string} props.currentSpace - The current space name.
+ * @param {boolean} props.isEditingTemplate - Whether currently editing a template.
+ * @param {Function} props.onCancelTemplateEdit - Callback for canceling template editing.
  * @return {JSX.Element} The MarkdownEditor component.
  */
-const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileData, onSave, hasChanges, currentSpace}) => {
+const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileData, onSave, hasChanges, currentSpace, isEditingTemplate, onCancelTemplateEdit}) => {
   const { isDark } = useTheme();
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -318,6 +320,19 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
             title="Open preview in new window">
             <i className="bi bi-box-arrow-up-right me-1"></i>Preview Window
           </button>
+          
+          {/* Cancel button for template editing */}
+          {isEditingTemplate && (
+            <>
+              <div className="vr mx-2"></div>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={onCancelTemplateEdit}
+                title="Cancel template editing and return to templates list">
+                <i className="bi bi-x-lg me-1"></i>Cancel
+              </button>
+            </>
+          )}
           
           {/* View mode buttons for markdown files */}
           {isMarkdown && (

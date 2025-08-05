@@ -38,3 +38,6 @@
 - Share a link to a file
 - Move recent and starred to user account
 - Invitations so include email in users
+
+# Bugs
+- GIT integration

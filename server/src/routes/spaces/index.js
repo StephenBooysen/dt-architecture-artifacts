@@ -682,6 +682,26 @@ router.post('/:space/force-reset', loadFilingProvider, checkSpaceAccess('write')
   }
 });
 
+// Get all available spaces (for settings page)
+router.get('/all', (req, res) => {
+  try {
+    // Load spaces configuration
+    const spacesPath = path.join(__dirname, '../../../../server-data/spaces.json');
+    if (!fs.existsSync(spacesPath)) {
+      return res.json([]);
+    }
+    
+    const spacesData = fs.readFileSync(spacesPath, 'utf8');
+    const allSpaces = JSON.parse(spacesData);
+    
+    // Return all spaces for settings page
+    res.json(allSpaces);
+  } catch (error) {
+    console.error('Error loading all spaces:', error);
+    res.status(500).json({ error: 'Failed to load spaces' });
+  }
+});
+
 // Debug endpoint to clear filing provider cache
 router.post('/debug/clear-cache/:space?', (req, res) => {
   const spaceName = req.params.space;

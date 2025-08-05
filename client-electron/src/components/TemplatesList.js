@@ -9,7 +9,7 @@
  * @since 2024-01-01
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { createFileFromTemplate } from '../services/api';
 
@@ -32,17 +32,19 @@ const TemplatesList = ({
   onTemplateSelect,
   isLoading
 }) => {
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [templateName, setTemplateName] = useState('');
   const [templateContent, setTemplateContent] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
+  const [templateTags, setTemplateTags] = useState('');
   const [templateVariables, setTemplateVariables] = useState('{}');
   const [showUseTemplateModal, setShowUseTemplateModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [newFileName, setNewFileName] = useState('');
   const [newFilePath, setNewFilePath] = useState('');
+  const [highlightedTemplate, setHighlightedTemplate] = useState(null);
 
   const handleCreateTemplate = async (e) => {
     e.preventDefault();
@@ -63,16 +65,23 @@ const TemplatesList = ({
         }
       }
 
-      await onTemplateCreate({
+      const newTemplate = {
         name: templateName.trim(),
         content: templateContent,
         description: templateDescription.trim(),
+        tags: templateTags.trim(),
         variables: variables
-      });
+      };
       
-      setShowCreateModal(false);
+      await onTemplateCreate(newTemplate);
+      
+      setShowCreateForm(false);
+      setHighlightedTemplate(templateName.trim());
       resetForm();
       toast.success('Template created successfully');
+      
+      // Remove highlight after 3 seconds
+      setTimeout(() => setHighlightedTemplate(null), 3000);
     } catch (error) {
       toast.error('Failed to create template');
     }
@@ -137,11 +146,12 @@ const TemplatesList = ({
     setTemplateName('');
     setTemplateContent('');
     setTemplateDescription('');
+    setTemplateTags('');
     setTemplateVariables('{}');
   };
 
   const closeModals = () => {
-    setShowCreateModal(false);
+    setShowCreateForm(false);
     setShowEditModal(false);
     setShowUseTemplateModal(false);
     setEditingTemplate(null);
@@ -240,7 +250,7 @@ const TemplatesList = ({
         </div>
         <button
           className="btn btn-primary"
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => setShowCreateForm(true)}
           disabled={isLoading}
         >
           <i className="bi bi-plus-lg me-2"></i>
@@ -267,11 +277,93 @@ const TemplatesList = ({
             <p className="text-muted mb-4">Create your first template to get started with standardized content.</p>
             <button
               className="btn btn-primary"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => setShowCreateForm(true)}
             >
               <i className="bi bi-plus-lg me-2"></i>
               Create Your First Template
             </button>
+          </div>
+        </div>
+      ) : showCreateForm ? (
+        <div className="home-section-card">
+          <div className="card-body">
+            <form onSubmit={handleCreateTemplate}>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="template-name" className="form-label">Template Name:</label>
+                  <input
+                    id="template-name"
+                    type="text"
+                    className="form-control"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder="e.g., meeting-notes"
+                    required
+                  />
+                </div>
+                
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="template-description" className="form-label">Description:</label>
+                  <input
+                    id="template-description"
+                    type="text"
+                    className="form-control"
+                    value={templateDescription}
+                    onChange={(e) => setTemplateDescription(e.target.value)}
+                    placeholder="Brief description of this template"
+                  />
+                </div>
+              </div>
+              
+              <div className="mb-3">
+                <label htmlFor="template-tags" className="form-label">Tags:</label>
+                <input
+                  id="template-tags"
+                  type="text"
+                  className="form-control"
+                  value={templateTags}
+                  onChange={(e) => setTemplateTags(e.target.value)}
+                  placeholder="e.g., financial, personal, meeting"
+                />
+                <div className="form-text">Separate multiple tags with commas</div>
+              </div>
+              
+              <div className="mb-3">
+                <label htmlFor="template-content" className="form-label">Template Content:</label>
+                <textarea
+                  id="template-content"
+                  className="form-control"
+                  value={templateContent}
+                  onChange={(e) => setTemplateContent(e.target.value)}
+                  placeholder="Enter your markdown template content here..."
+                  rows={12}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="template-variables" className="form-label">Variables (JSON):</label>
+                <textarea
+                  id="template-variables"
+                  className="form-control font-monospace"
+                  value={templateVariables}
+                  onChange={(e) => setTemplateVariables(e.target.value)}
+                  placeholder='{"variable1": "default value", "variable2": "another value"}'
+                  rows={4}
+                />
+                <div className="form-text">Define default values for template variables in JSON format.</div>
+              </div>
+              
+              <div className="d-flex gap-2">
+                <button type="submit" className="btn btn-primary">
+                  <i className="bi bi-check-lg me-2"></i>
+                  Save Template
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowCreateForm(false)}>
+                  <i className="bi bi-x-lg me-2"></i>
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       ) : (
@@ -280,7 +372,7 @@ const TemplatesList = ({
             <div className="row">
               {templates.map((template) => (
                 <div key={template.name} className="col-lg-3 col-md-4 col-6 mb-3">
-                  <div className="home-dashboard-block p-3 h-100 position-relative">
+                  <div className={`home-dashboard-block p-3 h-100 position-relative ${highlightedTemplate === template.name ? 'border-primary border-2' : ''}`}>
                     <div 
                       className="h-100 cursor-pointer"
                       onClick={() => handleTemplateClick(template)}
@@ -291,12 +383,16 @@ const TemplatesList = ({
                         <div className="flex-grow-1 min-width-0">
                           <h6 className="mb-1 text-confluence-text text-truncate fw-medium" title={template.name}>
                             {template.name.replace('.md', '')}
+                            {highlightedTemplate === template.name && <span className="badge bg-success ms-1 small">New</span>}
                           </h6>
                         </div>
                       </div>
                       <div className="small text-muted">
                         <div className="mb-1">
                           <span className="badge bg-secondary badge-sm">{getTemplateCategory(template)}</span>
+                          {template.tags && (
+                            <span className="ms-1 badge bg-info badge-sm">{template.tags}</span>
+                          )}
                         </div>
                         {template.description && (
                           <div className="mb-2 text-truncate" title={template.description} style={{ fontSize: '0.7rem', opacity: '0.8' }}>
@@ -360,94 +456,12 @@ const TemplatesList = ({
         </div>
       )}
 
-      {/* Create Template Modal */}
-      {showCreateModal && (
-                <div 
-          className={`modal fade ${showCreateModal ? 'show' : ''}`} 
-          style={{ display: showCreateModal ? 'block' : 'none' }}
-          tabIndex="-1"
-          onClick={closeModals}
-        >
-          <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Create New Template</h5>
-                <button type="button" className="btn-close" onClick={closeModals} aria-label="Close"></button>
-              </div>
-              <form onSubmit={handleCreateTemplate}>
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="template-name" className="form-label">Template Name:</label>
-                      <input
-                        id="template-name"
-                        type="text"
-                        className="form-control"
-                        value={templateName}
-                        onChange={(e) => setTemplateName(e.target.value)}
-                        placeholder="e.g., meeting-notes"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="template-description" className="form-label">Description:</label>
-                      <input
-                        id="template-description"
-                        type="text"
-                        className="form-control"
-                        value={templateDescription}
-                        onChange={(e) => setTemplateDescription(e.target.value)}
-                        placeholder="Brief description of this template"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="template-content" className="form-label">Template Content:</label>
-                    <textarea
-                      id="template-content"
-                      className="form-control"
-                      value={templateContent}
-                      onChange={(e) => setTemplateContent(e.target.value)}
-                      placeholder="Enter your markdown template content here..."
-                      rows={8}
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="template-variables" className="form-label">Variables (JSON):</label>
-                    <textarea
-                      id="template-variables"
-                      className="form-control font-monospace"
-                      value={templateVariables}
-                      onChange={(e) => setTemplateVariables(e.target.value)}
-                      placeholder='{"variable1": "default value", "variable2": "another value"}'
-                      rows={4}
-                    />
-                    <div className="form-text">Define default values for template variables in JSON format.</div>
-                  </div>
-                </div>
-                
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={closeModals}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    Create Template
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Edit Template Modal */}
       {showEditModal && (
                 <div 
-          className={`modal fade ${showCreateModal ? 'show' : ''}`} 
-          style={{ display: showCreateModal ? 'block' : 'none' }}
+          className={`modal fade ${showEditModal ? 'show' : ''}`} 
+          style={{ display: showEditModal ? 'block' : 'none' }}
           tabIndex="-1"
           onClick={closeModals}
         >
@@ -528,8 +542,8 @@ const TemplatesList = ({
       {/* Use Template Modal */}
       {showUseTemplateModal && selectedTemplate && (
                 <div 
-          className={`modal fade ${showCreateModal ? 'show' : ''}`} 
-          style={{ display: showCreateModal ? 'block' : 'none' }}
+          className={`modal fade ${showUseTemplateModal ? 'show' : ''}`} 
+          style={{ display: showUseTemplateModal ? 'block' : 'none' }}
           tabIndex="-1"
           onClick={closeModals}
         >

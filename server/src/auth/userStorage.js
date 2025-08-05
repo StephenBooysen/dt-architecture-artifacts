@@ -246,6 +246,38 @@ class UserStorage {
       }
     }
   }
+
+  /**
+   * Update user data
+   * @param {string} userId - The user ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<boolean>} - Success status
+   */
+  async updateUser(userId, updateData) {
+    const user = this.findUserById(userId);
+    if (!user) {
+      return false;
+    }
+
+    // Update user properties
+    if (updateData.password) {
+      const bcrypt = require('bcryptjs');
+      const saltRounds = 10;
+      user.password = await bcrypt.hash(updateData.password, saltRounds);
+    }
+
+    if (updateData.spaces !== undefined) {
+      user.spaces = updateData.spaces;
+    }
+
+    if (updateData.roles !== undefined) {
+      user.roles = updateData.roles;
+    }
+
+    // Save to file
+    await this.saveUsers();
+    return true;
+  }
 }
 
 module.exports = new UserStorage();

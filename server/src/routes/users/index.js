@@ -78,4 +78,105 @@ router.get('/spaces', requireAuth, (req, res) => {
   }
 });
 
+/**
+ * Update user settings (password and spaces)
+ */
+router.put('/settings', requireAuth, async (req, res) => {
+  try {
+    // Get current user from session
+    if (!req.user) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const { currentPassword, newPassword, spaces } = req.body;
+    const userId = req.user.id;
+
+    // Get current user data
+    const currentUser = userStorage.findUserById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // If password change is requested, validate current password
+    if (newPassword && !currentPassword) {
+      return res.status(400).json({ error: 'Current password is required to change password' });
+    }
+
+    if (newPassword) {
+      // Validate current password
+      const isCurrentPasswordValid = await userStorage.validateUser(currentUser.username, currentPassword);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+
+      // Validate new password
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+      }
+    }
+
+    // Validate spaces
+    if (!spaces || typeof spaces !== 'string') {
+      return res.status(400).json({ error: 'Spaces must be provided as a comma-separated string' });
+    }
+
+    // Ensure Personal space is always included
+    const spacesList = spaces.split(',').map(s => s.trim()).filter(s => s);
+    if (!spacesList.includes('Personal')) {
+      spacesList.unshift('Personal');
+    }
+
+    // Load spaces configuration to validate requested spaces
+    const spacesFilePath = path.join(__dirname, '../../../../server-data/spaces.json');
+    if (fs.existsSync(spacesFilePath)) {
+      const spacesData = fs.readFileSync(spacesFilePath, 'utf8');
+      const allSpaces = JSON.parse(spacesData);
+      
+      // Only allow spaces that exist and are public (except Personal which is always allowed)
+      const validSpaces = spacesList.filter(spaceName => {
+        if (spaceName === 'Personal') return true;
+        const spaceConfig = allSpaces.find(s => s.space === spaceName);
+        return spaceConfig && spaceConfig.visibility === 'public';
+      });
+
+      if (validSpaces.length !== spacesList.length) {
+        return res.status(400).json({ error: 'One or more requested spaces are not available or not public' });
+      }
+    }
+
+    // Update user data
+    const updateData = {
+      spaces: spacesList.join(', ')
+    };
+
+    if (newPassword) {
+      updateData.password = newPassword;
+    }
+
+    // Use userStorage to update the user
+    await userStorage.updateUser(userId, updateData);
+
+    // Get updated user data
+    const updatedUser = userStorage.findUserById(userId);
+    
+    // Return updated user data (without password)
+    const userResponse = {
+      id: updatedUser.id,
+      username: updatedUser.username,
+      createdAt: updatedUser.createdAt,
+      roles: updatedUser.roles || [],
+      spaces: updatedUser.spaces
+    };
+
+    res.json({
+      message: 'Settings updated successfully',
+      user: userResponse
+    });
+
+  } catch (error) {
+    console.error('Error updating user settings:', error);
+    res.status(500).json({ error: 'Failed to update user settings' });
+  }
+});
+
 module.exports = router;

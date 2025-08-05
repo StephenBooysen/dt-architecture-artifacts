@@ -34,6 +34,7 @@ import RecentFilesView from './components/RecentFilesView';
 import StarredFilesView from './components/StarredFilesView';
 import SearchResultsView from './components/SearchResultsView';
 import HomeView from './components/HomeView';
+import UserSettings from './components/UserSettings';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
 import KnowledgeSearchPane from './components/KnowledgeSearchPane';
@@ -927,7 +928,7 @@ function AppContent() {
 
   const handleTemplateCreate = async (templateData) => {
     try {
-      await createTemplate(templateData);
+      await createTemplate(templateData, currentSpace);
       await loadTemplates();
       // Return to templates list view after creating
       setCurrentView('templates');
@@ -939,7 +940,7 @@ function AppContent() {
 
   const handleTemplateEdit = async (templateName, templateData) => {
     try {
-      await updateTemplate(templateName, templateData);
+      await updateTemplate(templateName, templateData, currentSpace);
       await loadTemplates();
       // Return to templates list view after editing
       setCurrentView('templates');
@@ -951,11 +952,21 @@ function AppContent() {
 
   const handleTemplateDelete = async (templateName) => {
     try {
-      await deleteTemplate(templateName);
+      await deleteTemplate(templateName, currentSpace);
       await loadTemplates();
     } catch (error) {
       throw error;
     }
+  };
+
+  const handleCancelTemplateEdit = () => {
+    // Return to templates view and clear editing state
+    setCurrentView('templates');
+    setIsEditingTemplate(false);
+    setSelectedFile(null);
+    setFileContent('');
+    setFileData(null);
+    setHasChanges(false);
   };
 
   const handleTemplateSelect = async (template, action = 'use') => {
@@ -1365,17 +1376,15 @@ function AppContent() {
               </div>
 
               <div className="d-flex align-items-center gap-3">
-                <button
-                  className="btn btn-outline-secondary btn-sm"
-                  onClick={() => setCurrentView('home')}
-                  title="Home"
-                >
-                  <i className="bi bi-house"></i>
-                </button>
                 
                 {isAuthenticated ? (
                   <>
-                    <div className="d-flex align-items-center me-3">
+                    <div 
+                      className="d-flex align-items-center me-3 cursor-pointer" 
+                      onClick={() => setCurrentView('settings')}
+                      title="Click to open user settings"
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className="user-avatar me-2">
                         <i className="bi bi-person-circle text-primary" style={{fontSize: '1.5rem'}}></i>
                       </div>
@@ -1517,6 +1526,16 @@ function AppContent() {
               isLoading={isLoading}
               onClearSearch={handleClearSearch}
             />
+          ) : currentView === 'settings' ? (
+            <UserSettings
+              user={user}
+              onSettingsUpdate={(updatedUser) => {
+                // Update the auth context with the new user data
+                login(updatedUser);
+                toast.success('Settings updated successfully');
+              }}
+              onCancel={() => setCurrentView('home')}
+            />
           ) : (
             <MarkdownEditor
               content={fileContent}
@@ -1528,6 +1547,8 @@ function AppContent() {
               onSave={handleSave}
               hasChanges={hasChanges}
               currentSpace={currentSpace}
+              isEditingTemplate={isEditingTemplate}
+              onCancelTemplateEdit={handleCancelTemplateEdit}
             />
           )}
         </section>
