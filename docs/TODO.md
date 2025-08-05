@@ -41,3 +41,6 @@
 
 # Bugs
 - GIT integration
+
+# Features
+ -  Service that reads a local folder on your PC and syncs to your personal space.

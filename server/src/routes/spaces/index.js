@@ -683,7 +683,7 @@ router.post('/:space/force-reset', loadFilingProvider, checkSpaceAccess('write')
 });
 
 // Get all available spaces (for settings page)
-router.get('/all', (req, res) => {
+router.get('/spaces/all', (req, res) => {
   try {
     // Load spaces configuration
     const spacesPath = path.join(__dirname, '../../../../server-data/spaces.json');

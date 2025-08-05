@@ -26,7 +26,7 @@ const router = express.Router();
  */
 function requireAuth(req, res, next) {
   // First, check if user is authenticated via session (for web clients)
-  if (req.isAuthenticated()) {
+  if (req.isAuthenticated() && req.user) {
     return next();
   }
   
@@ -88,11 +88,34 @@ router.put('/settings', requireAuth, async (req, res) => {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
+    console.log('[Settings] User from request:', { 
+      id: req.user.id, 
+      idType: typeof req.user.id,
+      username: req.user.username 
+    });
+
+    // Debug: Show all users in storage
+    const allUsers = userStorage.getAllUsers();
+    console.log('[Settings] Total users in storage:', allUsers.length);
+    console.log('[Settings] All users in storage:', allUsers.map(u => ({ id: u.id, idType: typeof u.id, username: u.username })));
+
     const { currentPassword, newPassword, spaces } = req.body;
     const userId = req.user.id;
 
     // Get current user data
     const currentUser = userStorage.findUserById(userId);
+    console.log('[Settings] User found in storage:', currentUser ? { 
+      id: currentUser.id, 
+      idType: typeof currentUser.id,
+      username: currentUser.username 
+    } : 'null');
+    
+    // Debug: Try to find user with string and number versions
+    const userByString = userStorage.findUserById(String(userId));
+    const userByNumber = userStorage.findUserById(Number(userId));
+    console.log('[Settings] User by string ID:', userByString ? userByString.username : 'null');
+    console.log('[Settings] User by number ID:', userByNumber ? userByNumber.username : 'null');
+    
     if (!currentUser) {
       return res.status(404).json({ error: 'User not found' });
     }

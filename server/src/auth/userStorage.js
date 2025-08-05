@@ -132,7 +132,10 @@ class UserStorage {
   }
 
   findUserById(id) {
+    console.log('[UserStorage] Finding user by ID:', { id, idType: typeof id });
+    console.log('[UserStorage] Available user IDs:', this.users.map(u => ({ id: u.id, idType: typeof u.id, username: u.username })));
     const user = this.users.find(user => user.id === id);
+    console.log('[UserStorage] Found user:', user ? { id: user.id, username: user.username } : 'null');
     return user;
   }
 
