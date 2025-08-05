@@ -232,38 +232,41 @@ program
 program
   .command('config')
   .description('Manage configuration')
-  .option('-c, --create [file]', 'Create sample configuration file')
-  .option('-v, --view [file]', 'View current configuration')
-  .option('-s, --save [file]', 'Save current configuration to file')
+  .option('--create [file]', 'Create sample configuration file')
+  .option('--view [file]', 'View current configuration')
+  .option('--save [file]', 'Save current configuration to file')
   .action(async (options) => {
     try {
       configManager = new ConfigManager();
 
       if (options.create !== undefined) {
-        const configFile = options.create || 'watcher.config.json';
+        const configFile = typeof options.create === 'string' ? options.create : 'watcher.config.json';
         await configManager.createSampleConfig(configFile);
         return;
       }
 
       if (options.view !== undefined) {
+        const configFile = typeof options.view === 'string' ? options.view : undefined;
         const config = await configManager.load({
-          configFile: options.view || undefined
+          configFile: configFile
         });
         configManager.printConfig();
         return;
       }
 
       if (options.save !== undefined) {
+        const configFile = typeof options.save === 'string' ? options.save : undefined;
         const config = await configManager.load();
-        await configManager.save(options.save || undefined);
+        await configManager.save(configFile);
         return;
       }
 
       // Default: show help
-      console.log(chalk.yellow('Please specify an option. Use --help for more information.'));
+      console.log(chalk.yellow('Please specify an option for the config command. Use --help for more information.'));
 
     } catch (error) {
-      console.error(chalk.red('[ERROR]'), error.message);
+      console.error(chalk.red('[CONFIG ERROR]'), error.message);
+      console.error(chalk.red('[ERROR]'), error.stack);
       process.exit(1);
     }
   });

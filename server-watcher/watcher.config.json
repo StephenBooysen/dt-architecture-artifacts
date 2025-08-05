@@ -1,0 +1,21 @@
+{
+  "serverUrl": "http://localhost:5000",
+  "apiKey": "ak_29f02cffdd3f8b4ab03d1e59ebf235530a20c1f15ad1e233c6ce8082e685deae",
+  "username": "admin",
+  "localPath": "/home/stephen/Pictures/",
+  "remotePath": "synced-files",
+  "watchOptions": {
+    "ignoreInitial": false,
+    "ignored": [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/.DS_Store",
+      "**/Thumbs.db",
+      "**/*.tmp",
+      "**/*.temp",
+      "**/.*"
+    ]
+  },
+  "verbose": false,
+  "dryRun": false
+}

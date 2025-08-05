@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import './UserSettings.css';
 import { toast } from 'react-toastify';
 import { fetchUserSpaces, fetchAllSpaces, updateUserSettings, getApiKeys, generateApiKey, updateApiKey, revokeApiKey } from '../services/api';
 
@@ -250,7 +251,7 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
   };
 
   return (
-    <div className="user-settings-view p-4 confluence-bg">
+    <div className="user-settings-view p-4 confluence-bg user-settings-scrollable">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="h4 text-confluence-text mb-1">User Settings</h2>
@@ -433,7 +434,7 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
                     <h6 className="mb-0">Generate New API Key</h6>
                   </div>
                   <div className="card-body">
-                    <form onSubmit={handleGenerateApiKey}>
+                    <div>
                       <div className="row">
                         <div className="col-md-6 mb-3">
                           <label htmlFor="api-key-name" className="form-label">Name*</label>
@@ -460,7 +461,7 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
                         </div>
                       </div>
                       <div className="d-flex gap-2">
-                        <button type="submit" className="btn btn-primary">
+                        <button type="button" className="btn btn-primary" onClick={handleGenerateApiKey}>
                           <i className="bi bi-key me-2"></i>
                           Generate Key
                         </button>
@@ -475,7 +476,7 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
                           Cancel
                         </button>
                       </div>
-                    </form>
+                    </div>
                   </div>
                 </div>
               )}
@@ -600,7 +601,7 @@ const EditApiKeyForm = ({ apiKey, onSave, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <div className="row">
         <div className="col-md-6 mb-3">
           <label htmlFor={`edit-name-${apiKey.id}`} className="form-label">Name*</label>
@@ -625,7 +626,7 @@ const EditApiKeyForm = ({ apiKey, onSave, onCancel }) => {
         </div>
       </div>
       <div className="d-flex gap-2">
-        <button type="submit" className="btn btn-primary btn-sm">
+        <button type="button" className="btn btn-primary btn-sm" onClick={handleSubmit}>
           <i className="bi bi-check-lg me-2"></i>
           Save
         </button>
@@ -634,7 +635,7 @@ const EditApiKeyForm = ({ apiKey, onSave, onCancel }) => {
           Cancel
         </button>
       </div>
-    </form>
+    </div>
   );
 };
 
