@@ -24,10 +24,11 @@ import { useAuth } from '../contexts/AuthContext';
  * @param {Object} props - Component properties.
  * @param {Function} props.onFileSelect - Callback for file selection.
  * @param {Function} props.onTemplateSelect - Callback for template selection.
+ * @param {Function} props.onNewMarkdown - Callback to create new markdown file.
  * @param {boolean} props.isVisible - Whether the component is currently visible.
  * @return {JSX.Element} The HomeView component.
  */
-const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = false, currentSpace }) => {
+const HomeView = ({ onFileSelect, onTemplateSelect, onNewMarkdown, isVisible, isReadonly = false, currentSpace }) => {
   const { isDark } = useTheme();
   const { isAuthenticated } = useAuth();
   const [recentFiles, setRecentFiles] = useState([]);
@@ -467,6 +468,17 @@ const HomeView = ({ onFileSelect, onTemplateSelect, isVisible, isReadonly = fals
           <div className="text-center mb-4">
             <h1 className="display-5 text-confluence-text mb-2">Welcome to Architecture Artifacts</h1>
             <p className="lead text-muted">Your documentation workspace dashboard</p>
+            {!isReadonly && onNewMarkdown && (
+              <div className="mt-4">
+                <button
+                  className="btn btn-primary btn-lg"
+                  onClick={onNewMarkdown}
+                >
+                  <i className="bi bi-file-earmark-plus me-2"></i>
+                  Create New Markdown File
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

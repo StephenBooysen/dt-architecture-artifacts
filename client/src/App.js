@@ -35,6 +35,7 @@ import StarredFilesView from './components/StarredFilesView';
 import SearchResultsView from './components/SearchResultsView';
 import HomeView from './components/HomeView';
 import UserSettings from './components/UserSettings';
+import NewMarkdownForm from './components/NewMarkdownForm';
 import LoginModal from './components/Auth/LoginModal';
 import RegisterModal from './components/Auth/RegisterModal';
 import KnowledgeSearchPane from './components/KnowledgeSearchPane';
@@ -93,7 +94,7 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search', 'new-markdown'
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
@@ -1167,7 +1168,7 @@ function AppContent() {
   const handleViewChange = (view) => {
     setCurrentView(view);
     // Clear selected file when switching to special views
-    if (view === 'recent' || view === 'starred' || view === 'search' || view === 'home') {
+    if (view === 'recent' || view === 'starred' || view === 'search' || view === 'home' || view === 'new-markdown') {
       setSelectedFile(null);
       setFileContent('');
       setFileData(null);
@@ -1494,6 +1495,7 @@ function AppContent() {
             <HomeView
               onFileSelect={handleFileSelect}
               onTemplateSelect={handleTemplateSelect}
+              onNewMarkdown={() => setCurrentView('new-markdown')}
               isVisible={currentView === 'home'}
               isReadonly={isCurrentSpaceReadonly}
               currentSpace={currentSpace}
@@ -1534,6 +1536,12 @@ function AppContent() {
                 login(updatedUser);
                 toast.success('Settings updated successfully');
               }}
+              onCancel={() => setCurrentView('home')}
+            />
+          ) : currentView === 'new-markdown' ? (
+            <NewMarkdownForm
+              currentSpace={currentSpace}
+              onCreateFile={handleCreateFile}
               onCancel={() => setCurrentView('home')}
             />
           ) : (

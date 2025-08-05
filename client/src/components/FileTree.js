@@ -115,17 +115,22 @@ const FileTree = ({
   const fileTreeRef = useRef(null);
 
   const handleCreateClick = (type, basePath = '') => {
+    if (type === 'file') {
+      // For files, redirect to the new markdown form instead of showing modal
+      if (onViewChange) {
+        onViewChange('new-markdown');
+      }
+      setContextMenu(null);
+      return;
+    }
+    
+    // For folders, still use the modal
     setCreateType(type);
     setCreatePath(basePath);
     setInputValue('');
     setSelectedTemplate('');
     setShowCreateDialog(true);
     setContextMenu(null);
-    
-    // Load templates when creating a file
-    if (type === 'file') {
-      loadTemplates();
-    }
   };
 
   const loadTemplates = async () => {
@@ -700,7 +705,7 @@ const FileTree = ({
         </div>
       )}
 
-      {showCreateDialog && (
+      {showCreateDialog && createType === 'folder' && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(9, 30, 66, 0.54)'}}>
           <div className="modal-dialog">
             <div className="modal-content">
