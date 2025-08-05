@@ -13,7 +13,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { fetchUserSpaces, fetchAllSpaces, updateUserSettings } from '../services/api';
+import { fetchUserSpaces, fetchAllSpaces, updateUserSettings, getApiKeys, generateApiKey, updateApiKey, revokeApiKey } from '../services/api';
 
 /**
  * UserSettings component for managing user password and space access.
@@ -32,10 +32,19 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSpaces, setIsLoadingSpaces] = useState(true);
   const [errors, setErrors] = useState({});
+  
+  // API Key management state
+  const [apiKeys, setApiKeys] = useState([]);
+  const [isLoadingApiKeys, setIsLoadingApiKeys] = useState(true);
+  const [showApiKeyForm, setShowApiKeyForm] = useState(false);
+  const [apiKeyForm, setApiKeyForm] = useState({ name: '', description: '' });
+  const [editingApiKey, setEditingApiKey] = useState(null);
+  const [newlyGeneratedKey, setNewlyGeneratedKey] = useState(null);
 
-  // Load available spaces on component mount
+  // Load available spaces and API keys on component mount
   useEffect(() => {
     loadAvailableSpaces();
+    loadApiKeys();
   }, []);
 
   const loadAvailableSpaces = async () => {
@@ -59,6 +68,76 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
     } finally {
       setIsLoadingSpaces(false);
     }
+  };
+
+  const loadApiKeys = async () => {
+    try {
+      setIsLoadingApiKeys(true);
+      const response = await getApiKeys();
+      setApiKeys(response.apiKeys || []);
+    } catch (error) {
+      console.error('Failed to load API keys:', error);
+      toast.error('Failed to load API keys');
+    } finally {
+      setIsLoadingApiKeys(false);
+    }
+  };
+
+  const handleGenerateApiKey = async (e) => {
+    e.preventDefault();
+    
+    if (!apiKeyForm.name.trim()) {
+      toast.error('API key name is required');
+      return;
+    }
+
+    try {
+      const response = await generateApiKey({
+        name: apiKeyForm.name.trim(),
+        description: apiKeyForm.description.trim()
+      });
+      
+      setNewlyGeneratedKey(response.apiKey);
+      setApiKeyForm({ name: '', description: '' });
+      setShowApiKeyForm(false);
+      await loadApiKeys(); // Reload the list
+      toast.success('API key generated successfully');
+    } catch (error) {
+      console.error('Failed to generate API key:', error);
+      toast.error('Failed to generate API key: ' + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const handleUpdateApiKey = async (keyId, updateData) => {
+    try {
+      await updateApiKey(keyId, updateData);
+      setEditingApiKey(null);
+      await loadApiKeys(); // Reload the list
+      toast.success('API key updated successfully');
+    } catch (error) {
+      console.error('Failed to update API key:', error);
+      toast.error('Failed to update API key: ' + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const handleRevokeApiKey = async (keyId, keyName) => {
+    if (!window.confirm(`Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await revokeApiKey(keyId);
+      await loadApiKeys(); // Reload the list
+      toast.success('API key revoked successfully');
+    } catch (error) {
+      console.error('Failed to revoke API key:', error);
+      toast.error('Failed to revoke API key: ' + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
   };
 
   const validateForm = () => {
@@ -289,6 +368,187 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
               )}
             </div>
 
+            <hr />
+
+            {/* API Key Management Section */}
+            <div className="mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="text-confluence-text mb-0">API Keys</h5>
+                <button 
+                  type="button" 
+                  className="btn btn-primary btn-sm"
+                  onClick={() => setShowApiKeyForm(true)}
+                >
+                  <i className="bi bi-plus-lg me-2"></i>
+                  Generate API Key
+                </button>
+              </div>
+              <p className="text-muted small mb-3">
+                Generate API keys for external applications and services to access your personal space.
+              </p>
+
+              {/* Newly Generated Key Alert */}
+              {newlyGeneratedKey && (
+                <div className="alert alert-success alert-dismissible" role="alert">
+                  <h6 className="alert-heading">
+                    <i className="bi bi-check-circle-fill me-2"></i>
+                    API Key Generated Successfully
+                  </h6>
+                  <p className="mb-2">
+                    <strong>Key Name:</strong> {newlyGeneratedKey.name}
+                  </p>
+                  <p className="mb-2">
+                    <strong>API Key:</strong>
+                  </p>
+                  <div className="input-group mb-2">
+                    <input 
+                      type="text" 
+                      className="form-control font-monospace" 
+                      value={newlyGeneratedKey.key} 
+                      readOnly 
+                    />
+                    <button 
+                      className="btn btn-outline-secondary" 
+                      type="button"
+                      onClick={() => copyToClipboard(newlyGeneratedKey.key)}
+                    >
+                      <i className="bi bi-clipboard"></i>
+                    </button>
+                  </div>
+                  <small className="text-muted">
+                    This is the only time the full API key will be shown. Please copy it now.
+                  </small>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setNewlyGeneratedKey(null)}
+                  ></button>
+                </div>
+              )}
+
+              {/* API Key Form */}
+              {showApiKeyForm && (
+                <div className="card border-primary mb-3">
+                  <div className="card-header bg-primary bg-opacity-10">
+                    <h6 className="mb-0">Generate New API Key</h6>
+                  </div>
+                  <div className="card-body">
+                    <form onSubmit={handleGenerateApiKey}>
+                      <div className="row">
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="api-key-name" className="form-label">Name*</label>
+                          <input
+                            id="api-key-name"
+                            type="text"
+                            className="form-control"
+                            value={apiKeyForm.name}
+                            onChange={(e) => setApiKeyForm(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="e.g., Server Watcher"
+                            required
+                          />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="api-key-description" className="form-label">Description</label>
+                          <input
+                            id="api-key-description"
+                            type="text"
+                            className="form-control"
+                            value={apiKeyForm.description}
+                            onChange={(e) => setApiKeyForm(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Optional description"
+                          />
+                        </div>
+                      </div>
+                      <div className="d-flex gap-2">
+                        <button type="submit" className="btn btn-primary">
+                          <i className="bi bi-key me-2"></i>
+                          Generate Key
+                        </button>
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            setShowApiKeyForm(false);
+                            setApiKeyForm({ name: '', description: '' });
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* API Keys List */}
+              {isLoadingApiKeys ? (
+                <div className="d-flex justify-content-center p-4">
+                  <div className="spinner-border text-primary me-2" role="status"></div>
+                  <span className="text-muted">Loading API keys...</span>
+                </div>
+              ) : apiKeys.length === 0 ? (
+                <div className="text-center text-muted p-4">
+                  <i className="bi bi-key display-6 d-block mb-2"></i>
+                  <p>No API keys generated yet.</p>
+                  <p className="small">Generate your first API key to get started.</p>
+                </div>
+              ) : (
+                <div className="row">
+                  {apiKeys.map((key) => (
+                    <div key={key.id} className="col-12 mb-3">
+                      <div className="card">
+                        <div className="card-body">
+                          {editingApiKey === key.id ? (
+                            <EditApiKeyForm 
+                              apiKey={key}
+                              onSave={(updateData) => handleUpdateApiKey(key.id, updateData)}
+                              onCancel={() => setEditingApiKey(null)}
+                            />
+                          ) : (
+                            <div className="d-flex justify-content-between align-items-start">
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">{key.name}</h6>
+                                {key.description && (
+                                  <p className="text-muted small mb-2">{key.description}</p>
+                                )}
+                                <div className="d-flex align-items-center gap-3 small text-muted">
+                                  <span>
+                                    <strong>Key:</strong> {key.keyPreview}
+                                  </span>
+                                  <span>
+                                    <strong>Created:</strong> {new Date(key.createdAt).toLocaleDateString()}
+                                  </span>
+                                  {key.lastUsed && (
+                                    <span>
+                                      <strong>Last used:</strong> {new Date(key.lastUsed).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="d-flex gap-2">
+                                <button 
+                                  className="btn btn-outline-secondary btn-sm"
+                                  onClick={() => setEditingApiKey(key.id)}
+                                >
+                                  <i className="bi bi-pencil"></i>
+                                </button>
+                                <button 
+                                  className="btn btn-outline-danger btn-sm"
+                                  onClick={() => handleRevokeApiKey(key.id, key.name)}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Form Actions */}
             <div className="d-flex gap-2">
               <button 
@@ -322,6 +582,59 @@ const UserSettings = ({ user, onSettingsUpdate, onCancel }) => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Helper component for editing API keys
+const EditApiKeyForm = ({ apiKey, onSave, onCancel }) => {
+  const [name, setName] = useState(apiKey.name);
+  const [description, setDescription] = useState(apiKey.description || '');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error('API key name is required');
+      return;
+    }
+    onSave({ name: name.trim(), description: description.trim() });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="row">
+        <div className="col-md-6 mb-3">
+          <label htmlFor={`edit-name-${apiKey.id}`} className="form-label">Name*</label>
+          <input
+            id={`edit-name-${apiKey.id}`}
+            type="text"
+            className="form-control"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="col-md-6 mb-3">
+          <label htmlFor={`edit-description-${apiKey.id}`} className="form-label">Description</label>
+          <input
+            id={`edit-description-${apiKey.id}`}
+            type="text"
+            className="form-control"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="d-flex gap-2">
+        <button type="submit" className="btn btn-primary btn-sm">
+          <i className="bi bi-check-lg me-2"></i>
+          Save
+        </button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel}>
+          <i className="bi bi-x-lg me-2"></i>
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 };
 

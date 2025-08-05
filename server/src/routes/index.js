@@ -19,6 +19,7 @@ const userStorage = require('../auth/userStorage');
 // Import specialized route modules
 const authRoutes = require('./auth');
 const userRoutes = require('./users');
+const apiKeyRoutes = require('./api-keys');
 const { router: spacesRoutes, loadFilingProvider, checkSpaceAccess } = require('./spaces');
 const folderRoutes = require('./folders');
 const fileRoutes = require('./files');
@@ -63,7 +64,7 @@ if (process.env.FILING_PROVIDER === 'git') {
 
 /**
  * Authentication middleware to protect routes
- * Supports both session-based (cookies) and token-based (Authorization header) authentication
+ * Supports session-based (cookies), token-based (Authorization header), and API key authentication
  */
 function requireAuth(req, res, next) {
   // First, check if user is authenticated via session (for web clients)
@@ -71,11 +72,18 @@ function requireAuth(req, res, next) {
     return next();
   }
   
-  // If not authenticated via session, check for Authorization header (for VS Code extension)
+  // If not authenticated via session, check for Authorization header
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    const user = userStorage.validateSessionToken(token);
+    
+    // Try session token first (for VS Code extension)
+    let user = userStorage.validateSessionToken(token);
+    
+    // If not a session token, try API key authentication
+    if (!user) {
+      user = userStorage.authenticateByApiKey(token);
+    }
     
     if (user) {
       // Set user on request object so other middleware can access it
@@ -545,6 +553,9 @@ router.use('/auth', authRoutes);
 
 // User routes
 router.use('/user', userRoutes);
+
+// API Key routes  
+router.use('/api-keys', apiKeyRoutes);
 
 // Server routes
 router.use('/server', serverRoutes);

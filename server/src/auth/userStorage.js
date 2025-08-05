@@ -20,12 +20,15 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const USERS_FILE = path.join(__dirname, '../../../server-data/users.json');
+const API_KEYS_FILE = path.join(__dirname, '../../../server-data/api-keys.json');
 
 class UserStorage {
   constructor() {
     this.users = [];
+    this.apiKeys = []; // API keys storage
     this.sessions = new Map(); // In-memory session storage: sessionId -> { userId, expiresAt }
     this.loadUsersSync();
+    this.loadApiKeysSync();
   }
 
   loadUsersSync() {
@@ -64,6 +67,45 @@ class UserStorage {
       await fs.writeFile(USERS_FILE, JSON.stringify(this.users, null, 2));
     } catch (error) {
       console.error('Error saving users:', error);
+    }
+  }
+
+  loadApiKeysSync() {
+    try {
+      const data = require('fs').readFileSync(API_KEYS_FILE, 'utf8');
+      this.apiKeys = JSON.parse(data);
+      console.log('API keys loaded synchronously:', this.apiKeys.length);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        this.apiKeys = [];
+        console.log('API keys file not found, starting with empty array');
+      } else {
+        console.error('Error loading API keys:', error);
+        this.apiKeys = [];
+      }
+    }
+  }
+
+  async loadApiKeys() {
+    try {
+      const data = await fs.readFile(API_KEYS_FILE, 'utf8');
+      this.apiKeys = JSON.parse(data);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        this.apiKeys = [];
+        await this.saveApiKeys();
+      } else {
+        console.error('Error loading API keys:', error);
+        this.apiKeys = [];
+      }
+    }
+  }
+
+  async saveApiKeys() {
+    try {
+      await fs.writeFile(API_KEYS_FILE, JSON.stringify(this.apiKeys, null, 2));
+    } catch (error) {
+      console.error('Error saving API keys:', error);
     }
   }
 
@@ -280,6 +322,164 @@ class UserStorage {
     // Save to file
     await this.saveUsers();
     return true;
+  }
+
+  /**
+   * Create a new API key for a user
+   * @param {Object} keyData - API key data
+   * @returns {boolean} - Success status
+   */
+  createApiKey(keyData) {
+    try {
+      this.apiKeys.push(keyData);
+      this.saveApiKeys();
+      return true;
+    } catch (error) {
+      console.error('Error creating API key:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get all API keys for a user
+   * @param {string} userId - The user ID
+   * @returns {Array} - Array of API keys
+   */
+  getUserApiKeys(userId) {
+    return this.apiKeys.filter(key => key.userId === userId && key.isActive);
+  }
+
+  /**
+   * Get API key by ID
+   * @param {string} keyId - The API key ID
+   * @returns {Object|null} - The API key or null if not found
+   */
+  getApiKeyById(keyId) {
+    return this.apiKeys.find(key => key.id === keyId && key.isActive);
+  }
+
+  /**
+   * Get API key by the actual key value
+   * @param {string} keyValue - The API key value
+   * @returns {Object|null} - The API key or null if not found
+   */
+  getApiKeyByValue(keyValue) {
+    return this.apiKeys.find(key => key.key === keyValue && key.isActive);
+  }
+
+  /**
+   * Update API key last used timestamp
+   * @param {string} keyValue - The API key value
+   */
+  updateApiKeyLastUsed(keyValue) {
+    const apiKey = this.getApiKeyByValue(keyValue);
+    if (apiKey) {
+      apiKey.lastUsed = new Date().toISOString();
+      this.saveApiKeys();
+    }
+  }
+
+  /**
+   * Revoke an API key
+   * @param {string} keyId - The API key ID
+   * @returns {boolean} - Success status
+   */
+  revokeApiKey(keyId) {
+    try {
+      const apiKey = this.getApiKeyById(keyId);
+      if (apiKey) {
+        apiKey.isActive = false;
+        apiKey.revokedAt = new Date().toISOString();
+        this.saveApiKeys();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error revoking API key:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Update API key metadata
+   * @param {string} keyId - The API key ID
+   * @param {Object} updateData - Data to update
+   * @returns {boolean} - Success status
+   */
+  updateApiKey(keyId, updateData) {
+    try {
+      const apiKey = this.getApiKeyById(keyId);
+      if (apiKey) {
+        if (updateData.name !== undefined) {
+          apiKey.name = updateData.name;
+        }
+        if (updateData.description !== undefined) {
+          apiKey.description = updateData.description;
+        }
+        apiKey.updatedAt = new Date().toISOString();
+        this.saveApiKeys();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating API key:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Authenticate user by API key
+   * @param {string} keyValue - The API key value
+   * @returns {Object|null} - The user object or null if invalid
+   */
+  authenticateByApiKey(keyValue) {
+    const apiKey = this.getApiKeyByValue(keyValue);
+    if (!apiKey) {
+      return null;
+    }
+
+    const user = this.findUserById(apiKey.userId);
+    if (!user) {
+      return null;
+    }
+
+    // Update last used timestamp
+    this.updateApiKeyLastUsed(keyValue);
+
+    return {
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt,
+      roles: user.roles || [],
+      spaces: user.spaces,
+      apiKeyId: apiKey.id
+    };
+  }
+
+  /**
+   * Validate user credentials (username and password)
+   * @param {string} username - Username
+   * @param {string} password - Password
+   * @returns {Promise<Object|null>} - User object or null if invalid
+   */
+  async validateUser(username, password) {
+    const user = this.findUserByUsername(username);
+    if (!user || !user.password) {
+      return null;
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt,
+      roles: user.roles || [],
+      spaces: user.spaces
+    };
   }
 }
 

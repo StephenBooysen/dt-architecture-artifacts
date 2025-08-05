@@ -584,4 +584,72 @@ export const updateUserSettings = async (settingsData) => {
   }
 };
 
+/**
+ * API Key management functions
+ */
+
+/**
+ * Gets all API keys for the current user.
+ * @return {Promise<Object>} The API keys data.
+ */
+export const getApiKeys = async () => {
+  try {
+    const response = await api.get('/api-keys');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting API keys:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generates a new API key.
+ * @param {Object} keyData - The API key data.
+ * @param {string} keyData.name - Name for the API key.
+ * @param {string} [keyData.description] - Optional description.
+ * @return {Promise<Object>} The new API key data.
+ */
+export const generateApiKey = async (keyData) => {
+  try {
+    const response = await api.post('/api-keys/generate', keyData);
+    return response.data;
+  } catch (error) {
+    console.error('Error generating API key:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an API key's metadata.
+ * @param {string} keyId - The API key ID.
+ * @param {Object} updateData - Data to update.
+ * @param {string} updateData.name - Name for the API key.
+ * @param {string} [updateData.description] - Optional description.
+ * @return {Promise<Object>} The updated API key data.
+ */
+export const updateApiKey = async (keyId, updateData) => {
+  try {
+    const response = await api.put(`/api-keys/${keyId}`, updateData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating API key:', error);
+    throw error;
+  }
+};
+
+/**
+ * Revokes an API key.
+ * @param {string} keyId - The API key ID to revoke.
+ * @return {Promise<Object>} The revocation response.
+ */
+export const revokeApiKey = async (keyId) => {
+  try {
+    const response = await api.delete(`/api-keys/${keyId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error revoking API key:', error);
+    throw error;
+  }
+};
+
 export default api;
