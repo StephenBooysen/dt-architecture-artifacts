@@ -3,7 +3,7 @@
   "apiKey": "ak_29f02cffdd3f8b4ab03d1e59ebf235530a20c1f15ad1e233c6ce8082e685deae",
   "username": "admin",
   "localPath": "/home/stephen/Pictures/",
-  "remotePath": "synced-files",
+  "remotePath": "test-watcher-sync",
   "watchOptions": {
     "ignoreInitial": false,
     "ignored": [
@@ -17,5 +17,14 @@
     ]
   },
   "verbose": false,
-  "dryRun": false
+  "dryRun": false,
+  "serverRetry": {
+    "maxRetries": 60,
+    "retryInterval": 5000
+  },
+  "operationRetry": {
+    "maxRetries": 3,
+    "retryDelay": 2000,
+    "backoffMultiplier": 1.5
+  }
 }

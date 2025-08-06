@@ -531,11 +531,11 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: #dfe1e6;
+  background: #e5e8ec;
 }
 
 .auth-divider span {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
   padding: 0 12px;
   position: relative;
   z-index: 1;
@@ -543,12 +543,12 @@
 
 .google-login-button {
   width: 100%;
-  background: white;
-  color: #333;
-  border: 1px solid #dadce0;
+  background-color: #ffffff;
+  border: 1px solid #e5e8ec;
+  color: #172b4d;
+  font-weight: 500;
   padding: 12px;
   border-radius: 6px;
-  font-weight: 500;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
@@ -560,22 +560,21 @@
 }
 
 .google-login-button:hover {
-  background: #f8f9fa;
-  border-color: #c1c7cd;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #f7f8fa;
+  border-color: #e5e8ec;
+  color: #172b4d;
+  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.08);
 }
 
-.google-icon {
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
-  color: white;
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 10px;
+.google-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.google-login-button i {
+  font-size: 16px;
 }
 
 /* Settings Panel */

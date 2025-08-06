@@ -30,6 +30,13 @@ class ApiClient {
     this.username = config.username;
     this.verbose = config.verbose || false;
     
+    // Retry configuration for operations
+    this.retryConfig = config.operationRetry || {
+      maxRetries: 3,
+      retryDelay: 2000,
+      backoffMultiplier: 1.5
+    };
+    
     // Create axios instance with default configuration
     this.client = axios.create({
       baseURL: `${this.serverUrl}/api`,
@@ -53,7 +60,9 @@ class ApiClient {
       }
     );
 
-    this.personalSpace = 'Personal'; // Fixed personal space name
+    // Use space-specific endpoints to ensure files go to the correct space
+    this.useLegacyEndpoints = false;
+    this.personalSpace = 'Personal';
   }
 
   /**
@@ -83,6 +92,83 @@ class ApiClient {
   }
 
   /**
+   * Check if an error is retriable (server restart, network issues, etc.)
+   * @param {Error} error - The error to check
+   * @returns {boolean} True if the error is retriable
+   */
+  isRetriableError(error) {
+    // Check for common retriable errors
+    const retriableMessages = [
+      'socket hang up',
+      'ECONNRESET',
+      'ECONNREFUSED', 
+      'ENOTFOUND',
+      'ETIMEDOUT',
+      'Empty reply from server'
+    ];
+    
+    // Check error message
+    if (error.message && retriableMessages.some(msg => error.message.includes(msg))) {
+      return true;
+    }
+    
+    // Check for HTTP status codes that might be retriable
+    if (error.response) {
+      const status = error.response.status;
+      // 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout
+      if (status === 502 || status === 503 || status === 504) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Execute an API operation with retry logic
+   * @param {Function} operation - The async operation to retry
+   * @param {string} operationName - Name of the operation for logging
+   * @param {Object} options - Retry options
+   * @returns {Promise<any>} The result of the operation
+   */
+  async withRetry(operation, operationName, options = {}) {
+    const {
+      maxRetries = this.retryConfig.maxRetries,
+      retryDelay = this.retryConfig.retryDelay,
+      backoffMultiplier = this.retryConfig.backoffMultiplier
+    } = options;
+
+    let lastError = null;
+    let delay = retryDelay;
+
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+      try {
+        if (attempt > 1) {
+          this.log(`Retrying ${operationName} (attempt ${attempt}/${maxRetries + 1})...`);
+        }
+        
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        
+        if (attempt <= maxRetries && this.isRetriableError(error)) {
+          this.log(`${operationName} failed (attempt ${attempt}), retrying in ${delay}ms: ${error.message}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay = Math.min(delay * backoffMultiplier, 10000); // Cap at 10 seconds
+        } else {
+          // Either max retries reached or non-retriable error
+          if (this.isRetriableError(error) && attempt > maxRetries) {
+            this.logError(`${operationName} failed after ${maxRetries + 1} attempts:`, error.message);
+          }
+          throw error;
+        }
+      }
+    }
+    
+    throw lastError;
+  }
+
+  /**
    * Test the connection to the server
    * @returns {Promise<boolean>} True if connection is successful
    */
@@ -103,33 +189,33 @@ class ApiClient {
    * @returns {Promise<Array>} File tree structure
    */
   async getFileTree() {
-    try {
-      this.log(`Getting file tree for ${this.personalSpace} space...`);
-      const response = await this.client.get(`/${this.personalSpace}/folders`);
+    return this.withRetry(async () => {
+      this.log('Getting file tree...');
+      // Try the legacy files endpoint as the space-specific one has issues
+      const response = await this.client.get('/files');
       this.log('File tree retrieved successfully');
       return response.data;
-    } catch (error) {
-      this.logError('Failed to get file tree:', error.message);
-      throw error;
-    }
+    }, 'Get file tree');
   }
 
   /**
-   * Check if a file exists in the personal space
+   * Check if a file exists in the personal space  
    * @param {string} filePath - Relative path to the file
    * @returns {Promise<boolean>} True if file exists
    */
   async fileExists(filePath) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Checking if file exists: ${filePath}`);
-      await this.client.get(`/${this.personalSpace}/files/${filePath}`);
-      return true;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        return false;
+      try {
+        await this.client.get(`/${this.personalSpace}/files/${encodeURIComponent(filePath)}`);
+        return true;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          return false;
+        }
+        throw error;
       }
-      throw error;
-    }
+    }, `Check file exists ${filePath}`);
   }
 
   /**
@@ -140,7 +226,7 @@ class ApiClient {
   async getFileContent(filePath) {
     try {
       this.log(`Getting content for file: ${filePath}`);
-      const response = await this.client.get(`/${this.personalSpace}/files/${filePath}`);
+      const response = await this.client.get(`/files/${encodeURIComponent(filePath)}`);
       return response.data.content || response.data.cleanContent || '';
     } catch (error) {
       this.logError(`Failed to get file content for ${filePath}:`, error.message);
@@ -155,16 +241,14 @@ class ApiClient {
    * @returns {Promise<void>}
    */
   async createFile(filePath, content) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Creating file: ${filePath}`);
-      await this.client.post(`/${this.personalSpace}/files/${filePath}`, {
+      await this.client.post(`/${this.personalSpace}/files`, {
+        filePath: filePath,
         content: content
       });
       this.logSuccess(`File created: ${filePath}`);
-    } catch (error) {
-      this.logError(`Failed to create file ${filePath}:`, error.message);
-      throw error;
-    }
+    }, `Create file ${filePath}`);
   }
 
   /**
@@ -174,16 +258,13 @@ class ApiClient {
    * @returns {Promise<void>}
    */
   async updateFile(filePath, content) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Updating file: ${filePath}`);
-      await this.client.put(`/${this.personalSpace}/files/${filePath}`, {
+      await this.client.put(`/${this.personalSpace}/files/${encodeURIComponent(filePath)}`, {
         content: content
       });
       this.logSuccess(`File updated: ${filePath}`);
-    } catch (error) {
-      this.logError(`Failed to update file ${filePath}:`, error.message);
-      throw error;
-    }
+    }, `Update file ${filePath}`);
   }
 
   /**
@@ -192,14 +273,11 @@ class ApiClient {
    * @returns {Promise<void>}
    */
   async deleteFile(filePath) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Deleting file: ${filePath}`);
-      await this.client.delete(`/${this.personalSpace}/files/${filePath}`);
+      await this.client.delete(`/${this.personalSpace}/files/${encodeURIComponent(filePath)}`);
       this.logSuccess(`File deleted: ${filePath}`);
-    } catch (error) {
-      this.logError(`Failed to delete file ${filePath}:`, error.message);
-      throw error;
-    }
+    }, `Delete file ${filePath}`);
   }
 
   /**
@@ -208,16 +286,13 @@ class ApiClient {
    * @returns {Promise<void>}
    */
   async createFolder(folderPath) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Creating folder: ${folderPath}`);
       await this.client.post(`/${this.personalSpace}/folders`, {
         folderPath: folderPath
       });
       this.logSuccess(`Folder created: ${folderPath}`);
-    } catch (error) {
-      this.logError(`Failed to create folder ${folderPath}:`, error.message);
-      throw error;
-    }
+    }, `Create folder ${folderPath}`);
   }
 
   /**
@@ -226,14 +301,11 @@ class ApiClient {
    * @returns {Promise<void>}
    */
   async deleteFolder(folderPath) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Deleting folder: ${folderPath}`);
-      await this.client.delete(`/${this.personalSpace}/folders/${folderPath}`);
+      await this.client.delete(`/${this.personalSpace}/folders/${encodeURIComponent(folderPath)}`);
       this.logSuccess(`Folder deleted: ${folderPath}`);
-    } catch (error) {
-      this.logError(`Failed to delete folder ${folderPath}:`, error.message);
-      throw error;
-    }
+    }, `Delete folder ${folderPath}`);
   }
 
   /**
@@ -243,11 +315,50 @@ class ApiClient {
    * @returns {Promise<void>}
    */
   async uploadFile(localFilePath, remoteFilePath) {
-    try {
+    return this.withRetry(async () => {
       this.log(`Uploading ${localFilePath} to ${remoteFilePath}`);
       
-      // Read the local file
-      const content = await fs.readFile(localFilePath, 'utf8');
+      // Determine if this is a text or binary file
+      const isTextFile = this.isTextualFile(path.basename(localFilePath));
+      
+      if (isTextFile) {
+        // Handle text files using the JSON API
+        const content = await fs.readFile(localFilePath, 'utf8');
+        
+        // Check if the remote file already exists
+        const exists = await this.fileExists(remoteFilePath);
+        
+        if (exists) {
+          // Update existing file
+          await this.updateFile(remoteFilePath, content);
+        } else {
+          // Create new file
+          await this.createFile(remoteFilePath, content);
+        }
+      } else {
+        // Handle binary files using the multipart upload API
+        await this.uploadBinaryFile(localFilePath, remoteFilePath);
+      }
+      
+      this.logSuccess(`Upload completed: ${localFilePath} -> ${remoteFilePath}`);
+    }, `Upload file ${localFilePath}`);
+  }
+
+  /**
+   * Upload a binary file by encoding it as base64 text content
+   * @param {string} localFilePath - Path to the local file
+   * @param {string} remoteFilePath - Relative path in the personal space
+   * @returns {Promise<void>}
+   */
+  async uploadBinaryFile(localFilePath, remoteFilePath) {
+    try {
+      // Read binary file and encode as base64
+      const buffer = await fs.readFile(localFilePath);
+      const base64Content = buffer.toString('base64');
+      const mimeType = this.getMimeType(localFilePath);
+      
+      // Create a data URL format that can be stored as text
+      const content = `data:${mimeType};base64,${base64Content}`;
       
       // Check if the remote file already exists
       const exists = await this.fileExists(remoteFilePath);
@@ -260,9 +371,9 @@ class ApiClient {
         await this.createFile(remoteFilePath, content);
       }
       
-      this.logSuccess(`Upload completed: ${localFilePath} -> ${remoteFilePath}`);
+      this.log(`Binary file uploaded successfully: ${remoteFilePath}`);
     } catch (error) {
-      this.logError(`Failed to upload file ${localFilePath}:`, error.message);
+      this.logError(`Failed to upload binary file ${localFilePath}:`, error.message);
       throw error;
     }
   }
@@ -387,20 +498,74 @@ class ApiClient {
   }
 
   /**
-   * Check if a file is likely a text file that should be synced
+   * Check if a file should be synced (text files and common binary formats)
    * @param {string} filename - File name
    * @returns {boolean} True if file should be synced
    */
   isTextFile(filename) {
+    const allowedExtensions = [
+      // Text files
+      '.md', '.txt', '.json', '.js', '.ts', '.jsx', '.tsx',
+      '.css', '.scss', '.html', '.xml', '.yml', '.yaml',
+      '.py', '.java', '.c', '.cpp', '.h', '.php', '.rb',
+      '.go', '.rs', '.sh', '.bat', '.ps1', '.sql',
+      // Image files
+      '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.webp',
+      // Document files
+      '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+      // Other common formats
+      '.zip', '.tar', '.gz', '.7z'
+    ];
+    
+    const ext = path.extname(filename).toLowerCase();
+    return allowedExtensions.includes(ext);
+  }
+
+  /**
+   * Check if a file is a text file (as opposed to binary)
+   * @param {string} filename - File name
+   * @returns {boolean} True if file is textual
+   */
+  isTextualFile(filename) {
     const textExtensions = [
       '.md', '.txt', '.json', '.js', '.ts', '.jsx', '.tsx',
       '.css', '.scss', '.html', '.xml', '.yml', '.yaml',
       '.py', '.java', '.c', '.cpp', '.h', '.php', '.rb',
-      '.go', '.rs', '.sh', '.bat', '.ps1', '.sql'
+      '.go', '.rs', '.sh', '.bat', '.ps1', '.sql', '.svg'
     ];
     
     const ext = path.extname(filename).toLowerCase();
     return textExtensions.includes(ext);
+  }
+
+  /**
+   * Get MIME type for a file based on extension
+   * @param {string} filename - File name
+   * @returns {string} MIME type
+   */
+  getMimeType(filename) {
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.webp': 'image/webp',
+      '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xls': 'application/vnd.ms-excel',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.ppt': 'application/vnd.ms-powerpoint',
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.zip': 'application/zip',
+      '.tar': 'application/x-tar',
+      '.gz': 'application/gzip',
+      '.7z': 'application/x-7z-compressed'
+    };
+    
+    return mimeTypes[ext] || 'application/octet-stream';
   }
 }
 

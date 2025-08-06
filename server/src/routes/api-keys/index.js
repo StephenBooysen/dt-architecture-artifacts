@@ -32,7 +32,14 @@ function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    const user = userStorage.validateSessionToken(token);
+    
+    // Try session token first
+    let user = userStorage.validateSessionToken(token);
+    
+    // If not a session token, try API key authentication
+    if (!user) {
+      user = userStorage.authenticateByApiKey(token);
+    }
     
     if (user) {
       // Set user on request object so other middleware can access it

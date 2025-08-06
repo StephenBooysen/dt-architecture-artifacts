@@ -200,12 +200,22 @@ function checkSpaceAccess(operation = 'read') {
         console.log(`[Server] Validating session token`);
         user = userStorage.validateSessionToken(token);
         
+        // If not a session token, try API key authentication
+        if (!user) {
+          console.log(`[Server] Session token validation failed, trying API key`);
+          user = userStorage.authenticateByApiKey(token);
+          if (user) {
+            console.log(`[Server] API key auth successful for user: ${user.username}`);
+          } else {
+            console.log(`[Server] API key validation failed`);
+          }
+        } else {
+          console.log(`[Server] Session token auth successful for user: ${user.username}`);
+        }
+        
         if (user) {
-          console.log(`[Server] Token auth successful for user: ${user.username}`);
           // Set user on request object so other middleware can access it
           req.user = user;
-        } else {
-          console.log(`[Server] Token validation failed`);
         }
       } else {
         console.log(`[Server] No Authorization header found`);

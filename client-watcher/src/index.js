@@ -58,6 +58,55 @@ async function handleShutdown() {
   process.exit(0);
 }
 
+/**
+ * Wait for server to become available with retry logic
+ * @param {ApiClient} apiClient - The API client to test
+ * @param {Object} options - Retry options
+ * @returns {Promise<boolean>} True when server is available
+ */
+async function waitForServer(apiClient, options = {}) {
+  const {
+    maxRetries = 30,
+    retryInterval = 5000, // 5 seconds
+    verbose = false
+  } = options;
+
+  console.log(chalk.blue('[INFO]'), 'Waiting for server to become available...');
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      if (verbose) {
+        console.log(chalk.blue('[INFO]'), `Connection attempt ${attempt}/${maxRetries}...`);
+      }
+      
+      const connected = await apiClient.testConnection();
+      if (connected) {
+        // Also test API key authentication
+        try {
+          await apiClient.getFileTree();
+          console.log(chalk.green('[SUCCESS]'), `Connected to server successfully (attempt ${attempt})`);
+          return true;
+        } catch (authError) {
+          if (verbose) {
+            console.log(chalk.yellow('[WARN]'), `Server reachable but authentication failed (attempt ${attempt}): ${authError.message}`);
+          }
+        }
+      }
+    } catch (error) {
+      if (verbose) {
+        console.log(chalk.yellow('[WARN]'), `Connection failed (attempt ${attempt}): ${error.message}`);
+      }
+    }
+    
+    if (attempt < maxRetries) {
+      console.log(chalk.blue('[INFO]'), `Server not available, waiting ${retryInterval/1000}s before retry ${attempt + 1}/${maxRetries}...`);
+      await new Promise(resolve => setTimeout(resolve, retryInterval));
+    }
+  }
+  
+  return false;
+}
+
 // Set up graceful shutdown handlers
 process.on('SIGINT', handleShutdown);
 process.on('SIGTERM', handleShutdown);
@@ -97,16 +146,22 @@ program
         serverUrl: config.serverUrl,
         apiKey: config.apiKey,
         username: config.username,
-        verbose: config.verbose
+        verbose: config.verbose,
+        operationRetry: config.operationRetry
       });
 
-      // Test connection
-      console.log(chalk.blue('[INFO]'), 'Testing connection to server...');
-      const connected = await apiClient.testConnection();
+      // Wait for server to become available with retry logic
+      const retryConfig = config.serverRetry || { maxRetries: 60, retryInterval: 5000 };
+      const connected = await waitForServer(apiClient, {
+        maxRetries: retryConfig.maxRetries,
+        retryInterval: retryConfig.retryInterval,
+        verbose: config.verbose
+      });
+      
       if (!connected) {
-        throw new Error('Failed to connect to server. Please check your configuration.');
+        const waitTime = (retryConfig.maxRetries * retryConfig.retryInterval) / 1000 / 60;
+        throw new Error(`Server did not become available after ${waitTime} minutes (${retryConfig.maxRetries} attempts). Please check your server configuration and ensure it's running at ${config.serverUrl}.`);
       }
-      console.log(chalk.green('[SUCCESS]'), 'Connected to server successfully');
 
       // Create file watcher
       fileWatcher = new FileWatcher({
@@ -185,7 +240,8 @@ program
         serverUrl: config.serverUrl,
         apiKey: config.apiKey,
         username: config.username,
-        verbose: config.verbose
+        verbose: config.verbose,
+        operationRetry: config.operationRetry
       });
 
       // Test connection
@@ -304,28 +360,21 @@ program
         serverUrl: config.serverUrl,
         apiKey: config.apiKey,
         username: config.username,
-        verbose: config.verbose
+        verbose: config.verbose,
+        operationRetry: config.operationRetry
       });
 
-      // Test connection
-      console.log(chalk.blue('[INFO]'), 'Testing connection to server...');
-      const connected = await apiClient.testConnection();
+      // Test connection with brief retry for test command
+      const connected = await waitForServer(apiClient, {
+        maxRetries: 3, // Only try 3 times for test command
+        retryInterval: 2000, // 2 second intervals
+        verbose: config.verbose
+      });
       
       if (connected) {
-        console.log(chalk.green('[SUCCESS]'), 'Connection test passed');
-        
-        // Test API key authentication
-        try {
-          await apiClient.getFileTree();
-          console.log(chalk.green('[SUCCESS]'), 'API key authentication successful');
-        } catch (error) {
-          console.log(chalk.red('[ERROR]'), 'API key authentication failed:', error.message);
-          process.exit(1);
-        }
-        
         console.log(chalk.green('[SUCCESS]'), 'All tests passed - configuration is valid');
       } else {
-        console.log(chalk.red('[ERROR]'), 'Connection test failed');
+        console.log(chalk.red('[ERROR]'), 'Server is not available after 3 attempts');
         process.exit(1);
       }
 
