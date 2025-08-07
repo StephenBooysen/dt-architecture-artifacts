@@ -71,6 +71,8 @@ const FileTree = ({
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [spaces, setSpaces] = useState([]);
+  const [shortcutsCollapsed, setShortcutsCollapsed] = useState(false);
+  const [spacesCollapsed, setSpacesCollapsed] = useState(false);
   // Function to collect all folder paths recursively
   const collectAllFolderPaths = (items) => {
     const folderPaths = new Set();
@@ -525,63 +527,80 @@ const FileTree = ({
       />
       
       <div className="file-tree-header flex-shrink-0">
-        {/* Navigation options at the top */}
-        <div className="nav-options mb-3">
+        {/* Collapsible Shortcuts Section */}
+        <div className="shortcuts-section mb-3">
           <div 
-            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer"
-            onClick={() => onViewChange && onViewChange('home')}
-            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
-            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+            className="section-header d-flex align-items-center justify-content-between p-2 rounded cursor-pointer"
+            onClick={() => setShortcutsCollapsed(!shortcutsCollapsed)}
+            style={{cursor: 'pointer', backgroundColor: 'var(--section-header-bg, rgba(0, 0, 0, 0.02))'}}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--section-header-hover-bg, rgba(0, 0, 0, 0.05))'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--section-header-bg, rgba(0, 0, 0, 0.02))'}
           >
             <div className="d-flex align-items-center">
-              <i className="bi bi-house me-2 text-muted"></i>
-              <span className="text-confluence-text">Home</span>
+              <i className={`bi ${shortcutsCollapsed ? 'bi-chevron-right' : 'bi-chevron-down'} me-2 text-muted`}></i>
+              <h3 className="h6 mb-0 fw-semibold text-confluence-text">Shortcuts</h3>
             </div>
-            <i className="bi bi-chevron-right text-muted"></i>
           </div>
           
-          <div 
-            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
-            onClick={() => onViewChange && onViewChange('recent')}
-            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
-            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
-          >
-            <div className="d-flex align-items-center">
-              <i className="bi bi-clock-history me-2 text-muted"></i>
-              <span className="text-confluence-text">Recent</span>
-            </div>
-            <i className="bi bi-chevron-right text-muted"></i>
-          </div>
-          
-          <div 
-            className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
-            onClick={() => onViewChange && onViewChange('starred')}
-            style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
-            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
-          >
-            <div className="d-flex align-items-center">
-              <i className="bi bi-star me-2 text-muted"></i>
-              <span className="text-confluence-text">Starred</span>
-            </div>
-            <i className="bi bi-chevron-right text-muted"></i>
-          </div>
-          
-          {!isReadonly && (
-            <div 
-              className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
-              onClick={() => onViewChange && onViewChange('templates')}
-              style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)'}}
-              onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
-            >
-              <div className="d-flex align-items-center">
-                <i className="bi bi-file-earmark-code me-2 text-muted"></i>
-                <span className="text-confluence-text">Templates</span>
+          {!shortcutsCollapsed && (
+            <div className="nav-options mt-2">
+              <div 
+                className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer"
+                onClick={() => onViewChange && onViewChange('home')}
+                style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)', marginLeft: '1rem'}}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+              >
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-house me-2 text-muted"></i>
+                  <span className="text-confluence-text">Home</span>
+                </div>
+                <i className="bi bi-chevron-right text-muted"></i>
               </div>
-              <i className="bi bi-chevron-right text-muted"></i>
+              
+              <div 
+                className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
+                onClick={() => onViewChange && onViewChange('recent')}
+                style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)', marginLeft: '1rem'}}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+              >
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-clock-history me-2 text-muted"></i>
+                  <span className="text-confluence-text">Recent</span>
+                </div>
+                <i className="bi bi-chevron-right text-muted"></i>
+              </div>
+              
+              <div 
+                className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
+                onClick={() => onViewChange && onViewChange('starred')}
+                style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)', marginLeft: '1rem'}}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+              >
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-star me-2 text-muted"></i>
+                  <span className="text-confluence-text">Starred</span>
+                </div>
+                <i className="bi bi-chevron-right text-muted"></i>
+              </div>
+              
+              {!isReadonly && (
+                <div 
+                  className="nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1"
+                  onClick={() => onViewChange && onViewChange('templates')}
+                  style={{cursor: 'pointer', backgroundColor: 'var(--nav-option-bg, transparent)', marginLeft: '1rem'}}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)'}
+                >
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-file-earmark-code me-2 text-muted"></i>
+                    <span className="text-confluence-text">Templates</span>
+                  </div>
+                  <i className="bi bi-chevron-right text-muted"></i>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -660,48 +679,62 @@ const FileTree = ({
         )}
       </div>
 
-      {/* Spaces Navigation Section */}
+      {/* Collapsible Spaces Navigation Section */}
       {isAuthenticated && spaces.length > 0 && (
         <div className="mt-4 pt-3 border-top">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h3 className="h5 mb-0 fw-semibold text-confluence-text">Spaces</h3>
+          <div 
+            className="section-header d-flex align-items-center justify-content-between p-2 rounded cursor-pointer"
+            onClick={() => setSpacesCollapsed(!spacesCollapsed)}
+            style={{cursor: 'pointer', backgroundColor: 'var(--section-header-bg, rgba(0, 0, 0, 0.02))'}}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--section-header-hover-bg, rgba(0, 0, 0, 0.05))'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--section-header-bg, rgba(0, 0, 0, 0.02))'}
+          >
+            <div className="d-flex align-items-center">
+              <i className={`bi ${spacesCollapsed ? 'bi-chevron-right' : 'bi-chevron-down'} me-2 text-muted`}></i>
+              <h3 className="h6 mb-0 fw-semibold text-confluence-text">Spaces</h3>
+            </div>
+            <span className="badge bg-secondary small">{spaces.length}</span>
           </div>
-          <div className="spaces-nav">
-            {spaces.map((space) => (
-              <div 
-                key={space.space}
-                className={`nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1 ${currentSpace === space.space ? 'active' : ''}`}
-                onClick={() => onSpaceChange && onSpaceChange(space.space)}
-                style={{
-                  cursor: 'pointer', 
-                  backgroundColor: currentSpace === space.space 
-                    ? 'var(--confluence-primary-light, rgba(0, 82, 204, 0.1))' 
-                    : 'var(--nav-option-bg, transparent)'
-                }}
-                onMouseEnter={(e) => {
-                  if (currentSpace !== space.space) {
-                    e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (currentSpace !== space.space) {
-                    e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)';
-                  }
-                }}
-              >
-                <div className="d-flex align-items-center">
-                  <i className={`bi ${getSpaceIcon(space)} me-2 text-muted`}></i>
-                  <span className={`text-confluence-text ${currentSpace === space.space ? 'fw-medium' : ''}`}>
-                    {space.space}
-                  </span>
-                  <small className="ms-2 text-muted">({space.access})</small>
+          
+          {!spacesCollapsed && (
+            <div className="spaces-nav mt-2">
+              {spaces.map((space) => (
+                <div 
+                  key={space.space}
+                  className={`nav-option d-flex align-items-center justify-content-between p-2 rounded cursor-pointer mt-1 ${currentSpace === space.space ? 'active' : ''}`}
+                  onClick={() => onSpaceChange && onSpaceChange(space.space)}
+                  style={{
+                    cursor: 'pointer', 
+                    backgroundColor: currentSpace === space.space 
+                      ? 'var(--confluence-primary-light, rgba(0, 82, 204, 0.1))' 
+                      : 'var(--nav-option-bg, transparent)',
+                    marginLeft: '1rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentSpace !== space.space) {
+                      e.target.style.backgroundColor = 'var(--nav-option-hover-bg, rgba(0, 0, 0, 0.05))';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentSpace !== space.space) {
+                      e.target.style.backgroundColor = 'var(--nav-option-bg, transparent)';
+                    }
+                  }}
+                >
+                  <div className="d-flex align-items-center">
+                    <i className={`bi ${getSpaceIcon(space)} me-2 text-muted`}></i>
+                    <span className={`text-confluence-text ${currentSpace === space.space ? 'fw-medium' : ''}`}>
+                      {space.space}
+                    </span>
+                    <small className="ms-2 text-muted">({space.access})</small>
+                  </div>
+                  {currentSpace === space.space && (
+                    <i className="bi bi-check-circle text-primary"></i>
+                  )}
                 </div>
-                {currentSpace === space.space && (
-                  <i className="bi bi-check-circle text-primary"></i>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

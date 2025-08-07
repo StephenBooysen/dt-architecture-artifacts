@@ -26,7 +26,11 @@
     "test:watch": "jest --config tests/jest.config.js --watch",
     "test:coverage": "jest --config tests/jest.config.js --coverage",
     "test:client": "cd client && npm test",
-    "test:server": "jest --config tests/jest.config.js --testPathPattern=server"
+    "test:server": "jest --config tests/jest.config.js --testPathPattern=server",
+    "test:playwright": "playwright test",
+    "test:playwright:ui": "playwright test --ui",
+    "test:playwright:debug": "playwright test --debug",
+    "test:playwright:headed": "playwright test --headed"
   },
   "author": "Stephen Booysen",
   "license": "ISC",
@@ -55,7 +59,8 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "simple-git": "*",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",
@@ -64,6 +69,7 @@
     "@babel/preset-env": "^7.22.0",
     "@babel/preset-react": "^7.22.0",
     "@babel/register": "^7.27.1",
+    "@playwright/test": "^1.54.2",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
@@ -75,6 +81,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "mammoth": "^1.9.1",
     "nodemon": "*",
+    "playwright": "^1.54.2",
     "supertest": "^6.3.3",
     "xmldom": "^0.6.0"
   }

@@ -90,7 +90,7 @@ function AppContent() {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [setHighlightedIndex] = useState(-1);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
@@ -1343,7 +1343,7 @@ function AppContent() {
                           {searchSuggestions.map((file, index) => (
                             <div
                               key={index}
-                              className="px-3 py-2 cursor-pointer border-bottom search-suggestion"
+                              className={`px-3 py-2 cursor-pointer border-bottom search-suggestion ${highlightedIndex === index ? 'highlighted' : ''}`}
                               onClick={() => handleFileSelect(file.path)}
                               onMouseEnter={() => setHighlightedIndex(index)}
                             >

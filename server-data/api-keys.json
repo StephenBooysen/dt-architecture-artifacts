@@ -1,3 +1,12 @@
-{
-    
-}
+[
+  {
+    "id": "967f9511-487e-4a6a-b8a5-1a902216da89",
+    "name": "Server Watcher",
+    "description": "",
+    "key": "ak_5fd8dc8cc4ae582e11bf1cec213e5a1b6eb2640bdddfcc4d6a89d97deb461b32",
+    "userId": "1754197851458",
+    "createdAt": "2025-08-07T19:20:31.661Z",
+    "lastUsed": null,
+    "isActive": true
+  }
+]

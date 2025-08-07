@@ -91,4 +91,4 @@ class DataServeProvider {
   }
 }
 
-module.exports = InMemoryDataServeProvider;
+module.exports = DataServeProvider;

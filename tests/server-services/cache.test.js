@@ -1,18 +1,25 @@
 /**
- * @fileoverview Unit tests for the in-memory cache.
+ * @fileoverview Unit tests for the cache singleton.
  */
 
-const createCache = require('../../server/src/services/caching');
+const cacheService = require('../../server/src/services/caching/singleton');
 const EventEmitter = require('events');
 
-describe('Cache', () => {
+describe('Cache Singleton', () => {
   let cache;
   let mockEventEmitter;
 
   beforeEach(() => {
+    // Reset singleton before each test
+    cacheService.reset();
     mockEventEmitter = new EventEmitter();
     jest.spyOn(mockEventEmitter, 'emit');
-    cache = createCache('memory', {}, mockEventEmitter);
+    cache = cacheService.initialize('memory', {}, mockEventEmitter);
+  });
+
+  afterEach(() => {
+    // Clean up after each test
+    cacheService.reset();
   });
 
   it('should put and get a value', async () => {
@@ -44,5 +51,22 @@ describe('Cache', () => {
       key: 'non-existent-key',
       value: undefined,
     });
+  });
+
+  it('should maintain singleton behavior', () => {
+    const cache1 = cacheService.getInstance();
+    const cache2 = cacheService.getInstance();
+    expect(cache1).toBe(cache2);
+  });
+
+  it('should throw error when accessing uninitialized singleton', () => {
+    cacheService.reset();
+    expect(() => cacheService.getInstance()).toThrow('Cache singleton not initialized');
+  });
+
+  it('should return same instance on multiple initializations', () => {
+    const cache1 = cacheService.initialize('memory', {}, mockEventEmitter);
+    const cache2 = cacheService.initialize('memory', {}, mockEventEmitter);
+    expect(cache1).toBe(cache2);
   });
 });

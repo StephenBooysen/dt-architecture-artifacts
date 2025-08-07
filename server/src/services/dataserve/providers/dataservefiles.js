@@ -136,4 +136,4 @@ class DataServeFileProvider {
   }
 }
 
-module.exports = FileDataRingProvider;
+module.exports = DataServeFileProvider;

@@ -231,17 +231,40 @@ function patchEmitter(emitter) {
 const eventEmitter = new EventEmitter();
 patchEmitter(eventEmitter);
 
-const log = require('./src/services/logging')('', { 'express-app': app }, eventEmitter);
-const cacheing = require('./src/services/caching')('', { 'express-app': app }, eventEmitter);
-const createFilingService = require('./src/services/filing');
-const filing = createFilingService('local', { 'express-app': app }, eventEmitter);
-const measuring = require('./src/services/measuring')('', { 'express-app': app }, eventEmitter);
-const notifying = require('./src/services/notifying')('', { 'express-app': app }, eventEmitter);
-const queueing = require('./src/services/queueing')('', { 'express-app': app }, eventEmitter);
-const scheduling = require('./src/services/scheduling')('', { 'express-app': app }, eventEmitter);
-const searching = require('./src/services/searching')('', { 'express-app': app }, eventEmitter);
-const workflow = require('./src/services/workflow')('', { 'express-app': app }, eventEmitter);
-const working = require('./src/services/working')('', { 'express-app': app }, eventEmitter);
+// Initialize all service singletons
+const loggingService = require('./src/services/logging/singleton');
+const log = loggingService.initialize('console', { 'express-app': app }, eventEmitter);
+
+const cacheService = require('./src/services/caching/singleton');
+cacheService.initialize('memory', { 'express-app': app }, eventEmitter);
+const cacheing = cacheService; // For backward compatibility
+
+const dataserveService = require('./src/services/dataserve/singleton');
+const dataserve = dataserveService.initialize('', { 'express-app': app }, eventEmitter);
+
+const filingService = require('./src/services/filing/singleton');
+const filing = filingService.initialize('local', { 'express-app': app }, eventEmitter);
+
+const measuringService = require('./src/services/measuring/singleton');
+const measuring = measuringService.initialize('', { 'express-app': app }, eventEmitter);
+
+const notifyingService = require('./src/services/notifying/singleton');
+const notifying = notifyingService.initialize('', { 'express-app': app }, eventEmitter);
+
+const queueingService = require('./src/services/queueing/singleton');
+const queueing = queueingService.initialize('', { 'express-app': app }, eventEmitter);
+
+const schedulingService = require('./src/services/scheduling/singleton');
+const scheduling = schedulingService.initialize('', { 'express-app': app }, eventEmitter);
+
+const searchingService = require('./src/services/searching/singleton');
+const searching = searchingService.initialize('', { 'express-app': app }, eventEmitter);
+
+const workflowService = require('./src/services/workflow/singleton');
+const workflow = workflowService.initialize('', { 'express-app': app }, eventEmitter);
+
+const workingService = require('./src/services/working/singleton');
+const working = workingService.initialize('', { 'express-app': app }, eventEmitter);
 
 // Apply API call logging to all API routes
 app.use('/api', logApiCall);
