@@ -94,17 +94,14 @@ passport.serializeUser((user, done) => {
  */
 passport.deserializeUser(async (id, done) => {
   try {
-    console.log('[Passport] Deserializing user with ID:', { id, idType: typeof id });
     const user = userStorage.findUserById(id);
-    console.log('[Passport] User found:', user ? { id: user.id, idType: typeof user.id, username: user.username } : 'null');
     
     if (!user) {
-      console.log('[Passport] User not found, returning false');
+      console.log('[Passport] User not found $(id), returning false');
       return done(null, false);
     }
     
     const userObj = { id: user.id, username: user.username, createdAt: user.createdAt, roles: user.roles || [], spaces: user.spaces };
-    console.log('[Passport] Returning user object:', { id: userObj.id, idType: typeof userObj.id, username: userObj.username });
     done(null, userObj);
   } catch (error) {
     console.log('[Passport] Error in deserializeUser:', error);
