@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Loyalty Platform - Data View</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .viewpoint-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .viewpoint-header {
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            color: white;
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+        }
+        .viewpoint-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        .viewpoint-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+        .data-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+        .data-card h3 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+        }
+        .data-role {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+        }
+        .role-originator { background: #27ae60; color: white; }
+        .role-consumer { background: #3498db; color: white; }
+        .role-processor { background: #9b59b6; color: white; }
+        .data-flow-section {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .flow-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 140px;
+            flex: 1;
+        }
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: #f39c12;
+            margin: 0 10px;
+        }
+        .data-quality-section {
+            background: #fef9e7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .quality-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .data-list {
+            list-style: none;
+            padding: 0;
+        }
+        .data-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .data-list li:last-child {
+            border-bottom: none;
+        }
+        .compliance-section {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .volume-indicator {
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .freshness-indicator {
+            font-weight: bold;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewpoint-container">
+        <div class="viewpoint-header">
+            <h2>Data Perspective</h2>
+        </div>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                This view shows the comprehensive data landscape of the Customer Loyalty Platform, including data types originated, processed, and consumed, along with data governance, quality characteristics, and enterprise-grade compliance requirements.
+            </p>
+
+            <h3>Data Types Originated (Platform as Primary Source)</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Loyalty Points Transactions</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Complete transaction lifecycle for loyalty points including earning events, spending/redemption events, and expiration processing with full audit trails and fraud detection.</p>
+                    <small><strong>Volume:</strong> <span class="volume-indicator">~850K transactions/day</span> | <strong>Retention:</strong> 7 years | <strong>Peak:</strong> 2.3M during holiday seasons</small>
+                </div>
+                <div class="data-card">
+                    <h3>Customer Tier Status Changes</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Tier progression and regression events including qualification criteria, effective dates, tier benefits assignments, and historical tier journey tracking.</p>
+                    <small><strong>Volume:</strong> <span class="volume-indicator">~45K status changes/month</span> | <strong>Retention:</strong> Lifetime | <strong>Processing:</strong> Real-time evaluation</small>
+                </div>
+                <div class="data-card">
+                    <h3>Reward Redemptions</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Multi-format redemption data covering product rewards, cashback transactions, experience bookings, and charity donations with redemption channel attribution.</p>
+                    <small><strong>Volume:</strong> <span class="volume-indicator">~120K redemptions/day</span> | <strong>Categories:</strong> 50+ redemption types | <strong>Value:</strong> $47M annually</small>
+                </div>
+                <div class="data-card">
+                    <h3>Engagement Events</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Comprehensive customer engagement tracking including app opens, offer views, challenge participation, social sharing, and gamification milestone achievements.</p>
+                    <small><strong>Volume:</strong> <span class="volume-indicator">~3.2M events/day</span> | <strong>Retention:</strong> 18 months | <strong>Categories:</strong> 25+ event types</small>
+                </div>
+                <div class="data-card">
+                    <h3>Coalition Partner Interactions</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Cross-brand loyalty activity including partner earning events, cross-redemptions, shared customer benefits, and coalition program performance metrics.</p>
+                    <small><strong>Volume:</strong> <span class="volume-indicator">~180K interactions/day</span> | <strong>Partners:</strong> 12 active coalitions | <strong>Revenue Share:</strong> $8.3M annually</small>
+                </div>
+            </div>
+
+            <h3>Data Types Consumed (Platform Reads from Other Systems)</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Customer Profile Data</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Demographic information, communication preferences, lifestyle attributes, and customer segmentation data from CRM systems for personalization and targeting.</p>
+                    <small><strong>Source:</strong> Customer Data Platform | <strong>Update Frequency:</strong> <span class="freshness-indicator">Near real-time</span> | <strong>Records:</strong> 4.2M profiles</small>
+                </div>
+                <div class="data-card">
+                    <h3>Purchase Transaction Data</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Transactional purchase data from POS systems, eCommerce platforms, and mobile apps to calculate points earning, tier qualification, and personalized offers.</p>
+                    <small><strong>Source:</strong> Digital Commerce Platform | <strong>Update Frequency:</strong> <span class="freshness-indicator">Real-time</span> | <strong>Volume:</strong> ~425K transactions/day</small>
+                </div>
+                <div class="data-card">
+                    <h3>Product Catalog Information</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Product details, categories, pricing, and promotional information for targeted offer creation, bonus point campaigns, and category-specific rewards.</p>
+                    <small><strong>Source:</strong> Product Information Management | <strong>Update Frequency:</strong> <span class="freshness-indicator">4x daily</span> | <strong>SKUs:</strong> 125K active products</small>
+                </div>
+                <div class="data-card">
+                    <h3>Store Location Data</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Store location coordinates, operating hours, services available, and regional attributes for location-based rewards, geo-targeted offers, and store visit bonuses.</p>
+                    <small><strong>Source:</strong> Store Operations System | <strong>Update Frequency:</strong> <span class="freshness-indicator">Daily</span> | <strong>Locations:</strong> 847 stores nationwide</small>
+                </div>
+                <div class="data-card">
+                    <h3>Marketing Campaign Data</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Campaign segments, offer eligibility rules, promotional calendars, and attribution data for coordinated loyalty and marketing program delivery.</p>
+                    <small><strong>Source:</strong> Marketing Automation Platform | <strong>Update Frequency:</strong> <span class="freshness-indicator">Hourly</span> | <strong>Active Campaigns:</strong> 35+ concurrent</small>
+                </div>
+            </div>
+
+            <h3>Data Types Processed & Enriched</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Customer Lifetime Value</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Advanced CLV calculations incorporating purchase history, loyalty engagement, tier benefits utilization, and predictive modeling for future value estimation.</p>
+                    <small><strong>Processing:</strong> Nightly batch + real-time updates | <strong>Models:</strong> 5 ML algorithms | <strong>Accuracy:</strong> 91% prediction rate</small>
+                </div>
+                <div class="data-card">
+                    <h3>Propensity Scoring</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Machine learning-driven propensity scores for offer response, churn risk, tier advancement likelihood, and redemption preferences using behavioral analytics.</p>
+                    <small><strong>Processing:</strong> Real-time scoring engine | <strong>Models:</strong> 12+ propensity models | <strong>Refresh:</strong> Every 15 minutes</small>
+                </div>
+                <div class="data-card">
+                    <h3>Tier Eligibility Calculations</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Complex tier qualification processing including spending thresholds, activity requirements, time-based criteria, and bonus tier challenges with automated tier assignments.</p>
+                    <small><strong>Processing:</strong> Event-driven + daily reconciliation | <strong>Rules Engine:</strong> 200+ qualification rules | <strong>SLA:</strong> < 30 seconds</small>
+                </div>
+                <div class="data-card">
+                    <h3>Reward Personalization</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>AI-powered personalization algorithms that optimize reward recommendations based on individual preferences, past behavior, and real-time context signals.</p>
+                    <small><strong>Processing:</strong> Real-time recommendation engine | <strong>Algorithms:</strong> Deep learning + collaborative filtering | <strong>CTR Lift:</strong> 340%</small>
+                </div>
+            </div>
+
+            <div class="data-flow-section">
+                <h3>Critical Data Flows</h3>
+                
+                <h4>Real-Time Points Processing Flow</h4>
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Purchase Transaction</strong>
+                        <div class="metric-label">POS/eCommerce</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Points Calculation</strong>
+                        <div class="metric-label">Rules Engine</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Balance Update</strong>
+                        <div class="metric-label">< 2 seconds SLA</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Customer Notification</strong>
+                        <div class="metric-label">Mobile/Email</div>
+                    </div>
+                </div>
+
+                <h4>Tier Status Evaluation Flow</h4>
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Customer Activity</strong>
+                        <div class="metric-label">Multi-channel Events</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Qualification Engine</strong>
+                        <div class="metric-label">ML-Based Assessment</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Tier Assignment</strong>
+                        <div class="metric-label">Benefits Activation</div>
+                    </div>
+                </div>
+
+                <h4>Personalization Data Pipeline</h4>
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Customer Behavior</strong>
+                        <div class="metric-label">Real-time Streaming</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Feature Engineering</strong>
+                        <div class="metric-label">Event Aggregation</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>ML Inference</strong>
+                        <div class="metric-label">Recommendation API</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Personalized Experience</strong>
+                        <div class="metric-label">Customer Interface</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-quality-section">
+                <h3>Data Quality & Performance Metrics</h3>
+                <div class="quality-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">99.97%</div>
+                        <div class="metric-label">Points Accuracy</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.95%</div>
+                        <div class="metric-label">System Availability</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 1.2s</div>
+                        <div class="metric-label">Real-time Latency</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.8%</div>
+                        <div class="metric-label">Data Completeness</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">847TB</div>
+                        <div class="metric-label">Total Data Storage</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">2.3GB/s</div>
+                        <div class="metric-label">Peak Ingestion Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="compliance-section">
+                <h3>Data Governance & Compliance</h3>
+                <ul class="data-list">
+                    <li>
+                        <span>GDPR Compliance - Personal Data</span>
+                        <span class="data-role role-processor">Fully Compliant</span>
+                    </li>
+                    <li>
+                        <span>CCPA Compliance - California Residents</span>
+                        <span class="data-role role-processor">Certified</span>
+                    </li>
+                    <li>
+                        <span>Points Balance Reconciliation</span>
+                        <span class="data-role role-processor">Daily + Real-time</span>
+                    </li>
+                    <li>
+                        <span>Fraud Detection & Prevention</span>
+                        <span class="data-role role-processor">ML-Powered</span>
+                    </li>
+                    <li>
+                        <span>Data Encryption at Rest</span>
+                        <span class="data-role role-processor">AES-256</span>
+                    </li>
+                    <li>
+                        <span>Data Encryption in Transit</span>
+                        <span class="data-role role-processor">TLS 1.3</span>
+                    </li>
+                    <li>
+                        <span>Transaction Audit Trails</span>
+                        <span class="data-role role-processor">Immutable Logs</span>
+                    </li>
+                    <li>
+                        <span>Customer Data Retention</span>
+                        <span class="data-role role-processor">7 Years Active, Purge on Request</span>
+                    </li>
+                    <li>
+                        <span>Points Liability Management</span>
+                        <span class="data-role role-processor">GAAP Compliant</span>
+                    </li>
+                    <li>
+                        <span>Cross-Border Data Transfer</span>
+                        <span class="data-role role-processor">Privacy Shield Certified</span>
+                    </li>
+                </ul>
+            </div>
+
+            <h3>Data Integration Patterns & Architecture</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Real-Time Processing</h3>
+                    <p><strong>Use Cases:</strong> Points earning/spending, tier status updates, fraud detection, personalization</p>
+                    <p><strong>Technology:</strong> Apache Kafka, Apache Flink, Redis</p>
+                    <p><strong>SLA:</strong> < 2 seconds end-to-end processing</p>
+                    <p><strong>Volume:</strong> 15,000 events/second peak capacity</p>
+                </div>
+                <div class="data-card">
+                    <h3>Batch Processing</h3>
+                    <p><strong>Use Cases:</strong> Daily analytics, expired points cleanup, tier recalculation, ML model training</p>
+                    <p><strong>Technology:</strong> Apache Spark, Airflow orchestration</p>
+                    <p><strong>Schedule:</strong> Multiple daily windows (2AM, 8AM, 2PM, 8PM ET)</p>
+                    <p><strong>Volume:</strong> 2.8TB processed daily</p>
+                </div>
+                <div class="data-card">
+                    <h3>Event Streaming</h3>
+                    <p><strong>Use Cases:</strong> Customer behavior tracking, engagement analytics, real-time dashboards</p>
+                    <p><strong>Technology:</strong> Apache Kafka, Schema Registry</p>
+                    <p><strong>Retention:</strong> 30 days streaming, lifetime in data lake</p>
+                    <p><strong>Topics:</strong> 47 event types across 12 Kafka topics</p>
+                </div>
+                <div class="data-card">
+                    <h3>API Integration</h3>
+                    <p><strong>Use Cases:</strong> Partner data exchange, mobile app synchronization, customer service tools</p>
+                    <p><strong>Technology:</strong> REST APIs, GraphQL, OAuth 2.0</p>
+                    <p><strong>Rate Limits:</strong> 10,000 requests/minute per client</p>
+                    <p><strong>Availability:</strong> 99.99% uptime SLA</p>
+                </div>
+            </div>
+
+            <h3>Data Security & Fraud Prevention</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Fraud Detection Algorithms</h3>
+                    <p><strong>Velocity Checks:</strong> Points earning/spending rate limits</p>
+                    <p><strong>Pattern Analysis:</strong> Suspicious redemption behaviors</p>
+                    <p><strong>Account Monitoring:</strong> Multi-account fraud rings detection</p>
+                    <p><strong>Success Rate:</strong> 94.7% fraud prevention accuracy</p>
+                </div>
+                <div class="data-card">
+                    <h3>Data Lineage & Audit</h3>
+                    <p><strong>Transaction Provenance:</strong> Full audit trail for all points transactions</p>
+                    <p><strong>Data Lineage:</strong> End-to-end data flow tracking</p>
+                    <p><strong>Change Management:</strong> Immutable transaction history</p>
+                    <p><strong>Compliance Reporting:</strong> Automated regulatory reports</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Platform - Data View</title>
+    <style>
+        :root {
+            --primary-color: #e67e22;
+            --secondary-color: #f39c12;
+            --accent-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --success-color: #27ae60;
+            --warning-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--secondary-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .data-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .data-node {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            flex: 1;
+            min-width: 160px;
+            position: relative;
+        }
+
+        .data-node:not(:last-child)::after {
+            content: "→";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .data-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+
+        .data-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .data-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .data-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-metrics {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .volume-metric {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .frequency-metric {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .list {
+            list-style: none;
+        }
+
+        .list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .list li::before {
+            content: "→";
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .metrics-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .processing-pipeline {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .pipeline-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .pipeline-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .pipeline-step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid var(--secondary-color);
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .step-desc {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .realtime-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .batch-badge {
+            background: var(--warning-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Marketing Platform</h1>
+        <p>Data Architecture View - Marketing Data Processing & Integration Hub</p>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📤</div>
+                    <h3>Data Originates</h3>
+                </div>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-title">Campaign Performance Data</div>
+                        <div class="data-desc">Email opens, clicks, conversions, A/B test results, campaign attribution metrics</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">47M interactions/month</span>
+                            <span class="frequency-metric">Real-time</span>
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">Lead Scores & Qualification</div>
+                        <div class="data-desc">Behavioral scoring, demographic weighting, engagement metrics, sales readiness indicators</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">3.2M leads/year</span>
+                            <span class="frequency-metric">Real-time</span>
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">Marketing Attribution Data</div>
+                        <div class="data-desc">Multi-touch attribution models, revenue tracking, campaign ROI, customer journey touchpoints</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">847% ROI tracked</span>
+                            <span class="frequency-metric">Daily</span>
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">Content Engagement Analytics</div>
+                        <div class="data-desc">Content performance, personalization effectiveness, A/B test results, dynamic content metrics</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">125M emails/month</span>
+                            <span class="frequency-metric">Real-time</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📥</div>
+                    <h3>Data Consumes</h3>
+                </div>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-title">Customer Profiles from CDP</div>
+                        <div class="data-desc">Unified customer profiles, behavioral history, preferences, demographic data, journey stages</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">50M profiles</span>
+                            <span class="frequency-metric">Real-time sync</span>
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">Transaction & Purchase Data</div>
+                        <div class="data-desc">Order history, purchase behavior, product preferences, lifetime value, revenue attribution</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">12M transactions</span>
+                            <span class="frequency-metric">Hourly</span>
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">Website & App Analytics</div>
+                        <div class="data-desc">Page views, user sessions, conversion funnels, behavioral tracking, engagement patterns</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">2.3TB/month</span>
+                            <span class="frequency-metric">Real-time</span>
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">Social Media & Engagement</div>
+                        <div class="data-desc">Social interactions, brand mentions, influencer content, engagement rates, viral metrics</div>
+                        <div class="data-metrics">
+                            <span class="volume-metric">8M interactions</span>
+                            <span class="frequency-metric">15-min intervals</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">⚙️</div>
+                <h3>Data Processing Engines</h3>
+            </div>
+            
+            <div class="processing-pipeline">
+                <div class="pipeline-title">Marketing Attribution Modeling</div>
+                <div class="pipeline-steps">
+                    <div class="pipeline-step">
+                        <div class="step-title">Data Ingestion</div>
+                        <div class="step-desc">Multi-channel touchpoint collection, event streaming, behavioral tracking</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Journey Mapping</div>
+                        <div class="step-desc">Customer path reconstruction, touchpoint sequencing, interaction weighting</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Attribution Modeling</div>
+                        <div class="step-desc">Multi-touch attribution, conversion credit distribution, ROI calculation</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Revenue Attribution</div>
+                        <div class="step-desc">Campaign ROI tracking, channel performance, revenue contribution analysis</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="processing-pipeline">
+                <div class="pipeline-title">Lead Scoring Algorithms</div>
+                <div class="pipeline-steps">
+                    <div class="pipeline-step">
+                        <div class="step-title">Behavioral Analysis</div>
+                        <div class="step-desc">Website activity, email engagement, content consumption patterns</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Demographic Scoring</div>
+                        <div class="step-desc">Firmographic data, role-based scoring, company size weighting</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Predictive Modeling</div>
+                        <div class="step-desc">ML-based scoring, conversion probability, sales readiness prediction</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Score Optimization</div>
+                        <div class="step-desc">Continuous model tuning, performance feedback, threshold adjustment</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="processing-pipeline">
+                <div class="pipeline-title">Campaign Optimization Engine</div>
+                <div class="pipeline-steps">
+                    <div class="pipeline-step">
+                        <div class="step-title">Performance Monitoring</div>
+                        <div class="step-desc">Real-time campaign metrics, engagement tracking, conversion monitoring</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">A/B Testing</div>
+                        <div class="step-desc">Statistical testing framework, variant performance, significance testing</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">Dynamic Optimization</div>
+                        <div class="step-desc">Automated adjustments, budget reallocation, targeting optimization</div>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-title">ML Enhancement</div>
+                        <div class="step-desc">Machine learning optimization, predictive adjustments, performance forecasting</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h3>Data Volume & Processing</h3>
+                </div>
+                <div class="metrics-showcase">
+                    <div class="metric">
+                        <div class="metric-value">125M</div>
+                        <div class="metric-label">Email Sends/Month</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">47M</div>
+                        <div class="metric-label">Campaign Interactions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2.3TB</div>
+                        <div class="metric-label">Campaign Data</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">50M</div>
+                        <div class="metric-label">Customer Profiles</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">3.2M</div>
+                        <div class="metric-label">Leads Generated</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">12M</div>
+                        <div class="metric-label">Transactions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <h3>Real-time Data Streams</h3>
+                </div>
+                <ul class="list">
+                    <li>Campaign Performance Triggers<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Behavioral Event Streaming<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Dynamic Content Personalization<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Lead Score Updates<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Email Engagement Tracking<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Website Activity Monitoring<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Customer Profile Synchronization<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Campaign Optimization Triggers<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>A/B Test Performance Updates<span class="realtime-badge">REAL-TIME</span></li>
+                    <li>Social Media Engagement Feed<span class="realtime-badge">REAL-TIME</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🔄</div>
+                <h3>Data Integration Flow</h3>
+            </div>
+            <div class="data-flow">
+                <div class="data-node">CDP<br>Ingestion</div>
+                <div class="data-node">Data<br>Processing</div>
+                <div class="data-node">Campaign<br>Execution</div>
+                <div class="data-node">Performance<br>Tracking</div>
+                <div class="data-node">Attribution<br>Analysis</div>
+            </div>
+            <div class="metrics-showcase">
+                <div class="metric">
+                    <div class="metric-value">99.9%</div>
+                    <div class="metric-label">Data Accuracy</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">< 100ms</div>
+                    <div class="metric-label">Processing Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">847%</div>
+                    <div class="metric-label">ROI Attribution</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">24/7</div>
+                    <div class="metric-label">Data Availability</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔄</div>
+                    <h3>Batch Processing</h3>
+                </div>
+                <ul class="list">
+                    <li>Daily Attribution Model Updates<span class="batch-badge">DAILY</span></li>
+                    <li>Customer Segmentation Refresh<span class="batch-badge">DAILY</span></li>
+                    <li>Campaign Performance Reports<span class="batch-badge">HOURLY</span></li>
+                    <li>Lead Score Recalculation<span class="batch-badge">HOURLY</span></li>
+                    <li>Revenue Attribution Analysis<span class="batch-badge">DAILY</span></li>
+                    <li>A/B Testing Statistical Analysis<span class="batch-badge">HOURLY</span></li>
+                    <li>Customer Journey Mapping<span class="batch-badge">DAILY</span></li>
+                    <li>Content Performance Analytics<span class="batch-badge">HOURLY</span></li>
+                    <li>Marketing Mix Modeling<span class="batch-badge">WEEKLY</span></li>
+                    <li>Predictive Model Training<span class="batch-badge">WEEKLY</span></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <h3>Data Quality & Governance</h3>
+                </div>
+                <ul class="list">
+                    <li>GDPR & Privacy Compliance Processing</li>
+                    <li>Consent Management & Tracking</li>
+                    <li>Data Quality Monitoring & Validation</li>
+                    <li>Customer Data Unification & Deduplication</li>
+                    <li>Campaign Data Lineage & Audit Trails</li>
+                    <li>Performance Data Accuracy Validation</li>
+                    <li>Attribution Model Accuracy Testing</li>
+                    <li>Lead Scoring Model Performance Monitoring</li>
+                    <li>Campaign ROI Calculation Verification</li>
+                    <li>Customer Profile Completeness Tracking</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

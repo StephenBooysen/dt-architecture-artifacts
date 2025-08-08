@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Loyalty Platform - Technology View</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .viewpoint-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .viewpoint-header {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+        }
+        .viewpoint-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        .viewpoint-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .tech-layer {
+            margin-bottom: 30px;
+        }
+        .tech-layer-header {
+            background: #f4f3ff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #6c5ce7;
+            margin-bottom: 20px;
+        }
+        .tech-layer-header h3 {
+            color: #5a4fcf;
+            margin: 0 0 8px 0;
+            font-size: 1.3rem;
+        }
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .tech-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #6c5ce7;
+        }
+        .tech-card h4 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+        .tech-details {
+            color: #34495e;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .tech-metrics {
+            background: #f1f0ff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #5a4fcf;
+            margin-top: 10px;
+        }
+        .tech-version {
+            display: inline-block;
+            background: #6c5ce7;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+        .summary-text {
+            font-size: 1.1rem;
+            color: #34495e;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+        .tech-stats {
+            background: #f1f0ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stats-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e6e4ff;
+        }
+        .stats-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #6c5ce7;
+        }
+        .stats-label {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        .architecture-overview {
+            background: #f4f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .architecture-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e6e4ff;
+        }
+        .architecture-card h4 {
+            color: #5a4fcf;
+            margin: 0 0 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewpoint-container">
+        <div class="viewpoint-header">
+            <h2>Technology Stack</h2>
+        </div>
+        <div class="viewpoint-content">
+            <div class="summary-text">
+                The Customer Loyalty Platform leverages a modern, cloud-native technology stack designed for scalability, performance, and real-time processing. The architecture supports microservices deployment with container orchestration, event-driven communication, and machine learning capabilities for personalized customer experiences.
+            </div>
+
+            <div class="tech-stats">
+                <h3>Technology Overview</h3>
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-value">47</div>
+                        <div class="stats-label">Microservices</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">200+</div>
+                        <div class="stats-label">Containers</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">99.7%</div>
+                        <div class="stats-label">Uptime SLA</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">14ms</div>
+                        <div class="stats-label">API Response</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">2.4TB</div>
+                        <div class="stats-label">Daily Data</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">Auto</div>
+                        <div class="stats-label">Scaling</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-layer">
+                <div class="tech-layer-header">
+                    <h3>Frontend Technologies</h3>
+                    <p>User-facing applications and interfaces across web and mobile platforms</p>
+                </div>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h4>Mobile Applications <span class="tech-version">Native</span></h4>
+                        <div class="tech-details">
+                            <strong>iOS:</strong> Swift 5.7, UIKit, SwiftUI for modern interfaces, Core Data for offline storage, Push Notifications via APNs.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Android:</strong> Kotlin 1.8, Jetpack Compose, Room database, Firebase Cloud Messaging, Material Design 3.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Performance:</strong> 4.7/5 app store rating • <2s launch time • 78% mobile traffic • 2.1M monthly active users
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Cross-Platform Framework <span class="tech-version">React Native 0.72</span></h4>
+                        <div class="tech-details">
+                            <strong>Implementation:</strong> Shared business logic between iOS and Android, native module integration for platform-specific features.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Libraries:</strong> Redux Toolkit for state management, React Navigation, React Native Paper, Async Storage.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Efficiency:</strong> 70% code sharing • 40% faster development • Consistent UX across platforms
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Web Portal <span class="tech-version">React 18.2</span></h4>
+                        <div class="tech-details">
+                            <strong>Framework:</strong> React 18 with Concurrent Features, TypeScript for type safety, Next.js for SSR and performance optimization.
+                        </div>
+                        <div class="tech-details">
+                            <strong>UI Library:</strong> Material-UI (MUI) v5, Emotion for CSS-in-JS, React Hook Form for form management.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Performance:</strong> 95+ Lighthouse score • 1.2s page load • 22% web traffic • PWA capabilities
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Admin Dashboard <span class="tech-version">Angular 16</span></h4>
+                        <div class="tech-details">
+                            <strong>Framework:</strong> Angular 16 with standalone components, RxJS for reactive programming, Angular Material for UI components.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Features:</strong> Real-time dashboards, data visualization with Chart.js, role-based access control, responsive design.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Usage:</strong> 340+ admin users • 15+ business dashboards • Real-time data updates
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-layer">
+                <div class="tech-layer-header">
+                    <h3>Backend Technologies</h3>
+                    <p>Server-side applications, APIs, and business logic processing</p>
+                </div>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h4>Core Services <span class="tech-version">Java Spring Boot 3.1</span></h4>
+                        <div class="tech-details">
+                            <strong>Framework:</strong> Spring Boot 3.1 with Spring WebFlux for reactive programming, Spring Security for authentication/authorization.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Architecture:</strong> Microservices pattern, Domain-driven design, CQRS with Event Sourcing, Circuit breaker pattern.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Scale:</strong> 34 microservices • 847M monthly API calls • 14ms median response • Auto-scaling enabled
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Real-time APIs <span class="tech-version">Node.js 18.17</span></h4>
+                        <div class="tech-details">
+                            <strong>Runtime:</strong> Node.js 18 with Express.js framework, Socket.io for real-time communication, PM2 for process management.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Purpose:</strong> Real-time notifications, WebSocket connections, lightweight API endpoints, event processing.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Performance:</strong> <100ms real-time updates • 50K concurrent connections • 99.98% uptime
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>API Gateway <span class="tech-version">Kong 3.3</span></h4>
+                        <div class="tech-details">
+                            <strong>Features:</strong> Request routing, load balancing, rate limiting, authentication, API versioning, request/response transformation.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Plugins:</strong> OAuth 2.0, JWT validation, CORS handling, request/response logging, metrics collection.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Traffic:</strong> 847M monthly requests • 99.95% success rate • <5ms latency overhead
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>GraphQL Layer <span class="tech-version">Apollo Server 4</span></h4>
+                        <div class="tech-details">
+                            <strong>Implementation:</strong> Apollo Server with schema federation, DataLoader for efficient data fetching, caching optimization.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Benefits:</strong> Single endpoint for multiple data sources, reduced over-fetching, real-time subscriptions.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Usage:</strong> 23% of API traffic • 45% reduction in requests • Mobile-optimized queries
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-layer">
+                <div class="tech-layer-header">
+                    <h3>Data Technologies</h3>
+                    <p>Database systems, caching, and data processing infrastructure</p>
+                </div>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h4>Primary Database <span class="tech-version">PostgreSQL 15</span></h4>
+                        <div class="tech-details">
+                            <strong>Configuration:</strong> Multi-master replication, read replicas for analytics, connection pooling with PgBouncer.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Features:</strong> JSONB for flexible schemas, full-text search, partitioning for large tables, automated backups.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Scale:</strong> 2.8M customer records • 15.2B points transactions • 99.99% availability • <10ms query time
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Caching Layer <span class="tech-version">Redis 7.0</span></h4>
+                        <div class="tech-details">
+                            <strong>Use Cases:</strong> Session management, frequently accessed data caching, real-time leaderboards, pub/sub messaging.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Configuration:</strong> Redis Cluster for high availability, Redis Streams for event processing, memory optimization.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Performance:</strong> <1ms cache response • 95% cache hit rate • 128GB memory allocation • Automatic failover
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Event Streaming <span class="tech-version">Apache Kafka 3.4</span></h4>
+                        <div class="tech-details">
+                            <strong>Topics:</strong> Transaction events, user behavior, points updates, tier changes, offer deliveries, system notifications.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Architecture:</strong> Multi-broker cluster, partitioned topics, exactly-once delivery, schema registry with Avro.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Throughput:</strong> 2.4M daily events • 47 event types • <100ms propagation • 99.99% delivery guarantee
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Search & Analytics <span class="tech-version">Elasticsearch 8.8</span></h4>
+                        <div class="tech-details">
+                            <strong>Capabilities:</strong> Full-text search for rewards catalog, user behavior analytics, real-time dashboards, log aggregation.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Integration:</strong> Logstash for data ingestion, Kibana for visualization, index lifecycle management.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Data:</strong> 50K+ searchable rewards • <200ms search response • 2.4TB indexed data • Real-time insights
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-layer">
+                <div class="tech-layer-header">
+                    <h3>Machine Learning & AI</h3>
+                    <p>Personalization engine and predictive analytics capabilities</p>
+                </div>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h4>ML Platform <span class="tech-version">Python 3.11</span></h4>
+                        <div class="tech-details">
+                            <strong>Libraries:</strong> Scikit-learn for traditional ML, Pandas/NumPy for data processing, MLflow for experiment tracking.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Models:</strong> Customer segmentation, churn prediction, personalized offers, tier progression forecasting.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Results:</strong> 89% offer relevance • 34% engagement uplift • 23% churn reduction • Daily model updates
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Deep Learning <span class="tech-version">TensorFlow 2.13</span></h4>
+                        <div class="tech-details">
+                            <strong>Applications:</strong> Recommendation systems, customer lifetime value prediction, fraud detection, sentiment analysis.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Infrastructure:</strong> GPU clusters for training, TensorFlow Serving for model deployment, A/B testing framework.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Performance:</strong> 15ms recommendation response • 95% fraud detection accuracy • Real-time inference
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Feature Store <span class="tech-version">Feast</span></h4>
+                        <div class="tech-details">
+                            <strong>Purpose:</strong> Centralized feature management, real-time feature serving, feature versioning and lineage tracking.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Features:</strong> Customer behavior features, transaction patterns, loyalty metrics, external data enrichment.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Scale:</strong> 500+ features • <10ms feature serving • Real-time updates • Multi-model support
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>AutoML Pipeline <span class="tech-version">Kubeflow</span></h4>
+                        <div class="tech-details">
+                            <strong>Capabilities:</strong> Automated model training, hyperparameter optimization, model validation, deployment automation.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Workflow:</strong> Data preprocessing, feature engineering, model training, evaluation, deployment, monitoring.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Efficiency:</strong> 70% faster model development • Automated retraining • Continuous model monitoring
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-layer">
+                <div class="tech-layer-header">
+                    <h3>Infrastructure & DevOps</h3>
+                    <p>Cloud infrastructure, orchestration, and operational management</p>
+                </div>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h4>Container Orchestration <span class="tech-version">Kubernetes 1.27</span></h4>
+                        <div class="tech-details">
+                            <strong>Platform:</strong> Amazon EKS with managed node groups, auto-scaling, service mesh with Istio, ingress controllers.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Features:</strong> Rolling deployments, blue-green releases, resource quotas, network policies, persistent volumes.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Scale:</strong> 200+ containers • Auto-scaling to 500% capacity • 99.7% uptime • Multi-AZ deployment
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Cloud Platform <span class="tech-version">AWS</span></h4>
+                        <div class="tech-details">
+                            <strong>Services:</strong> EKS, RDS, ElastiCache, CloudFront CDN, S3 storage, Lambda functions, API Gateway.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Regions:</strong> Multi-region deployment for disaster recovery, edge locations for global performance.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Infrastructure:</strong> 3 AWS regions • 99.99% SLA • Auto-scaling enabled • Cost optimized
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>Containerization <span class="tech-version">Docker</span></h4>
+                        <div class="tech-details">
+                            <strong>Images:</strong> Multi-stage builds, security scanning, minimal base images, layer caching optimization.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Registry:</strong> Amazon ECR with vulnerability scanning, image signing, lifecycle policies.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Deployment:</strong> <30s container startup • Automated image builds • Security compliance • Registry optimization
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <h4>CI/CD Pipeline <span class="tech-version">GitLab CI</span></h4>
+                        <div class="tech-details">
+                            <strong>Stages:</strong> Code quality checks, security scanning, automated testing, container builds, deployment automation.
+                        </div>
+                        <div class="tech-details">
+                            <strong>Features:</strong> GitOps workflow, automated rollbacks, environment promotion, compliance reporting.
+                        </div>
+                        <div class="tech-metrics">
+                            <strong>Performance:</strong> 15min average build time • 97% pipeline success • Automated deployments • Security gates
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="architecture-overview">
+                <h3>Monitoring & Observability</h3>
+                <div class="architecture-grid">
+                    <div class="architecture-card">
+                        <h4>Metrics & Monitoring</h4>
+                        <p><strong>Prometheus & Grafana:</strong> Real-time metrics collection, custom dashboards, alerting rules, SLA monitoring.</p>
+                    </div>
+                    <div class="architecture-card">
+                        <h4>Distributed Tracing</h4>
+                        <p><strong>Jaeger:</strong> Request tracing across microservices, performance bottleneck identification, dependency mapping.</p>
+                    </div>
+                    <div class="architecture-card">
+                        <h4>Log Management</h4>
+                        <p><strong>ELK Stack:</strong> Centralized logging, log analysis, error tracking, security event monitoring.</p>
+                    </div>
+                    <div class="architecture-card">
+                        <h4>Application Performance</h4>
+                        <p><strong>New Relic:</strong> APM monitoring, real user monitoring, error tracking, performance insights.</p>
+                    </div>
+                    <div class="architecture-card">
+                        <h4>Security Monitoring</h4>
+                        <p><strong>Splunk:</strong> Security information and event management, threat detection, compliance reporting.</p>
+                    </div>
+                    <div class="architecture-card">
+                        <h4>Synthetic Monitoring</h4>
+                        <p><strong>Pingdom:</strong> Uptime monitoring, performance testing, multi-location checks, SLA reporting.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

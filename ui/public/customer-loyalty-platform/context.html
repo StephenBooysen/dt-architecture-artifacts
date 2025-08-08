@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Loyalty Platform - Context View</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .viewpoint-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .viewpoint-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+        }
+        .viewpoint-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        .viewpoint-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .integration-section {
+            margin-bottom: 30px;
+        }
+        .integration-header {
+            background: #fdedec;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            margin-bottom: 20px;
+        }
+        .integration-header h3 {
+            color: #c0392b;
+            margin: 0 0 8px 0;
+            font-size: 1.3rem;
+        }
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .integration-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+        .integration-card h4 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+        .integration-details {
+            color: #34495e;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .integration-metrics {
+            background: #fdf2f2;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #a93226;
+            margin-top: 10px;
+        }
+        .middleware-section {
+            background: #fdedec;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .middleware-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .middleware-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #fadbd8;
+        }
+        .middleware-card h4 {
+            color: #c0392b;
+            margin: 0 0 8px 0;
+        }
+        .summary-text {
+            font-size: 1.1rem;
+            color: #34495e;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+        .integration-stats {
+            background: #fdf2f2;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stats-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stats-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #c0392b;
+        }
+        .stats-label {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewpoint-container">
+        <div class="viewpoint-header">
+            <h2>System Integration Context</h2>
+        </div>
+        <div class="viewpoint-content">
+            <div class="summary-text">
+                The Customer Loyalty Platform operates within a complex ecosystem of enterprise systems, managing data flows and integrations across customer touchpoints, operational systems, and partner networks. The platform serves as a central hub for loyalty data while maintaining real-time synchronization with 18+ integrated systems.
+            </div>
+
+            <div class="integration-stats">
+                <h3>Integration Overview</h3>
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-value">18+</div>
+                        <div class="stats-label">Active Integrations</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">847M</div>
+                        <div class="stats-label">Monthly API Calls</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">99.95%</div>
+                        <div class="stats-label">Integration Uptime</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">2.4M</div>
+                        <div class="stats-label">Daily Events</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">14ms</div>
+                        <div class="stats-label">Avg Response Time</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">24/7</div>
+                        <div class="stats-label">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-section">
+                <div class="integration-header">
+                    <h3>Inbound Integrations</h3>
+                    <p>Systems that provide data and events to the Customer Loyalty Platform</p>
+                </div>
+                <div class="integration-grid">
+                    <div class="integration-card">
+                        <h4>CRM System (Salesforce)</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Customer profiles, preferences, contact information, and demographic data synchronized in real-time via REST APIs.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Enables personalized offers and tier-based communications based on complete customer view.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 2.8M customer profiles • 150K daily updates • 99.9% sync success rate
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>POS Systems (Multiple)</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Transaction data, purchase details, store locations, and payment methods streamed via event messaging.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Real-time points earning, tier progression tracking, and purchase behavior analysis.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 1.2M daily transactions • 3,400 store locations • <500ms processing time
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>eCommerce Platform (Magento)</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Online purchases, cart abandonment events, product interactions, and digital engagement metrics.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Omnichannel points earning, personalized product recommendations, and digital engagement tracking.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 450K monthly online transactions • 89% cart recovery rate • Real-time sync
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Mobile Applications</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> App usage patterns, location data, push notification interactions, and in-app behavior events.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Mobile engagement scoring, location-based offers, and app-specific loyalty features.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 2.1M monthly active users • 78% mobile transaction volume • 340K daily app sessions
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-section">
+                <div class="integration-header">
+                    <h3>Outbound Integrations</h3>
+                    <p>Systems that consume data and insights from the Customer Loyalty Platform</p>
+                </div>
+                <div class="integration-grid">
+                    <div class="integration-card">
+                        <h4>Marketing Platform (Adobe Campaign)</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Customer segmentation data, loyalty status, engagement scores, and behavioral insights for targeted campaigns.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Enables precision marketing with loyalty-based segmentation and personalized campaign targeting.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 47 customer segments • 890K monthly campaigns • 34% uplift in engagement
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Customer Service Platform</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Real-time loyalty status, points balance, tier benefits, and transaction history for service agents.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Empowers customer service with complete loyalty context for enhanced support experiences.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 125K monthly service interactions • 67% first-call resolution • 4.8/5 satisfaction
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Analytics Platform (Snowflake)</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Loyalty program performance metrics, customer behavior data, and operational KPIs for business intelligence.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Provides comprehensive analytics for program optimization and strategic decision making.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 2.4M daily events • 50+ business dashboards • Real-time metric updates
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Email Systems (SendGrid)</h4>
+                        <div class="integration-details">
+                            <strong>Data Flow:</strong> Loyalty status changes, points earning notifications, tier progression alerts, and personalized offer communications.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Automated loyalty communications and engagement campaigns based on program activities.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 1.8M monthly emails • 42% open rate • 8.7% click-through rate
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-section">
+                <div class="integration-header">
+                    <h3>Bidirectional Integrations</h3>
+                    <p>Systems with two-way data exchange and synchronized operations</p>
+                </div>
+                <div class="integration-grid">
+                    <div class="integration-card">
+                        <h4>Payment Processors (Stripe, PayPal)</h4>
+                        <div class="integration-details">
+                            <strong>Data Exchange:</strong> Points redemption transactions, refund processing, payment status updates, and fraud detection signals.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Secure points-to-currency redemptions and maintaining payment integrity with loyalty features.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 89K monthly redemptions • $2.3M redemption value • 99.97% success rate
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Partner Coalition Systems</h4>
+                        <div class="integration-details">
+                            <strong>Data Exchange:</strong> Cross-brand points earning/redemption, partner transaction data, and coalition member synchronization.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Enables coalition loyalty programs with 12+ brand partners and cross-ecosystem rewards.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 12 active partners • 340K cross-brand transactions • 15% partner revenue contribution
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Inventory Management System</h4>
+                        <div class="integration-details">
+                            <strong>Data Exchange:</strong> Product availability for rewards catalog, redemption inventory levels, and promotional stock management.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Real-time rewards catalog management and inventory-aware redemption offerings.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 50K+ reward SKUs • 99.2% availability accuracy • Real-time sync
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Fraud Detection System</h4>
+                        <div class="integration-details">
+                            <strong>Data Exchange:</strong> Transaction patterns, anomaly detection, risk scores, and suspicious activity alerts.
+                        </div>
+                        <div class="integration-details">
+                            <strong>Purpose:</strong> Prevents loyalty fraud, protects member accounts, and maintains program integrity.
+                        </div>
+                        <div class="integration-metrics">
+                            <strong>Volume:</strong> 100% transaction monitoring • <0.01% fraud rate • Real-time risk scoring
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="middleware-section">
+                <h3>Integration Middleware & Infrastructure</h3>
+                <div class="middleware-grid">
+                    <div class="middleware-card">
+                        <h4>API Gateway (Kong)</h4>
+                        <p>Central entry point managing authentication, rate limiting, request routing, and API analytics across all integrations.</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>Message Queues (Apache Kafka)</h4>
+                        <p>High-throughput event streaming for real-time data synchronization, transaction processing, and system decoupling.</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>CDN (CloudFlare)</h4>
+                        <p>Global content delivery for mobile apps, reducing latency and improving user experience across geographic regions.</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>Event Streaming Platform</h4>
+                        <p>Real-time event processing for personalization engine, enabling immediate response to customer behavior patterns.</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>Data Integration Hub</h4>
+                        <p>ETL/ELT processes for batch data synchronization, data quality validation, and integration monitoring.</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>Service Mesh (Istio)</h4>
+                        <p>Microservices communication management with security, observability, and traffic management capabilities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

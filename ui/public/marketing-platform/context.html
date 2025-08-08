@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Platform - Context View</title>
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #c0392b;
+            --accent-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .integration-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .integration-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--secondary-color);
+        }
+
+        .integration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--secondary-color);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .card-subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-top: 0.3rem;
+        }
+
+        .integration-list {
+            list-style: none;
+        }
+
+        .integration-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+
+        .integration-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .item-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .item-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .data-flow-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .flow-metric {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .context-diagram {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .diagram-title {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--secondary-color);
+        }
+
+        .diagram-container {
+            display: grid;
+            grid-template-areas:
+                "inbound platform outbound"
+                "bidirectional platform middleware";
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .platform-core {
+            grid-area: platform;
+            background: var(--secondary-color);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .integration-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .integration-section.inbound {
+            grid-area: inbound;
+        }
+
+        .integration-section.outbound {
+            grid-area: outbound;
+        }
+
+        .integration-section.bidirectional {
+            grid-area: bidirectional;
+        }
+
+        .integration-section.middleware {
+            grid-area: middleware;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .integration-node {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .flow-arrows {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin: 0 0.5rem;
+        }
+
+        .api-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .api-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--secondary-color);
+        }
+
+        .api-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .api-endpoints {
+            list-style: none;
+        }
+
+        .api-endpoints li {
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .api-endpoints li::before {
+            content: "🔗";
+            margin-right: 0.5rem;
+        }
+
+        .connection-type {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .type-inbound {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .type-outbound {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .type-bidirectional {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .middleware-flows {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .middleware-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .middleware-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .middleware-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .integration-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .diagram-container {
+                grid-template-areas:
+                    "platform"
+                    "inbound"
+                    "outbound"
+                    "bidirectional"
+                    "middleware";
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Marketing Platform</h1>
+        <p>Context Architecture View - System Integrations & External Touchpoints</p>
+    </div>
+
+    <div class="container">
+        <div class="integration-grid">
+            <div class="integration-card">
+                <div class="card-header">
+                    <div class="card-icon">📥</div>
+                    <div>
+                        <div class="card-title">Inbound Integrations</div>
+                        <div class="card-subtitle">Data Sources & Customer Information</div>
+                    </div>
+                </div>
+                <div class="integration-list">
+                    <div class="integration-item">
+                        <div class="connection-type type-inbound">INBOUND</div>
+                        <div class="item-title">Customer Data Platform (CDP)</div>
+                        <div class="item-desc">Unified customer profiles, behavioral data, segmentation, and journey tracking for personalized campaigns</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-inbound">INBOUND</div>
+                        <div class="item-title">CRM System Integration</div>
+                        <div class="item-desc">Lead data, contact information, sales pipeline status, and account relationship management</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-inbound">INBOUND</div>
+                        <div class="item-title">Web Analytics Platform</div>
+                        <div class="item-desc">Website behavior, conversion tracking, user journey analytics, and engagement metrics</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-inbound">INBOUND</div>
+                        <div class="item-title">Social Media Platforms</div>
+                        <div class="item-desc">Social engagement data, brand mentions, influencer content, and viral marketing metrics</div>
+                    </div>
+                </div>
+                <div class="data-flow-metrics">
+                    <div class="flow-metric">
+                        <div class="metric-value">50M</div>
+                        <div class="metric-label">Customer Profiles</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">2.3TB</div>
+                        <div class="metric-label">Monthly Data</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">Real-time</div>
+                        <div class="metric-label">Data Sync</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="card-header">
+                    <div class="card-icon">📤</div>
+                    <div>
+                        <div class="card-title">Outbound Integrations</div>
+                        <div class="card-subtitle">Campaign Execution & Delivery Channels</div>
+                    </div>
+                </div>
+                <div class="integration-list">
+                    <div class="integration-item">
+                        <div class="connection-type type-outbound">OUTBOUND</div>
+                        <div class="item-title">Email Service Provider (SendGrid)</div>
+                        <div class="item-desc">High-volume email delivery, template management, deliverability optimization, and engagement tracking</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-outbound">OUTBOUND</div>
+                        <div class="item-title">SMS Gateway (Twilio)</div>
+                        <div class="item-desc">Multi-channel SMS campaigns, shortcode management, delivery confirmation, and opt-out handling</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-outbound">OUTBOUND</div>
+                        <div class="item-title">Advertising Platforms</div>
+                        <div class="item-desc">Paid media campaign management, audience targeting, budget optimization, and performance tracking</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-outbound">OUTBOUND</div>
+                        <div class="item-title">Website Personalization</div>
+                        <div class="item-desc">Dynamic content delivery, behavioral targeting, A/B testing, and conversion optimization</div>
+                    </div>
+                </div>
+                <div class="data-flow-metrics">
+                    <div class="flow-metric">
+                        <div class="metric-value">125M</div>
+                        <div class="metric-label">Emails/Month</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">89%</div>
+                        <div class="metric-label">Deliverability</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">15+</div>
+                        <div class="metric-label">Channels</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="integration-grid">
+            <div class="integration-card">
+                <div class="card-header">
+                    <div class="card-icon">🔄</div>
+                    <div>
+                        <div class="card-title">Bidirectional Integrations</div>
+                        <div class="card-subtitle">Two-Way Data Exchange & Synchronization</div>
+                    </div>
+                </div>
+                <div class="integration-list">
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
+                        <div class="item-title">CRM Lead Synchronization</div>
+                        <div class="item-desc">Real-time lead scoring updates, qualification status, sales attribution, and pipeline progression tracking</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
+                        <div class="item-title">Sales Attribution Tools</div>
+                        <div class="item-desc">Revenue attribution tracking, multi-touch conversion paths, deal influence scoring, and ROI measurement</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
+                        <div class="item-title">Business Intelligence Platforms</div>
+                        <div class="item-desc">Marketing performance dashboards, cross-platform analytics, KPI tracking, and executive reporting</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
+                        <div class="item-title">Customer Support Systems</div>
+                        <div class="item-desc">Support ticket integration, customer satisfaction data, service interaction history, and feedback loops</div>
+                    </div>
+                </div>
+                <div class="data-flow-metrics">
+                    <div class="flow-metric">
+                        <div class="metric-value">3.2M</div>
+                        <div class="metric-label">Lead Updates</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">847%</div>
+                        <div class="metric-label">ROI Tracked</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Sync Accuracy</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="card-header">
+                    <div class="card-icon">⚙️</div>
+                    <div>
+                        <div class="card-title">Middleware & Orchestration</div>
+                        <div class="card-subtitle">API Management & Event Processing</div>
+                    </div>
+                </div>
+                <div class="integration-list">
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
+                        <div class="item-title">Marketing Automation Workflows</div>
+                        <div class="item-desc">Event-driven campaign triggers, behavioral automation, drip campaigns, and journey orchestration</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
+                        <div class="item-title">API Gateway & Management</div>
+                        <div class="item-desc">RESTful API orchestration, rate limiting, security authentication, and integration monitoring</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
+                        <div class="item-title">Event Streaming Platform</div>
+                        <div class="item-desc">Real-time event processing, message queuing, data transformation, and workflow triggering</div>
+                    </div>
+                    <div class="integration-item">
+                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
+                        <div class="item-title">Data Transformation Layer</div>
+                        <div class="item-desc">ETL processes, data normalization, format conversion, and quality validation</div>
+                    </div>
+                </div>
+                <div class="data-flow-metrics">
+                    <div class="flow-metric">
+                        <div class="metric-value">47M</div>
+                        <div class="metric-label">Events/Month</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">< 100ms</div>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">24/7</div>
+                        <div class="metric-label">Processing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="context-diagram">
+            <div class="diagram-title">Marketing Platform Integration Context</div>
+            <div class="diagram-container">
+                <div class="integration-section inbound">
+                    <div class="section-title">Data Sources</div>
+                    <div class="integration-node">Customer Data Platform</div>
+                    <div class="integration-node">CRM System</div>
+                    <div class="integration-node">Web Analytics</div>
+                    <div class="integration-node">Social Media</div>
+                </div>
+
+                <div class="platform-core">
+                    <div>Marketing Platform</div>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">Campaign Orchestration Hub</div>
+                </div>
+
+                <div class="integration-section outbound">
+                    <div class="section-title">Delivery Channels</div>
+                    <div class="integration-node">Email (SendGrid)</div>
+                    <div class="integration-node">SMS (Twilio)</div>
+                    <div class="integration-node">Ad Platforms</div>
+                    <div class="integration-node">Web Personalization</div>
+                </div>
+
+                <div class="integration-section bidirectional">
+                    <div class="section-title">Two-Way Sync</div>
+                    <div class="integration-node">CRM Lead Sync</div>
+                    <div class="integration-node">Sales Attribution</div>
+                    <div class="integration-node">BI Platforms</div>
+                    <div class="integration-node">Support Systems</div>
+                </div>
+
+                <div class="integration-section middleware">
+                    <div class="section-title">Orchestration</div>
+                    <div class="integration-node">API Gateway</div>
+                    <div class="integration-node">Event Processing</div>
+                    <div class="integration-node">Workflow Engine</div>
+                    <div class="integration-node">Data Transform</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-showcase">
+            <div class="api-card">
+                <div class="api-title">Campaign Management APIs</div>
+                <ul class="api-endpoints">
+                    <li>Campaign Creation & Management</li>
+                    <li>A/B Testing Configuration</li>
+                    <li>Audience Segmentation</li>
+                    <li>Performance Analytics</li>
+                    <li>Attribution Tracking</li>
+                </ul>
+            </div>
+            <div class="api-card">
+                <div class="api-title">Customer Data APIs</div>
+                <ul class="api-endpoints">
+                    <li>Profile Data Synchronization</li>
+                    <li>Behavioral Event Ingestion</li>
+                    <li>Lead Scoring Updates</li>
+                    <li>Journey Tracking</li>
+                    <li>Consent Management</li>
+                </ul>
+            </div>
+            <div class="api-card">
+                <div class="api-title">Channel Integration APIs</div>
+                <ul class="api-endpoints">
+                    <li>Email Template Management</li>
+                    <li>SMS Campaign Execution</li>
+                    <li>Social Media Publishing</li>
+                    <li>Ad Platform Synchronization</li>
+                    <li>Website Personalization</li>
+                </ul>
+            </div>
+            <div class="api-card">
+                <div class="api-title">Analytics & Reporting APIs</div>
+                <ul class="api-endpoints">
+                    <li>Real-time Performance Metrics</li>
+                    <li>Attribution Model Results</li>
+                    <li>Campaign ROI Tracking</li>
+                    <li>Customer Journey Analytics</li>
+                    <li>Conversion Funnel Analysis</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="middleware-flows">
+            <div class="middleware-title">Integration Middleware Components</div>
+            <div class="middleware-items">
+                <div class="middleware-item">
+                    <strong>Apache Kafka</strong><br>
+                    Event streaming & message queuing
+                </div>
+                <div class="middleware-item">
+                    <strong>API Gateway</strong><br>
+                    Request routing & rate limiting
+                </div>
+                <div class="middleware-item">
+                    <strong>ETL Pipelines</strong><br>
+                    Data transformation & loading
+                </div>
+                <div class="middleware-item">
+                    <strong>Workflow Engine</strong><br>
+                    Campaign orchestration
+                </div>
+                <div class="middleware-item">
+                    <strong>Event Processor</strong><br>
+                    Real-time trigger handling
+                </div>
+                <div class="middleware-item">
+                    <strong>Data Validator</strong><br>
+                    Quality assurance & monitoring
+                </div>
+            </div>
+        </div>
+
+        <div class="integration-grid">
+            <div class="integration-card">
+                <div class="card-header">
+                    <div class="card-icon">🔧</div>
+                    <div>
+                        <div class="card-title">Integration Performance</div>
+                        <div class="card-subtitle">System Performance & Reliability Metrics</div>
+                    </div>
+                </div>
+                <div class="data-flow-metrics">
+                    <div class="flow-metric">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Integration Uptime</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">< 100ms</div>
+                        <div class="metric-label">API Response Time</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">10K+</div>
+                        <div class="metric-label">Requests/Second</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">50+</div>
+                        <div class="metric-label">Active Integrations</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div>
+                        <div class="card-title">Data Integration Volume</div>
+                        <div class="card-subtitle">Monthly Integration Traffic & Processing</div>
+                    </div>
+                </div>
+                <div class="data-flow-metrics">
+                    <div class="flow-metric">
+                        <div class="metric-value">2.3TB</div>
+                        <div class="metric-label">Data Processed</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">47M</div>
+                        <div class="metric-label">Events Handled</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">125M</div>
+                        <div class="metric-label">Messages Sent</div>
+                    </div>
+                    <div class="flow-metric">
+                        <div class="metric-value">3.2M</div>
+                        <div class="metric-label">Records Synced</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

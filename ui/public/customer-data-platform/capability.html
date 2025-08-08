@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDP - Capability Viewpoint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ecf0f1, #bdc3c7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .capability-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .capability-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .capability-card.master {
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .capability-card.facilitator {
+            border-left: 5px solid #f39c12;
+        }
+        
+        .capability-card.consumer {
+            border-left: 5px solid #27ae60;
+        }
+        
+        .capability-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ecf0f1;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 0.5rem;
+        }
+        
+        .capability-card h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem 0;
+            color: #bdc3c7;
+        }
+        
+        .capability-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .capability-card li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .capability-card li:before {
+            content: '⚡';
+            position: absolute;
+            left: 0;
+            color: #9b59b6;
+            font-size: 1rem;
+        }
+        
+        .value-streams {
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        
+        .value-stream-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .value-stream {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .value-stream h4 {
+            color: #ecf0f1;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 0.5rem;
+        }
+        
+        .capability-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .metric {
+            background: rgba(155, 89, 182, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ecf0f1;
+            display: block;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+        
+        .api-capabilities {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+        
+        .integration-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .integration-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid #9b59b6;
+        }
+        
+        .ml-capabilities {
+            background: rgba(230, 126, 34, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Data Platform</h1>
+        <p class="subtitle">Capability Viewpoint - Enterprise Customer Intelligence & Personalization Engine</p>
+        
+        <div class="capability-grid">
+            <div class="capability-card master">
+                <h2>Master Capabilities</h2>
+                
+                <h3>Customer Identity Resolution</h3>
+                <ul>
+                    <li>Deterministic identity matching using PII data</li>
+                    <li>Probabilistic matching with 92% accuracy using ML</li>
+                    <li>Cross-device identity stitching and device graphs</li>
+                    <li>Real-time identity resolution for anonymous visitors</li>
+                    <li>Household and family relationship mapping</li>
+                </ul>
+                
+                <h3>Unified Profile Management</h3>
+                <ul>
+                    <li>Real-time profile updates from 47+ data sources</li>
+                    <li>360-degree customer view creation and maintenance</li>
+                    <li>Profile deduplication and golden record creation</li>
+                    <li>Behavioral event aggregation and scoring</li>
+                    <li>Customer lifecycle stage tracking and progression</li>
+                </ul>
+                
+                <h3>Advanced Segmentation</h3>
+                <ul>
+                    <li>Dynamic audience creation based on real-time behaviors</li>
+                    <li>ML-driven lookalike audience generation</li>
+                    <li>Predictive segment modeling and scoring</li>
+                    <li>Cross-channel behavioral segmentation</li>
+                    <li>Value-based customer tiering and prioritization</li>
+                </ul>
+                
+                <h3>Data Governance & Quality</h3>
+                <ul>
+                    <li>Automated data validation and cleansing rules</li>
+                    <li>Privacy compliance and consent management</li>
+                    <li>Data lineage tracking and audit trails</li>
+                    <li>Quality scoring and data completeness monitoring</li>
+                    <li>PII encryption and access controls</li>
+                </ul>
+            </div>
+            
+            <div class="capability-card facilitator">
+                <h2>Facilitator Capabilities</h2>
+                
+                <h3>Real-time Personalization</h3>
+                <ul>
+                    <li>Sub-200ms profile lookup for web personalization</li>
+                    <li>Dynamic content recommendation engine</li>
+                    <li>A/B testing and experience optimization</li>
+                    <li>Cross-channel message orchestration</li>
+                    <li>Behavioral trigger-based automation</li>
+                </ul>
+                
+                <h3>Marketing Attribution</h3>
+                <ul>
+                    <li>Multi-touch attribution modeling</li>
+                    <li>Cross-channel customer journey mapping</li>
+                    <li>Campaign performance measurement</li>
+                    <li>Incrementality testing and lift analysis</li>
+                    <li>Media mix optimization insights</li>
+                </ul>
+                
+                <h3>Customer Journey Analytics</h3>
+                <ul>
+                    <li>Path analysis and conversion funnel optimization</li>
+                    <li>Predictive next-best-action recommendations</li>
+                    <li>Customer satisfaction and NPS tracking</li>
+                    <li>Churn prediction and retention modeling</li>
+                    <li>Lifetime value calculation and forecasting</li>
+                </ul>
+                
+                <h3>AI/ML Model Serving</h3>
+                <ul>
+                    <li>Real-time model inference and scoring</li>
+                    <li>Recommendation system deployment</li>
+                    <li>Propensity modeling for marketing campaigns</li>
+                    <li>Anomaly detection for fraud prevention</li>
+                    <li>Dynamic pricing optimization models</li>
+                </ul>
+            </div>
+            
+            <div class="capability-card consumer">
+                <h2>Consumer Capabilities</h2>
+                
+                <h3>Multi-channel Data Ingestion</h3>
+                <ul>
+                    <li>Real-time streaming data ingestion (850M events/day)</li>
+                    <li>Batch data processing from enterprise systems</li>
+                    <li>API-based data collection from SaaS platforms</li>
+                    <li>Mobile SDK and web tracking integration</li>
+                    <li>Offline data import and reconciliation</li>
+                </ul>
+                
+                <h3>Transaction Data Processing</h3>
+                <ul>
+                    <li>Point-of-sale transaction ingestion</li>
+                    <li>E-commerce purchase tracking</li>
+                    <li>Subscription billing integration</li>
+                    <li>Return and refund data processing</li>
+                    <li>Payment method and fraud signal analysis</li>
+                </ul>
+                
+                <h3>Behavioral Analytics</h3>
+                <ul>
+                    <li>Web analytics and clickstream processing</li>
+                    <li>Mobile app engagement tracking</li>
+                    <li>Email interaction and engagement metrics</li>
+                    <li>Social media sentiment and interaction data</li>
+                    <li>Customer service interaction history</li>
+                </ul>
+                
+                <h3>External Data Enrichment</h3>
+                <ul>
+                    <li>Third-party demographic data integration</li>
+                    <li>Location and geospatial data processing</li>
+                    <li>Social media profile enrichment</li>
+                    <li>Credit score and financial data (where permitted)</li>
+                    <li>Weather and seasonal behavioral influences</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="value-streams">
+            <h2>Value Stream Capabilities</h2>
+            
+            <div class="value-stream-grid">
+                <div class="value-stream">
+                    <h4>Customer Acquisition</h4>
+                    <ul>
+                        <li><strong>Identity Resolution:</strong> 92% match rate for anonymous to known customer conversion</li>
+                        <li><strong>Lookalike Modeling:</strong> AI-powered audience expansion with 34% higher conversion</li>
+                        <li><strong>Attribution Analysis:</strong> Multi-touch attribution across 15+ marketing channels</li>
+                        <li><strong>Lead Scoring:</strong> Real-time prospect scoring with 78% accuracy</li>
+                        <li><strong>Campaign Optimization:</strong> Dynamic audience targeting and budget allocation</li>
+                    </ul>
+                </div>
+                
+                <div class="value-stream">
+                    <h4>Customer Retention</h4>
+                    <ul>
+                        <li><strong>Behavioral Insights:</strong> Real-time engagement scoring and trend analysis</li>
+                        <li><strong>Churn Prediction:</strong> 87% accuracy in identifying at-risk customers</li>
+                        <li><strong>Loyalty Analytics:</strong> Program effectiveness and engagement optimization</li>
+                        <li><strong>Win-back Campaigns:</strong> Automated re-engagement workflows</li>
+                        <li><strong>Customer Health Scoring:</strong> Proactive retention interventions</li>
+                    </ul>
+                </div>
+                
+                <div class="value-stream">
+                    <h4>Experience Personalization</h4>
+                    <ul>
+                        <li><strong>Real-time Personalization:</strong> <200ms response time for content delivery</li>
+                        <li><strong>Product Recommendations:</strong> AI-driven suggestions with 23% click-through rate</li>
+                        <li><strong>Dynamic Pricing:</strong> Personalized offers based on customer value</li>
+                        <li><strong>Content Optimization:</strong> A/B testing and experience personalization</li>
+                        <li><strong>Omnichannel Consistency:</strong> Unified experience across all touchpoints</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="capability-metrics">
+            <div class="metric">
+                <span class="metric-value">850M</span>
+                <span class="metric-label">Events/Day</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">4.2M</span>
+                <span class="metric-label">Unified Profiles</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">47+</span>
+                <span class="metric-label">Data Sources</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">200ms</span>
+                <span class="metric-label">Profile Lookup</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">92%</span>
+                <span class="metric-label">Match Accuracy</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">99.9%</span>
+                <span class="metric-label">Uptime SLA</span>
+            </div>
+        </div>
+        
+        <div class="api-capabilities">
+            <h2>API & Integration Capabilities</h2>
+            
+            <div class="integration-matrix">
+                <div class="integration-item">
+                    <h4>GraphQL APIs</h4>
+                    <p>Flexible customer profile queries with sub-second response times</p>
+                </div>
+                
+                <div class="integration-item">
+                    <h4>REST APIs</h4>
+                    <p>Standard HTTP endpoints for profile updates, segmentation, and analytics</p>
+                </div>
+                
+                <div class="integration-item">
+                    <h4>Streaming APIs</h4>
+                    <p>Real-time event ingestion with Apache Kafka and WebSocket connections</p>
+                </div>
+                
+                <div class="integration-item">
+                    <h4>Webhook Delivery</h4>
+                    <p>Event-driven notifications to downstream systems and applications</p>
+                </div>
+                
+                <div class="integration-item">
+                    <h4>SDK Integration</h4>
+                    <p>Native mobile and web SDKs for seamless data collection</p>
+                </div>
+                
+                <div class="integration-item">
+                    <h4>ETL Connectors</h4>
+                    <p>Pre-built connectors for Salesforce, Adobe, HubSpot, and 40+ platforms</p>
+                </div>
+            </div>
+            
+            <h3>API Performance Metrics</h3>
+            <ul>
+                <li>Profile Lookup API: <200ms P95 response time</li>
+                <li>Segment Query API: <500ms for complex audience queries</li>
+                <li>Event Ingestion API: 100,000+ events/second throughput</li>
+                <li>Real-time Personalization API: <50ms response time</li>
+                <li>API Availability: 99.99% uptime with global load balancing</li>
+            </ul>
+        </div>
+        
+        <div class="ml-capabilities">
+            <h2>Machine Learning Capabilities</h2>
+            
+            <div class="capability-grid">
+                <div>
+                    <h3>Identity Resolution ML</h3>
+                    <ul>
+                        <li>Probabilistic matching with fuzzy logic algorithms</li>
+                        <li>Deep learning models for cross-device identification</li>
+                        <li>Graph neural networks for household clustering</li>
+                        <li>Continuous model training with feedback loops</li>
+                    </ul>
+                    
+                    <h3>Predictive Analytics</h3>
+                    <ul>
+                        <li>Churn prediction with 87% accuracy</li>
+                        <li>Customer lifetime value forecasting</li>
+                        <li>Propensity scoring for marketing campaigns</li>
+                        <li>Next-best-action recommendation engine</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Personalization ML</h3>
+                    <ul>
+                        <li>Collaborative filtering for product recommendations</li>
+                        <li>Content-based filtering with NLP analysis</li>
+                        <li>Real-time deep learning inference</li>
+                        <li>Multi-armed bandit for content optimization</li>
+                    </ul>
+                    
+                    <h3>Anomaly Detection</h3>
+                    <ul>
+                        <li>Fraud detection with behavioral analysis</li>
+                        <li>Data quality anomaly identification</li>
+                        <li>System performance monitoring</li>
+                        <li>Customer behavior pattern recognition</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

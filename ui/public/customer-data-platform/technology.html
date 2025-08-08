@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDP - Technology Viewpoint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ecf0f1, #bdc3c7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .tech-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        
+        .tech-card.ingestion {
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .tech-card.storage {
+            border-left: 5px solid #f39c12;
+        }
+        
+        .tech-card.processing {
+            border-left: 5px solid #2ecc71;
+        }
+        
+        .tech-card.identity {
+            border-left: 5px solid #3498db;
+        }
+        
+        .tech-card.apis {
+            border-left: 5px solid #9b59b6;
+        }
+        
+        .tech-card.infrastructure {
+            border-left: 5px solid #1abc9c;
+        }
+        
+        .tech-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-align: center;
+        }
+        
+        .tech-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ecf0f1;
+            text-align: center;
+            border-bottom: 2px solid #a29bfe;
+            padding-bottom: 0.5rem;
+        }
+        
+        .tech-description {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .tech-card h3 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.8rem 0;
+            color: #bdc3c7;
+        }
+        
+        .tech-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .tech-card li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .tech-card li:before {
+            content: '⚙️';
+            position: absolute;
+            left: 0;
+            font-size: 1rem;
+        }
+        
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .metric {
+            background: rgba(108, 92, 231, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ecf0f1;
+            display: block;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+        
+        .architecture-section {
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        
+        .architecture-diagram {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .arch-layer {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(46, 204, 113, 0.3);
+            position: relative;
+        }
+        
+        .arch-layer h4 {
+            color: #ecf0f1;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #2ecc71;
+            padding-bottom: 0.5rem;
+        }
+        
+        .ml-platform {
+            background: rgba(230, 126, 34, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+        
+        .ml-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .ml-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #e67e22;
+        }
+        
+        .security-section {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .monitoring-section {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+        
+        .deployment-pipeline {
+            background: rgba(155, 89, 182, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+        
+        .pipeline-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .pipeline-step {
+            background: rgba(155, 89, 182, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .pipeline-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9b59b6;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .pipeline-step:last-child::after {
+            display: none;
+        }
+        
+        .tech-specs {
+            background: rgba(26, 188, 156, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(26, 188, 156, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Data Platform</h1>
+        <p class="subtitle">Technology Viewpoint - Big Data Technology Stack for Enterprise-Scale Customer Intelligence</p>
+        
+        <div class="performance-metrics">
+            <div class="metric">
+                <span class="metric-value">850M</span>
+                <span class="metric-label">Events/Day</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">450TB</span>
+                <span class="metric-label">Total Storage</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">100K</span>
+                <span class="metric-label">Events/Second</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">200ms</span>
+                <span class="metric-label">Profile Lookup</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">99.99%</span>
+                <span class="metric-label">API Uptime</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">92%</span>
+                <span class="metric-label">ML Accuracy</span>
+            </div>
+        </div>
+        
+        <div class="tech-stack-grid">
+            <div class="tech-card ingestion">
+                <span class="tech-icon">📥</span>
+                <h2>Data Ingestion Layer</h2>
+                <p class="tech-description">Massive-scale event ingestion and real-time data collection infrastructure</p>
+                
+                <h3>Apache Kafka Ecosystem</h3>
+                <ul>
+                    <li><strong>Kafka Brokers:</strong> 12-node cluster handling 850M events/day with 99.99% uptime</li>
+                    <li><strong>Kafka Connect:</strong> 40+ pre-built connectors for SaaS platforms and databases</li>
+                    <li><strong>Schema Registry:</strong> Avro schemas with backward compatibility and evolution</li>
+                    <li><strong>Kafka Streams:</strong> Real-time stream processing for event enrichment</li>
+                    <li><strong>MirrorMaker 2:</strong> Cross-region replication for disaster recovery</li>
+                </ul>
+                
+                <h3>Amazon Kinesis Platform</h3>
+                <ul>
+                    <li><strong>Kinesis Data Streams:</strong> High-throughput streaming for mobile and web events</li>
+                    <li><strong>Kinesis Firehose:</strong> Serverless data delivery to S3 and analytics platforms</li>
+                    <li><strong>Kinesis Analytics:</strong> Real-time SQL queries on streaming data</li>
+                    <li><strong>Kinesis Data Firehose:</strong> Automatic data transformation and compression</li>
+                </ul>
+                
+                <h3>API Gateway & Collection</h3>
+                <ul>
+                    <li><strong>Kong Gateway:</strong> API management with rate limiting and authentication</li>
+                    <li><strong>AWS API Gateway:</strong> Serverless API management with auto-scaling</li>
+                    <li><strong>REST APIs:</strong> High-performance endpoints for batch data uploads</li>
+                    <li><strong>GraphQL APIs:</strong> Flexible real-time data subscriptions</li>
+                    <li><strong>WebSocket Connections:</strong> Real-time bidirectional communication</li>
+                </ul>
+                
+                <h3>Mobile & Web SDKs</h3>
+                <ul>
+                    <li><strong>JavaScript SDK:</strong> Web tracking with offline capabilities and batching</li>
+                    <li><strong>iOS SDK (Swift):</strong> Native mobile tracking with local storage</li>
+                    <li><strong>Android SDK (Kotlin):</strong> Optimized mobile event collection</li>
+                    <li><strong>React Native SDK:</strong> Cross-platform mobile development</li>
+                    <li><strong>Server-side SDKs:</strong> Python, Java, Node.js, PHP, .NET libraries</li>
+                </ul>
+            </div>
+            
+            <div class="tech-card storage">
+                <span class="tech-icon">💾</span>
+                <h2>Storage Architecture</h2>
+                <p class="tech-description">Multi-petabyte distributed storage with sub-second query performance</p>
+                
+                <h3>Apache Cassandra (180TB Hot Storage)</h3>
+                <ul>
+                    <li><strong>Cluster Configuration:</strong> 24-node cluster across 3 availability zones</li>
+                    <li><strong>Replication Strategy:</strong> RF=3 with NetworkTopologyStrategy</li>
+                    <li><strong>Data Modeling:</strong> Optimized for customer profile queries and updates</li>
+                    <li><strong>Performance:</strong> 500,000 writes/sec, <5ms read latency P95</li>
+                    <li><strong>Compaction:</strong> Size-tiered compaction for write-heavy workloads</li>
+                </ul>
+                
+                <h3>Amazon S3 Data Lake (270TB Historical)</h3>
+                <ul>
+                    <li><strong>Storage Classes:</strong> Intelligent tiering from Standard to Glacier</li>
+                    <li><strong>Data Organization:</strong> Partitioned by date, customer segment, event type</li>
+                    <li><strong>Compression:</strong> Parquet format with Snappy compression (6:1 ratio)</li>
+                    <li><strong>Security:</strong> Server-side encryption with AWS KMS</li>
+                    <li><strong>Lifecycle Policies:</strong> Automated data archiving and deletion</li>
+                </ul>
+                
+                <h3>Redis Cache Cluster (50GB Memory)</h3>
+                <ul>
+                    <li><strong>Configuration:</strong> ElastiCache for Redis with cluster mode enabled</li>
+                    <li><strong>Performance:</strong> <1ms latency for profile lookups, 95% cache hit rate</li>
+                    <li><strong>Data Structures:</strong> Hashes for profiles, sets for segments, sorted sets for scores</li>
+                    <li><strong>Persistence:</strong> RDB snapshots with AOF for durability</li>
+                    <li><strong>Auto-scaling:</strong> Dynamic node scaling based on memory utilization</li>
+                </ul>
+                
+                <h3>Elasticsearch Analytics (25TB Indexed)</h3>
+                <ul>
+                    <li><strong>Cluster Setup:</strong> 15-node cluster with dedicated master nodes</li>
+                    <li><strong>Index Strategy:</strong> Time-based indices with automatic rollover</li>
+                    <li><strong>Search Performance:</strong> <100ms for complex customer search queries</li>
+                    <li><strong>Aggregations:</strong> Real-time analytics and reporting dashboards</li>
+                    <li><strong>Machine Learning:</strong> Anomaly detection and behavioral analysis</li>
+                </ul>
+            </div>
+            
+            <div class="tech-card processing">
+                <span class="tech-icon">⚡</span>
+                <h2>Stream Processing</h2>
+                <p class="tech-description">Real-time event processing and complex event correlation at massive scale</p>
+                
+                <h3>Apache Flink Cluster</h3>
+                <ul>
+                    <li><strong>Deployment:</strong> Kubernetes-native with auto-scaling job managers</li>
+                    <li><strong>Processing Guarantees:</strong> Exactly-once semantics with checkpointing</li>
+                    <li><strong>Complex Event Processing:</strong> Pattern detection across customer journeys</li>
+                    <li><strong>Windowing:</strong> Tumbling, sliding, and session windows for analytics</li>
+                    <li><strong>State Management:</strong> RocksDB backend for large state operations</li>
+                </ul>
+                
+                <h3>Apache Spark for Batch Processing</h3>
+                <ul>
+                    <li><strong>Cluster Management:</strong> AWS EMR with spot instances for cost optimization</li>
+                    <li><strong>ML Pipelines:</strong> Spark MLlib for customer segmentation and propensity modeling</li>
+                    <li><strong>Data Processing:</strong> 15TB nightly ETL jobs in 4-hour windows</li>
+                    <li><strong>Delta Lake:</strong> ACID transactions and data versioning</li>
+                    <li><strong>Auto-scaling:</strong> Dynamic cluster resizing based on workload</li>
+                </ul>
+                
+                <h3>AWS Lambda Serverless</h3>
+                <ul>
+                    <li><strong>Event Processing:</strong> 10,000+ concurrent executions for real-time triggers</li>
+                    <li><strong>API Backend:</strong> Serverless GraphQL resolvers and REST endpoints</li>
+                    <li><strong>Data Transformation:</strong> Lightweight ETL and data enrichment</li>
+                    <li><strong>Webhook Processing:</strong> Outbound system notifications and integrations</li>
+                    <li><strong>Cost Optimization:</strong> Pay-per-execution with millisecond billing</li>
+                </ul>
+                
+                <h3>Stream Processing Patterns</h3>
+                <ul>
+                    <li><strong>Event Sourcing:</strong> Complete audit trail with event replay capabilities</li>
+                    <li><strong>CQRS Implementation:</strong> Separate read/write models for optimal performance</li>
+                    <li><strong>Saga Orchestration:</strong> Distributed transaction management</li>
+                    <li><strong>Circuit Breaker:</strong> Fault tolerance and graceful degradation</li>
+                    <li><strong>Backpressure Handling:</strong> Flow control for high-volume events</li>
+                </ul>
+            </div>
+            
+            <div class="tech-card identity">
+                <span class="tech-icon">🔍</span>
+                <h2>Identity Resolution</h2>
+                <p class="tech-description">Proprietary ML algorithms achieving 92% identity matching accuracy</p>
+                
+                <h3>Machine Learning Pipeline</h3>
+                <ul>
+                    <li><strong>Feature Engineering:</strong> 200+ features from behavioral, demographic, and transactional data</li>
+                    <li><strong>Deterministic Matching:</strong> Exact matches on email, phone, customer ID with 100% precision</li>
+                    <li><strong>Probabilistic Matching:</strong> Gradient boosting models with 92% accuracy</li>
+                    <li><strong>Fuzzy Logic:</strong> String similarity algorithms for name and address matching</li>
+                    <li><strong>Graph Neural Networks:</strong> Relationship detection through shared attributes</li>
+                </ul>
+                
+                <h3>Real-time Inference</h3>
+                <ul>
+                    <li><strong>Model Serving:</strong> TensorFlow Serving with <50ms inference time</li>
+                    <li><strong>Feature Store:</strong> Real-time feature computation and caching</li>
+                    <li><strong>A/B Testing:</strong> Multi-armed bandit for model experimentation</li>
+                    <li><strong>Confidence Scoring:</strong> Match quality assessment and thresholds</li>
+                    <li><strong>Feedback Loops:</strong> Continuous learning from user corrections</li>
+                </ul>
+                
+                <h3>Identity Graph Database</h3>
+                <ul>
+                    <li><strong>Neo4j Cluster:</strong> Graph database for relationship mapping</li>
+                    <li><strong>Node Types:</strong> Customers, devices, emails, phones, addresses</li>
+                    <li><strong>Edge Weights:</strong> Relationship strength and confidence scores</li>
+                    <li><strong>Graph Algorithms:</strong> Community detection and centrality measures</li>
+                    <li><strong>Real-time Updates:</strong> Dynamic graph updates with new connections</li>
+                </ul>
+                
+                <h3>Privacy-Preserving Techniques</h3>
+                <ul>
+                    <li><strong>Differential Privacy:</strong> Statistical privacy for aggregate queries</li>
+                    <li><strong>Homomorphic Encryption:</strong> Computation on encrypted data</li>
+                    <li><strong>Secure Multi-party Computation:</strong> Privacy-preserving ID resolution</li>
+                    <li><strong>K-anonymity:</strong> Data anonymization for analytics</li>
+                    <li><strong>Data Masking:</strong> PII protection in non-production environments</li>
+                </ul>
+            </div>
+            
+            <div class="tech-card apis">
+                <span class="tech-icon">🔗</span>
+                <h2>API Platform</h2>
+                <p class="tech-description">Comprehensive API ecosystem with GraphQL, REST, and real-time capabilities</p>
+                
+                <h3>GraphQL Federation</h3>
+                <ul>
+                    <li><strong>Apollo Federation:</strong> Microservices schema composition and gateway</li>
+                    <li><strong>Real-time Subscriptions:</strong> WebSocket-based live data updates</li>
+                    <li><strong>Query Optimization:</strong> DataLoader pattern for N+1 query prevention</li>
+                    <li><strong>Schema Stitching:</strong> Legacy REST API integration</li>
+                    <li><strong>Caching:</strong> Redis-backed query result caching</li>
+                </ul>
+                
+                <h3>REST API Architecture</h3>
+                <ul>
+                    <li><strong>OpenAPI Specification:</strong> API-first design with comprehensive documentation</li>
+                    <li><strong>Hypermedia (HATEOAS):</strong> Self-discovering API relationships</li>
+                    <li><strong>Content Negotiation:</strong> JSON, XML, and binary format support</li>
+                    <li><strong>Pagination:</strong> Cursor-based pagination for large datasets</li>
+                    <li><strong>Versioning:</strong> Semantic versioning with backward compatibility</li>
+                </ul>
+                
+                <h3>Real-time Communication</h3>
+                <ul>
+                    <li><strong>WebSocket Gateway:</strong> Persistent connections for live updates</li>
+                    <li><strong>Server-Sent Events:</strong> Unidirectional real-time data streaming</li>
+                    <li><strong>Webhook Delivery:</strong> Reliable event notifications with retry logic</li>
+                    <li><strong>Socket.IO:</strong> Cross-platform real-time communication</li>
+                    <li><strong>MQTT Protocol:</strong> IoT device integration and messaging</li>
+                </ul>
+                
+                <h3>API Security & Management</h3>
+                <ul>
+                    <li><strong>OAuth 2.0 + PKCE:</strong> Secure authorization with proof key</li>
+                    <li><strong>JWT Tokens:</strong> Stateless authentication with claims</li>
+                    <li><strong>Rate Limiting:</strong> Token bucket algorithm with sliding windows</li>
+                    <li><strong>API Keys:</strong> Simple authentication for server-to-server</li>
+                    <li><strong>CORS Configuration:</strong> Cross-origin request security</li>
+                </ul>
+            </div>
+            
+            <div class="tech-card infrastructure">
+                <span class="tech-icon">☁️</span>
+                <h2>Cloud Infrastructure</h2>
+                <p class="tech-description">Kubernetes-native architecture with auto-scaling and global distribution</p>
+                
+                <h3>Container Orchestration</h3>
+                <ul>
+                    <li><strong>Amazon EKS:</strong> Managed Kubernetes with 99.95% uptime SLA</li>
+                    <li><strong>Cluster Autoscaler:</strong> Dynamic node scaling based on pod demands</li>
+                    <li><strong>Horizontal Pod Autoscaler:</strong> CPU/memory-based pod scaling</li>
+                    <li><strong>Vertical Pod Autoscaler:</strong> Right-sizing for optimal resource usage</li>
+                    <li><strong>Spot Instance Integration:</strong> Cost optimization with fault tolerance</li>
+                </ul>
+                
+                <h3>Service Mesh Architecture</h3>
+                <ul>
+                    <li><strong>Istio Service Mesh:</strong> Traffic management, security, and observability</li>
+                    <li><strong>Envoy Proxy:</strong> Layer 7 load balancing and circuit breaking</li>
+                    <li><strong>mTLS:</strong> Automatic mutual TLS for service-to-service communication</li>
+                    <li><strong>Traffic Policies:</strong> Canary deployments and blue-green releases</li>
+                    <li><strong>Distributed Tracing:</strong> Request flow visibility across services</li>
+                </ul>
+                
+                <h3>Global Distribution</h3>
+                <ul>
+                    <li><strong>Multi-Region Deployment:</strong> US-East, US-West, EU-West, Asia-Pacific</li>
+                    <li><strong>Amazon CloudFront CDN:</strong> Edge caching with 216 global locations</li>
+                    <li><strong>Route 53 DNS:</strong> Health checks and failover routing</li>
+                    <li><strong>Cross-Region Replication:</strong> Automated data synchronization</li>
+                    <li><strong>Disaster Recovery:</strong> RTO < 4 hours, RPO < 15 minutes</li>
+                </ul>
+                
+                <h3>Infrastructure as Code</h3>
+                <ul>
+                    <li><strong>Terraform:</strong> Multi-cloud infrastructure provisioning</li>
+                    <li><strong>Helm Charts:</strong> Kubernetes application packaging and deployment</li>
+                    <li><strong>ArgoCD:</strong> GitOps continuous deployment and sync</li>
+                    <li><strong>AWS CloudFormation:</strong> AWS-native infrastructure templates</li>
+                    <li><strong>Ansible:</strong> Configuration management and automation</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="architecture-section">
+            <h2>Layered Architecture Overview</h2>
+            
+            <div class="architecture-diagram">
+                <div class="arch-layer">
+                    <h4>Presentation Layer</h4>
+                    <p>React Dashboard<br>Mobile Apps<br>API Documentation</p>
+                </div>
+                
+                <div class="arch-layer">
+                    <h4>API Gateway</h4>
+                    <p>Kong Gateway<br>Rate Limiting<br>Authentication</p>
+                </div>
+                
+                <div class="arch-layer">
+                    <h4>Application Layer</h4>
+                    <p>GraphQL APIs<br>REST Services<br>Webhook Handlers</p>
+                </div>
+                
+                <div class="arch-layer">
+                    <h4>Business Logic</h4>
+                    <p>Identity Resolution<br>Segmentation<br>ML Inference</p>
+                </div>
+                
+                <div class="arch-layer">
+                    <h4>Data Processing</h4>
+                    <p>Apache Flink<br>Kafka Streams<br>Lambda Functions</p>
+                </div>
+                
+                <div class="arch-layer">
+                    <h4>Storage Layer</h4>
+                    <p>Cassandra<br>S3 Data Lake<br>Redis Cache</p>
+                </div>
+                
+                <div class="arch-layer">
+                    <h4>Infrastructure</h4>
+                    <p>Kubernetes<br>Service Mesh<br>Monitoring</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ml-platform">
+            <h2>Machine Learning Platform</h2>
+            
+            <div class="ml-grid">
+                <div class="ml-item">
+                    <h4>Model Development</h4>
+                    <ul>
+                        <li><strong>Jupyter Notebooks:</strong> Interactive development with GPU support</li>
+                        <li><strong>MLflow:</strong> Experiment tracking and model registry</li>
+                        <li><strong>Feature Store:</strong> Centralized feature management and versioning</li>
+                        <li><strong>AutoML:</strong> Automated model selection and hyperparameter tuning</li>
+                        <li><strong>A/B Testing:</strong> Statistical significance testing for models</li>
+                    </ul>
+                </div>
+                
+                <div class="ml-item">
+                    <h4>Model Training Infrastructure</h4>
+                    <ul>
+                        <li><strong>AWS SageMaker:</strong> Managed training with distributed computing</li>
+                        <li><strong>Kubernetes Jobs:</strong> Scalable training workloads</li>
+                        <li><strong>GPU Clusters:</strong> NVIDIA V100 and A100 instances</li>
+                        <li><strong>Distributed Training:</strong> Multi-node TensorFlow and PyTorch</li>
+                        <li><strong>Spot Training:</strong> Cost-optimized training with checkpointing</li>
+                    </ul>
+                </div>
+                
+                <div class="ml-item">
+                    <h4>Model Serving & Inference</h4>
+                    <ul>
+                        <li><strong>TensorFlow Serving:</strong> High-performance model serving</li>
+                        <li><strong>TorchServe:</strong> PyTorch model deployment and management</li>
+                        <li><strong>ONNX Runtime:</strong> Cross-framework model optimization</li>
+                        <li><strong>KFServing:</strong> Kubernetes-native model serving platform</li>
+                        <li><strong>Edge Inference:</strong> Mobile and browser-based ML models</li>
+                    </ul>
+                </div>
+                
+                <div class="ml-item">
+                    <h4>ML Operations (MLOps)</h4>
+                    <ul>
+                        <li><strong>Kubeflow:</strong> End-to-end ML workflow orchestration</li>
+                        <li><strong>Model Monitoring:</strong> Drift detection and performance tracking</li>
+                        <li><strong>Automated Retraining:</strong> Scheduled model updates and deployment</li>
+                        <li><strong>Model Versioning:</strong> Git-based model lifecycle management</li>
+                        <li><strong>CI/CD for ML:</strong> Automated testing and deployment pipelines</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="security-section">
+            <h2>Security Architecture</h2>
+            
+            <div class="tech-stack-grid">
+                <div>
+                    <h3>Data Protection</h3>
+                    <ul>
+                        <li><strong>Encryption at Rest:</strong> AES-256 encryption for all stored data</li>
+                        <li><strong>Encryption in Transit:</strong> TLS 1.3 for all network communication</li>
+                        <li><strong>Key Management:</strong> AWS KMS with automatic key rotation</li>
+                        <li><strong>Field-level Encryption:</strong> PII data encrypted with separate keys</li>
+                        <li><strong>Tokenization:</strong> PII replacement with non-sensitive tokens</li>
+                    </ul>
+                    
+                    <h3>Identity & Access Management</h3>
+                    <ul>
+                        <li><strong>Multi-factor Authentication:</strong> TOTP and hardware security keys</li>
+                        <li><strong>Role-based Access Control:</strong> Granular permissions and policies</li>
+                        <li><strong>Just-in-time Access:</strong> Temporary elevated permissions</li>
+                        <li><strong>Service Accounts:</strong> Automated credential rotation</li>
+                        <li><strong>Audit Logging:</strong> Complete access and activity tracking</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Network Security</h3>
+                    <ul>
+                        <li><strong>VPC Isolation:</strong> Private networks with security groups</li>
+                        <li><strong>Web Application Firewall:</strong> OWASP Top 10 protection</li>
+                        <li><strong>DDoS Protection:</strong> AWS Shield Advanced with 24/7 response</li>
+                        <li><strong>Network Segmentation:</strong> Zero-trust architecture</li>
+                        <li><strong>VPN Access:</strong> Site-to-site and client VPN connections</li>
+                    </ul>
+                    
+                    <h3>Compliance & Governance</h3>
+                    <ul>
+                        <li><strong>SOC 2 Type II:</strong> Annual compliance audits and certification</li>
+                        <li><strong>GDPR & CCPA:</strong> Automated privacy rights and consent</li>
+                        <li><strong>Data Loss Prevention:</strong> Real-time PII detection and blocking</li>
+                        <li><strong>Vulnerability Scanning:</strong> Continuous security assessments</li>
+                        <li><strong>Incident Response:</strong> 24/7 security operations center</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="monitoring-section">
+            <h2>Observability & Monitoring</h2>
+            
+            <div class="tech-stack-grid">
+                <div>
+                    <h3>Application Performance Monitoring</h3>
+                    <ul>
+                        <li><strong>DataDog APM:</strong> End-to-end request tracing and profiling</li>
+                        <li><strong>New Relic:</strong> Application insights and error tracking</li>
+                        <li><strong>Jaeger:</strong> Distributed tracing for microservices</li>
+                        <li><strong>Prometheus:</strong> Metrics collection and time-series storage</li>
+                        <li><strong>Grafana:</strong> Visualization and alerting dashboards</li>
+                    </ul>
+                    
+                    <h3>Log Management</h3>
+                    <ul>
+                        <li><strong>ELK Stack:</strong> Centralized logging with Elasticsearch</li>
+                        <li><strong>Fluentd:</strong> Log collection and forwarding</li>
+                        <li><strong>CloudWatch Logs:</strong> AWS-native log aggregation</li>
+                        <li><strong>Structured Logging:</strong> JSON format with correlation IDs</li>
+                        <li><strong>Log Retention:</strong> Automated archiving and deletion</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Infrastructure Monitoring</h3>
+                    <ul>
+                        <li><strong>CloudWatch:</strong> AWS resource monitoring and alerting</li>
+                        <li><strong>Kubernetes Metrics:</strong> Node and pod resource utilization</li>
+                        <li><strong>Database Monitoring:</strong> Cassandra, Redis, and RDS insights</li>
+                        <li><strong>Network Monitoring:</strong> VPC flow logs and traffic analysis</li>
+                        <li><strong>Cost Monitoring:</strong> Resource usage and optimization alerts</li>
+                    </ul>
+                    
+                    <h3>Alerting & Incident Response</h3>
+                    <ul>
+                        <li><strong>PagerDuty:</strong> On-call scheduling and escalation</li>
+                        <li><strong>Slack Integration:</strong> Real-time alerts and team collaboration</li>
+                        <li><strong>Runbooks:</strong> Automated incident response procedures</li>
+                        <li><strong>SLA Monitoring:</strong> Uptime and performance SLA tracking</li>
+                        <li><strong>Post-mortem Process:</strong> Incident analysis and improvement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="deployment-pipeline">
+            <h2>CI/CD & Deployment Pipeline</h2>
+            
+            <div class="pipeline-flow">
+                <div class="pipeline-step">
+                    <h4>Source Control</h4>
+                    <p>Git<br>Branch Protection</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Build & Test</h4>
+                    <p>Docker Build<br>Unit Tests</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Security Scan</h4>
+                    <p>SAST/DAST<br>Vulnerability Check</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Container Registry</h4>
+                    <p>ECR Push<br>Image Signing</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Staging Deploy</h4>
+                    <p>Helm Chart<br>Integration Tests</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Production Deploy</h4>
+                    <p>Blue-Green<br>Health Checks</p>
+                </div>
+            </div>
+            
+            <div class="tech-stack-grid">
+                <div>
+                    <h3>Continuous Integration</h3>
+                    <ul>
+                        <li><strong>GitHub Actions:</strong> Automated CI/CD workflows</li>
+                        <li><strong>Docker Multi-stage:</strong> Optimized container builds</li>
+                        <li><strong>Test Automation:</strong> Unit, integration, and E2E testing</li>
+                        <li><strong>Code Quality:</strong> SonarQube static analysis</li>
+                        <li><strong>Dependency Scanning:</strong> Vulnerability detection</li>
+                    </ul>
+                    
+                    <h3>Deployment Strategies</h3>
+                    <ul>
+                        <li><strong>Blue-Green Deployment:</strong> Zero-downtime releases</li>
+                        <li><strong>Canary Releases:</strong> Gradual traffic shifting</li>
+                        <li><strong>Feature Flags:</strong> LaunchDarkly for feature rollouts</li>
+                        <li><strong>Rollback Automation:</strong> Automatic failure detection</li>
+                        <li><strong>Database Migrations:</strong> Backward-compatible schema changes</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Environment Management</h3>
+                    <ul>
+                        <li><strong>GitOps:</strong> ArgoCD for declarative deployments</li>
+                        <li><strong>Environment Parity:</strong> Identical dev/staging/production</li>
+                        <li><strong>Secrets Management:</strong> Sealed secrets and external-secrets</li>
+                        <li><strong>Configuration Management:</strong> ConfigMaps and environment variables</li>
+                        <li><strong>Resource Quotas:</strong> Namespace-based resource limits</li>
+                    </ul>
+                    
+                    <h3>Quality Gates</h3>
+                    <ul>
+                        <li><strong>Automated Testing:</strong> 85%+ code coverage requirement</li>
+                        <li><strong>Performance Testing:</strong> Load testing with k6</li>
+                        <li><strong>Security Testing:</strong> OWASP ZAP and Bandit scanning</li>
+                        <li><strong>Compliance Checks:</strong> Policy as code with OPA Gatekeeper</li>
+                        <li><strong>Manual Approval:</strong> Production deployment gates</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-specs">
+            <h2>Technical Specifications & Performance</h2>
+            
+            <div class="performance-metrics">
+                <div class="metric">
+                    <span class="metric-value">850M</span>
+                    <span class="metric-label">Events/Day</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">100K</span>
+                    <span class="metric-label">Events/Second Peak</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">450TB</span>
+                    <span class="metric-label">Total Storage</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">15TB</span>
+                    <span class="metric-label">Daily Processing</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">200ms</span>
+                    <span class="metric-label">P95 API Response</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">99.99%</span>
+                    <span class="metric-label">API Uptime</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4.2M</span>
+                    <span class="metric-label">Customer Profiles</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">92%</span>
+                    <span class="metric-label">ML Accuracy</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">47+</span>
+                    <span class="metric-label">Data Sources</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">500K</span>
+                    <span class="metric-label">Writes/Second</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">50ms</span>
+                    <span class="metric-label">ML Inference</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">95%</span>
+                    <span class="metric-label">Cache Hit Rate</span>
+                </div>
+            </div>
+            
+            <div class="tech-stack-grid">
+                <div>
+                    <h3>Scalability Specifications</h3>
+                    <ul>
+                        <li><strong>Horizontal Scaling:</strong> Linear scaling to 10x current capacity</li>
+                        <li><strong>Auto-scaling Triggers:</strong> 70% CPU/memory utilization thresholds</li>
+                        <li><strong>Database Sharding:</strong> Customer ID-based partitioning strategy</li>
+                        <li><strong>Global Distribution:</strong> Sub-200ms latency worldwide</li>
+                        <li><strong>Load Balancing:</strong> Round-robin with health check failover</li>
+                    </ul>
+                    
+                    <h3>Reliability & Availability</h3>
+                    <ul>
+                        <li><strong>SLA Guarantees:</strong> 99.9% platform availability</li>
+                        <li><strong>RTO Target:</strong> <4 hours for disaster recovery</li>
+                        <li><strong>RPO Target:</strong> <15 minutes data loss maximum</li>
+                        <li><strong>Multi-AZ Deployment:</strong> Automatic failover capabilities</li>
+                        <li><strong>Circuit Breaker:</strong> Graceful degradation under load</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Performance Benchmarks</h3>
+                    <ul>
+                        <li><strong>Profile Lookup:</strong> P95 <200ms, P99 <500ms</li>
+                        <li><strong>Identity Resolution:</strong> <150ms average processing time</li>
+                        <li><strong>Segmentation Query:</strong> <500ms for complex audience rules</li>
+                        <li><strong>ML Model Inference:</strong> <50ms for real-time scoring</li>
+                        <li><strong>Data Ingestion:</strong> 100,000+ events/second sustained</li>
+                    </ul>
+                    
+                    <h3>Cost Optimization</h3>
+                    <ul>
+                        <li><strong>Spot Instances:</strong> 60% cost savings for batch workloads</li>
+                        <li><strong>Reserved Instances:</strong> 40% savings for baseline capacity</li>
+                        <li><strong>Data Lifecycle:</strong> Automated tiering to reduce storage costs</li>
+                        <li><strong>Compression:</strong> 6:1 data compression ratios</li>
+                        <li><strong>Right-sizing:</strong> Automated resource optimization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

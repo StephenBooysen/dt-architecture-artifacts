@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDP - Data Viewpoint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ecf0f1, #bdc3c7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        .data-flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .data-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .data-card.originates {
+            border-left: 5px solid #27ae60;
+        }
+        
+        .data-card.consumes {
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .data-card.processes {
+            border-left: 5px solid #3498db;
+        }
+        
+        .data-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ecf0f1;
+            border-bottom: 2px solid #f39c12;
+            padding-bottom: 0.5rem;
+        }
+        
+        .data-card h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem 0;
+            color: #bdc3c7;
+        }
+        
+        .data-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .data-card li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .data-card li:before {
+            content: '📊';
+            position: absolute;
+            left: 0;
+            font-size: 1rem;
+        }
+        
+        .volume-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .metric {
+            background: rgba(243, 156, 18, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ecf0f1;
+            display: block;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+        
+        .data-sources {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+        
+        .source-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .source-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid #f39c12;
+        }
+        
+        .source-item h4 {
+            color: #ecf0f1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .real-time-section {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .processing-pipeline {
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        
+        .pipeline-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .pipeline-step {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(46, 204, 113, 0.3);
+            position: relative;
+        }
+        
+        .pipeline-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2ecc71;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .pipeline-step:last-child::after {
+            display: none;
+        }
+        
+        .data-quality {
+            background: rgba(155, 89, 182, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+        
+        .quality-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .quality-metric {
+            background: rgba(155, 89, 182, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .quality-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ecf0f1;
+            display: block;
+        }
+        
+        .storage-architecture {
+            background: rgba(230, 126, 34, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Data Platform</h1>
+        <p class="subtitle">Data Viewpoint - Massive Customer Data Unification & Processing Engine</p>
+        
+        <div class="volume-metrics">
+            <div class="metric">
+                <span class="metric-value">850M</span>
+                <span class="metric-label">Events/Day</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">15TB</span>
+                <span class="metric-label">Daily Ingestion</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">450TB</span>
+                <span class="metric-label">Total Storage</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">47+</span>
+                <span class="metric-label">Data Sources</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">4.2M</span>
+                <span class="metric-label">Customer Profiles</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">200ms</span>
+                <span class="metric-label">Profile Lookup</span>
+            </div>
+        </div>
+        
+        <div class="data-flow-grid">
+            <div class="data-card originates">
+                <h2>Data Originated</h2>
+                
+                <h3>Unified Customer Profiles</h3>
+                <ul>
+                    <li>360-degree customer views with 4.2M active profiles</li>
+                    <li>Real-time profile updates from behavioral events</li>
+                    <li>Golden record creation through identity resolution</li>
+                    <li>Customer journey state and lifecycle tracking</li>
+                    <li>Preference and consent management records</li>
+                </ul>
+                
+                <h3>Behavioral Segments</h3>
+                <ul>
+                    <li>AI-driven customer segmentation with 2,500+ dynamic segments</li>
+                    <li>Propensity scores for purchase, churn, and engagement</li>
+                    <li>Lookalike audience models for marketing expansion</li>
+                    <li>Value-based customer tiering (VIP, Regular, Prospect)</li>
+                    <li>Behavioral pattern clusters and micro-segments</li>
+                </ul>
+                
+                <h3>Identity Graphs</h3>
+                <ul>
+                    <li>Cross-device identity mapping with 92% accuracy</li>
+                    <li>Device fingerprinting and relationship graphs</li>
+                    <li>Household clustering and family relationship data</li>
+                    <li>Anonymous to known customer resolution</li>
+                    <li>Identity confidence scoring and validation</li>
+                </ul>
+                
+                <h3>Match Rate Analytics</h3>
+                <ul>
+                    <li>Identity resolution performance metrics</li>
+                    <li>Data source quality and completeness scores</li>
+                    <li>Profile merge and deduplication statistics</li>
+                    <li>Cross-channel touchpoint correlation data</li>
+                    <li>Customer data health dashboards</li>
+                </ul>
+            </div>
+            
+            <div class="data-card consumes">
+                <h2>Data Consumed</h2>
+                
+                <h3>Core Customer Data (22 Sources)</h3>
+                <ul>
+                    <li><strong>CRM Systems:</strong> Salesforce, HubSpot - customer records, interactions, sales data</li>
+                    <li><strong>E-commerce Platform:</strong> Shopify, Magento - purchase history, cart events, product views</li>
+                    <li><strong>Point of Sale:</strong> Square, Toast - in-store transactions, payment methods</li>
+                    <li><strong>Customer Service:</strong> Zendesk, Freshdesk - support tickets, satisfaction scores</li>
+                    <li><strong>Loyalty Platform:</strong> LoyaltyLion - points, rewards, tier status</li>
+                </ul>
+                
+                <h3>Digital Engagement (15 Sources)</h3>
+                <ul>
+                    <li><strong>Web Analytics:</strong> Google Analytics, Adobe Analytics - page views, sessions, conversions</li>
+                    <li><strong>Mobile Apps:</strong> Native iOS/Android SDKs - app usage, in-app purchases</li>
+                    <li><strong>Email Marketing:</strong> Mailchimp, SendGrid - opens, clicks, unsubscribes</li>
+                    <li><strong>Social Media:</strong> Facebook, Instagram APIs - social interactions, ad engagement</li>
+                    <li><strong>Live Chat:</strong> Intercom, Drift - chat transcripts, satisfaction ratings</li>
+                </ul>
+                
+                <h3>External Enrichment (10+ Sources)</h3>
+                <ul>
+                    <li><strong>Demographics:</strong> Experian, Acxiom - age, income, lifestyle data</li>
+                    <li><strong>Location Data:</strong> Foursquare, GPS - visit patterns, store proximity</li>
+                    <li><strong>Weather API:</strong> OpenWeather - seasonal behavior correlations</li>
+                    <li><strong>Credit Scores:</strong> Experian (where permitted) - financial profiles</li>
+                    <li><strong>Social Profiles:</strong> Clearbit - professional and personal enrichment</li>
+                </ul>
+                
+                <h3>Real-time Streaming Events</h3>
+                <ul>
+                    <li>Website clickstream and navigation patterns</li>
+                    <li>Mobile app interaction and usage events</li>
+                    <li>Purchase and transaction events</li>
+                    <li>Email and SMS engagement events</li>
+                    <li>Customer service interaction events</li>
+                </ul>
+            </div>
+            
+            <div class="data-card processes">
+                <h2>Data Processing</h2>
+                
+                <h3>Identity Resolution (92% Accuracy)</h3>
+                <ul>
+                    <li><strong>Deterministic Matching:</strong> Email, phone, customer ID exact matches</li>
+                    <li><strong>Probabilistic Matching:</strong> ML algorithms with fuzzy logic and similarity scoring</li>
+                    <li><strong>Graph Resolution:</strong> Relationship mapping through shared devices and addresses</li>
+                    <li><strong>Behavioral Linking:</strong> Pattern recognition across touchpoints and sessions</li>
+                    <li><strong>Confidence Scoring:</strong> Match quality assessment and validation thresholds</li>
+                </ul>
+                
+                <h3>ML-Driven Segmentation</h3>
+                <ul>
+                    <li><strong>Clustering Algorithms:</strong> K-means, DBSCAN for behavioral grouping</li>
+                    <li><strong>Classification Models:</strong> Random Forest, XGBoost for propensity scoring</li>
+                    <li><strong>Deep Learning:</strong> Neural networks for complex pattern recognition</li>
+                    <li><strong>Real-time Scoring:</strong> Stream processing for immediate segment updates</li>
+                    <li><strong>Model Validation:</strong> A/B testing and performance monitoring</li>
+                </ul>
+                
+                <h3>Real-time Profile Updates</h3>
+                <ul>
+                    <li><strong>Stream Processing:</strong> Apache Kafka and Flink for event processing</li>
+                    <li><strong>Profile Merging:</strong> Real-time consolidation of new data points</li>
+                    <li><strong>Data Validation:</strong> Quality checks and anomaly detection</li>
+                    <li><strong>Trigger Processing:</strong> Event-based automation and notifications</li>
+                    <li><strong>Cache Updates:</strong> Redis cache refresh for sub-200ms lookups</li>
+                </ul>
+                
+                <h3>Data Quality & Governance</h3>
+                <ul>
+                    <li><strong>Automated Cleansing:</strong> Standardization, deduplication, validation</li>
+                    <li><strong>Privacy Compliance:</strong> PII encryption, consent tracking, right to erasure</li>
+                    <li><strong>Data Lineage:</strong> Complete audit trails from source to consumption</li>
+                    <li><strong>Quality Scoring:</strong> Completeness, accuracy, and freshness metrics</li>
+                    <li><strong>Schema Evolution:</strong> Backward-compatible data structure updates</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="data-sources">
+            <h2>Comprehensive Data Source Integration (47+ Sources)</h2>
+            
+            <div class="source-grid">
+                <div class="source-item">
+                    <h4>Customer Relationship Management</h4>
+                    <p>Salesforce, HubSpot, Microsoft Dynamics, Pipedrive</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>E-commerce Platforms</h4>
+                    <p>Shopify, Magento, WooCommerce, BigCommerce</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Web Analytics</h4>
+                    <p>Google Analytics, Adobe Analytics, Mixpanel, Amplitude</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Email Marketing</h4>
+                    <p>Mailchimp, SendGrid, Klaviyo, Campaign Monitor</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Customer Service</h4>
+                    <p>Zendesk, Freshdesk, ServiceNow, Help Scout</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Social Media</h4>
+                    <p>Facebook, Instagram, Twitter, LinkedIn APIs</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Payment Processing</h4>
+                    <p>Stripe, PayPal, Square, Adyen</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Mobile Analytics</h4>
+                    <p>Firebase, Branch, Adjust, AppsFlyer</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Marketing Automation</h4>
+                    <p>Marketo, Pardot, Eloqua, ActiveCampaign</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Data Enrichment</h4>
+                    <p>Clearbit, ZoomInfo, Experian, Acxiom</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Survey & Feedback</h4>
+                    <p>Qualtrics, SurveyMonkey, Typeform, NPS tools</p>
+                </div>
+                
+                <div class="source-item">
+                    <h4>Call Center</h4>
+                    <p>Twilio, RingCentral, Genesys, Avaya</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="processing-pipeline">
+            <h2>Real-time Data Processing Pipeline</h2>
+            
+            <div class="pipeline-steps">
+                <div class="pipeline-step">
+                    <h4>Data Ingestion</h4>
+                    <p>Kafka, Kinesis<br>100K events/sec</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Stream Processing</h4>
+                    <p>Apache Flink<br>Real-time transforms</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Identity Resolution</h4>
+                    <p>ML Matching<br>92% accuracy</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Profile Update</h4>
+                    <p>Cassandra writes<br>Sub-second latency</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Cache Refresh</h4>
+                    <p>Redis update<br>200ms lookups</p>
+                </div>
+                
+                <div class="pipeline-step">
+                    <h4>Event Distribution</h4>
+                    <p>Webhook delivery<br>Downstream systems</p>
+                </div>
+            </div>
+            
+            <h3>Processing Performance</h3>
+            <ul>
+                <li><strong>Ingestion Throughput:</strong> 100,000+ events per second peak capacity</li>
+                <li><strong>Processing Latency:</strong> Average 150ms from event to profile update</li>
+                <li><strong>Batch Processing:</strong> 15TB daily ETL jobs completed in 4-hour windows</li>
+                <li><strong>Stream Processing:</strong> 850M events processed daily with 99.9% success rate</li>
+                <li><strong>Data Freshness:</strong> 95% of profiles updated within 30 seconds of new events</li>
+            </ul>
+        </div>
+        
+        <div class="real-time-section">
+            <h2>Real-time Data Capabilities</h2>
+            
+            <div class="data-flow-grid">
+                <div>
+                    <h3>Streaming Event Processing</h3>
+                    <ul>
+                        <li><strong>Web Events:</strong> Page views, clicks, form submissions processed in real-time</li>
+                        <li><strong>Mobile Events:</strong> App opens, feature usage, in-app purchases streamed instantly</li>
+                        <li><strong>Transaction Events:</strong> Purchase completions trigger immediate profile updates</li>
+                        <li><strong>Email Events:</strong> Opens, clicks, unsubscribes processed within seconds</li>
+                        <li><strong>Service Events:</strong> Support interactions update customer satisfaction scores</li>
+                    </ul>
+                    
+                    <h3>Profile Lookup Performance</h3>
+                    <ul>
+                        <li><strong>Sub-200ms Response:</strong> P95 response time for profile queries</li>
+                        <li><strong>Global CDN:</strong> Edge caching for worldwide low latency</li>
+                        <li><strong>Auto-scaling:</strong> Dynamic capacity based on traffic patterns</li>
+                        <li><strong>Fallback Systems:</strong> Graceful degradation during peak loads</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Event Stream Analytics</h3>
+                    <ul>
+                        <li><strong>Session Analytics:</strong> Real-time website and app session analysis</li>
+                        <li><strong>Conversion Tracking:</strong> Live funnel performance and abandonment alerts</li>
+                        <li><strong>Anomaly Detection:</strong> Unusual behavior patterns flagged immediately</li>
+                        <li><strong>Personalization Triggers:</strong> Real-time content and offer optimization</li>
+                        <li><strong>Campaign Attribution:</strong> Live marketing touchpoint attribution</li>
+                    </ul>
+                    
+                    <h3>Live Segmentation Updates</h3>
+                    <ul>
+                        <li><strong>Dynamic Segments:</strong> Audience membership updated in real-time</li>
+                        <li><strong>Behavioral Triggers:</strong> Automatic segment entry/exit based on actions</li>
+                        <li><strong>ML Score Updates:</strong> Propensity scores recalculated continuously</li>
+                        <li><strong>Campaign Orchestration:</strong> Real-time audience delivery to marketing tools</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-quality">
+            <h2>Data Quality & Governance</h2>
+            
+            <div class="quality-metrics">
+                <div class="quality-metric">
+                    <span class="quality-score">94%</span>
+                    <span class="metric-label">Data Quality Score</span>
+                </div>
+                
+                <div class="quality-metric">
+                    <span class="quality-score">87%</span>
+                    <span class="metric-label">Profile Completeness</span>
+                </div>
+                
+                <div class="quality-metric">
+                    <span class="quality-score">92%</span>
+                    <span class="metric-label">Identity Match Rate</span>
+                </div>
+                
+                <div class="quality-metric">
+                    <span class="quality-score">99.2%</span>
+                    <span class="metric-label">Data Freshness</span>
+                </div>
+                
+                <div class="quality-metric">
+                    <span class="quality-score">100%</span>
+                    <span class="metric-label">GDPR Compliance</span>
+                </div>
+                
+                <div class="quality-metric">
+                    <span class="quality-score">0.3%</span>
+                    <span class="metric-label">Duplicate Rate</span>
+                </div>
+            </div>
+            
+            <div class="data-flow-grid">
+                <div>
+                    <h3>Data Validation & Cleansing</h3>
+                    <ul>
+                        <li><strong>Format Standardization:</strong> Phone numbers, addresses, email validation</li>
+                        <li><strong>Deduplication Logic:</strong> Automated duplicate detection and merging</li>
+                        <li><strong>Completeness Scoring:</strong> Profile completeness tracking and optimization</li>
+                        <li><strong>Anomaly Detection:</strong> Outlier identification and quality alerts</li>
+                        <li><strong>Data Enrichment:</strong> Missing data completion through external sources</li>
+                    </ul>
+                    
+                    <h3>Privacy & Compliance</h3>
+                    <ul>
+                        <li><strong>GDPR Article 17:</strong> Automated right to erasure implementation</li>
+                        <li><strong>CCPA Compliance:</strong> Consumer rights automation and reporting</li>
+                        <li><strong>Consent Management:</strong> Granular consent tracking and enforcement</li>
+                        <li><strong>Data Minimization:</strong> Purpose limitation and data retention policies</li>
+                        <li><strong>Access Controls:</strong> Role-based permissions and audit logging</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Data Lineage & Audit</h3>
+                    <ul>
+                        <li><strong>Source Tracking:</strong> Complete data provenance from source to destination</li>
+                        <li><strong>Transformation History:</strong> All processing steps documented and auditable</li>
+                        <li><strong>Change Logging:</strong> Profile modification history with timestamps</li>
+                        <li><strong>Access Auditing:</strong> User access patterns and data usage tracking</li>
+                        <li><strong>Compliance Reporting:</strong> Automated regulatory reporting capabilities</li>
+                    </ul>
+                    
+                    <h3>Data Governance Controls</h3>
+                    <ul>
+                        <li><strong>Data Classification:</strong> PII, sensitive, and public data categorization</li>
+                        <li><strong>Retention Policies:</strong> Automated data lifecycle management</li>
+                        <li><strong>Quality Thresholds:</strong> Automated quality gates and rejection rules</li>
+                        <li><strong>Schema Validation:</strong> Data structure enforcement and evolution</li>
+                        <li><strong>Business Rules:</strong> Custom validation and processing rules</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="storage-architecture">
+            <h2>Storage Architecture & Performance</h2>
+            
+            <div class="data-flow-grid">
+                <div>
+                    <h3>Primary Storage (450TB Total)</h3>
+                    <ul>
+                        <li><strong>Apache Cassandra:</strong> 180TB for hot customer profiles and real-time data</li>
+                        <li><strong>Amazon S3 Data Lake:</strong> 270TB for historical data and analytics</li>
+                        <li><strong>Redis Cache:</strong> 50GB for sub-200ms profile lookups</li>
+                        <li><strong>Elasticsearch:</strong> 25TB for search and analytics capabilities</li>
+                        <li><strong>PostgreSQL:</strong> 5TB for metadata and configuration data</li>
+                    </ul>
+                    
+                    <h3>Data Partitioning Strategy</h3>
+                    <ul>
+                        <li><strong>Customer ID Sharding:</strong> Horizontal partitioning for scalability</li>
+                        <li><strong>Time-based Partitioning:</strong> Event data partitioned by date ranges</li>
+                        <li><strong>Geographic Partitioning:</strong> Regional data residency compliance</li>
+                        <li><strong>Hot/Cold Tiering:</strong> Automatic data lifecycle management</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Performance Metrics</h3>
+                    <ul>
+                        <li><strong>Write Throughput:</strong> 500,000 writes/second during peak loads</li>
+                        <li><strong>Read Latency:</strong> P95 < 200ms for profile queries</li>
+                        <li><strong>Batch Processing:</strong> 15TB processed nightly in 4-hour windows</li>
+                        <li><strong>Cache Hit Rate:</strong> 95% for frequently accessed profiles</li>
+                        <li><strong>Data Availability:</strong> 99.99% uptime with multi-region replication</li>
+                    </ul>
+                    
+                    <h3>Backup & Recovery</h3>
+                    <ul>
+                        <li><strong>Continuous Backups:</strong> Point-in-time recovery capabilities</li>
+                        <li><strong>Cross-region Replication:</strong> Disaster recovery with <4 hour RTO</li>
+                        <li><strong>Incremental Snapshots:</strong> Efficient backup storage optimization</li>
+                        <li><strong>Data Encryption:</strong> At-rest and in-transit encryption</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Commerce Platform - Technology View</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .viewpoint-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .viewpoint-header {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+        }
+        .viewpoint-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        .viewpoint-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+        .tech-layer-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #6c5ce7;
+        }
+        .tech-layer-card h3 {
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .layer-icon {
+            width: 28px;
+            height: 28px;
+            background: #6c5ce7;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .tech-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .tech-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+        .tech-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .tech-version {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .support-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-current { background: #00b894; color: white; }
+        .status-lts { background: #0984e3; color: white; }
+        .status-eol-soon { background: #fdcb6e; color: #2d3436; }
+        .status-eol { background: #e17055; color: white; }
+        .status-deprecated { background: #636e72; color: white; }
+        .architecture-diagram {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .layer-box {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #6c5ce7;
+        }
+        .layer-box h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .layer-box p {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .modernization-section {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .modernization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .modernization-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+        .modernization-item h4 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        .modernization-item p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .security-section {
+            background: #e8f8f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .security-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .security-card h4 {
+            color: #2c3e50;
+            margin: 0 0 5px 0;
+        }
+        .performance-metrics {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #6c5ce7;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewpoint-container">
+        <div class="viewpoint-header">
+            <h2>Technology Stack & Infrastructure</h2>
+        </div>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                Comprehensive view of the technology components, versions, support status, and infrastructure architecture powering the Digital Commerce Platform.
+            </p>
+
+            <h3>Technology Stack by Layer</h3>
+            <div class="tech-stack-grid">
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">UI</div>
+                        Frontend / Presentation Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">React</span>
+                            <div>
+                                <span class="tech-version">18.2.0</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Next.js</span>
+                            <div>
+                                <span class="tech-version">13.5.6</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">TypeScript</span>
+                            <div>
+                                <span class="tech-version">5.1.6</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Styled Components</span>
+                            <div>
+                                <span class="tech-version">6.0.7</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Redux Toolkit</span>
+                            <div>
+                                <span class="tech-version">1.9.5</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">API</div>
+                        Backend / API Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">Node.js</span>
+                            <div>
+                                <span class="tech-version">20.6.1</span>
+                                <span class="support-status status-lts">LTS</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Express.js</span>
+                            <div>
+                                <span class="tech-version">4.18.2</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">GraphQL</span>
+                            <div>
+                                <span class="tech-version">16.8.1</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Apollo Server</span>
+                            <div>
+                                <span class="tech-version">4.9.3</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Jest</span>
+                            <div>
+                                <span class="tech-version">29.7.0</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">DB</div>
+                        Data Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">PostgreSQL</span>
+                            <div>
+                                <span class="tech-version">15.4</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Redis</span>
+                            <div>
+                                <span class="tech-version">7.2.0</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Elasticsearch</span>
+                            <div>
+                                <span class="tech-version">8.9.2</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Amazon S3</span>
+                            <div>
+                                <span class="tech-version">Latest</span>
+                                <span class="support-status status-current">Managed</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Prisma ORM</span>
+                            <div>
+                                <span class="tech-version">5.3.1</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">☁️</div>
+                        Infrastructure Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">Amazon EKS</span>
+                            <div>
+                                <span class="tech-version">1.28</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Docker</span>
+                            <div>
+                                <span class="tech-version">24.0.5</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Nginx</span>
+                            <div>
+                                <span class="tech-version">1.25.2</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Terraform</span>
+                            <div>
+                                <span class="tech-version">1.5.7</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">AWS CloudFormation</span>
+                            <div>
+                                <span class="tech-version">Latest</span>
+                                <span class="support-status status-current">Managed</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Deployment Architecture</h3>
+                <div class="layer-box">
+                    <h4>CDN & Load Balancing (CloudFront + ALB)</h4>
+                    <p>Global content delivery and traffic distribution across multiple availability zones</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Container Orchestration (Amazon EKS)</h4>
+                    <p>Kubernetes-managed containerized applications with auto-scaling and service mesh</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Microservices (Node.js + Express)</h4>
+                    <p>API Gateway, User Service, Product Service, Order Service, Payment Service</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Data Layer (RDS PostgreSQL + ElastiCache Redis)</h4>
+                    <p>Multi-AZ database deployment with read replicas and distributed caching</p>
+                </div>
+            </div>
+
+            <div class="security-section">
+                <h3>Security Technologies</h3>
+                <div class="security-grid">
+                    <div class="security-card">
+                        <h4>Identity & Access</h4>
+                        <p>AWS Cognito, OAuth 2.0, JWT tokens, MFA</p>
+                    </div>
+                    <div class="security-card">
+                        <h4>Data Encryption</h4>
+                        <p>TLS 1.3, AES-256, AWS KMS key management</p>
+                    </div>
+                    <div class="security-card">
+                        <h4>Network Security</h4>
+                        <p>VPC, Security Groups, NACLs, WAF</p>
+                    </div>
+                    <div class="security-card">
+                        <h4>Vulnerability Scanning</h4>
+                        <p>Snyk, AWS Inspector, OWASP ZAP</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-metrics">
+                <h3>Technology Performance Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Uptime SLA</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 200ms</div>
+                        <div class="metric-label">API Response Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">10K+</div>
+                        <div class="metric-label">Concurrent Users</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">50K+</div>
+                        <div class="metric-label">Requests/Second</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 1.5s</div>
+                        <div class="metric-label">Page Load Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">95+</div>
+                        <div class="metric-label">Lighthouse Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modernization-section">
+                <h4 style="color: #856404; margin: 0 0 15px 0;">Technology Modernization Roadmap</h4>
+                <div class="modernization-grid">
+                    <div class="modernization-item">
+                        <h4>Legacy jQuery Removal</h4>
+                        <p><strong>Target Q1 2024:</strong> Complete migration from jQuery 3.6.0 to pure modern JavaScript and React components.</p>
+                    </div>
+                    <div class="modernization-item">
+                        <h4>Database Upgrade</h4>
+                        <p><strong>Target Q2 2024:</strong> Upgrade PostgreSQL from 13.7 to 15.4 for improved performance and security features.</p>
+                    </div>
+                    <div class="modernization-item">
+                        <h4>Monitoring Stack</h4>
+                        <p><strong>Target Q3 2024:</strong> Implement Prometheus + Grafana + Jaeger for comprehensive observability.</p>
+                    </div>
+                    <div class="modernization-item">
+                        <h4>CI/CD Enhancement</h4>
+                        <p><strong>Target Q4 2024:</strong> Migrate from Jenkins to GitHub Actions for improved developer experience.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

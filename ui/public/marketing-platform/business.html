@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Platform - Business View</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--secondary-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .list {
+            list-style: none;
+        }
+
+        .list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .list li::before {
+            content: "→";
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .stakeholder-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stakeholder-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .stakeholder-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .value-chain {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .value-step {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 25px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+        }
+
+        .value-step:not(:last-child)::after {
+            content: "→";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .roi-highlight {
+            background: linear-gradient(45deg, var(--success-color), #2ecc71);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .roi-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Marketing Platform</h1>
+        <p>Business Architecture View - Enterprise Marketing Automation & Campaign Orchestration</p>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h3>Business Functions</h3>
+                </div>
+                <ul class="list">
+                    <li>Campaign Orchestration & Automation</li>
+                    <li>Content Management & Dynamic Personalization</li>
+                    <li>Lead Nurturing & Scoring</li>
+                    <li>Customer Journey Automation</li>
+                    <li>Marketing Attribution & Analytics</li>
+                    <li>A/B Testing & Optimization</li>
+                    <li>Omnichannel Campaign Execution</li>
+                    <li>Email & SMS Marketing</li>
+                    <li>Social Media Campaign Management</li>
+                    <li>Marketing Performance Measurement</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💰</div>
+                    <h3>Business Value Metrics</h3>
+                </div>
+                <div class="roi-highlight">
+                    <div class="roi-value">847%</div>
+                    <div>Marketing ROI Achieved</div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <div class="metric-value">3.2M</div>
+                        <div class="metric-label">Leads Generated Annually</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">67%</div>
+                        <div class="metric-label">Conversion Rate Improvement</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">125M</div>
+                        <div class="metric-label">Email Campaigns/Month</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">89%</div>
+                        <div class="metric-label">Email Deliverability</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">34%</div>
+                        <div class="metric-label">Average Open Rates</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">15+</div>
+                        <div class="metric-label">Marketing Channels</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👥</div>
+                    <h3>Key Stakeholders</h3>
+                </div>
+                <div class="stakeholder-section">
+                    <div class="stakeholder-group">
+                        <div class="stakeholder-title">Marketing Teams</div>
+                        <div>Campaign managers, Email marketers, Content creators, Marketing analysts, Marketing operations</div>
+                    </div>
+                    <div class="stakeholder-group">
+                        <div class="stakeholder-title">Creative Services</div>
+                        <div>Graphic designers, Copywriters, Video producers, Brand managers, Creative directors</div>
+                    </div>
+                    <div class="stakeholder-group">
+                        <div class="stakeholder-title">Sales Organization</div>
+                        <div>Sales representatives, Sales managers, Business development, Account managers</div>
+                    </div>
+                    <div class="stakeholder-group">
+                        <div class="stakeholder-title">Analytics & Insights</div>
+                        <div>Data analysts, Marketing scientists, Business intelligence, Performance managers</div>
+                    </div>
+                    <div class="stakeholder-group">
+                        <div class="stakeholder-title">Executive Leadership</div>
+                        <div>CMO, VP Marketing, Marketing directors, Revenue operations, Strategy teams</div>
+                    </div>
+                    <div class="stakeholder-group">
+                        <div class="stakeholder-title">Technology Teams</div>
+                        <div>Marketing technologists, Integration specialists, Platform administrators</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <h3>Strategic Importance</h3>
+                </div>
+                <ul class="list">
+                    <li>Omnichannel Marketing Orchestration Hub</li>
+                    <li>Customer Acquisition Engine (3.2M leads annually)</li>
+                    <li>Revenue Attribution & ROI Measurement</li>
+                    <li>Marketing Automation at Enterprise Scale</li>
+                    <li>Brand Consistency Across All Channels</li>
+                    <li>Customer Journey Optimization</li>
+                    <li>Data-Driven Marketing Decision Making</li>
+                    <li>Personalization & Dynamic Content Delivery</li>
+                    <li>Marketing Performance Analytics</li>
+                    <li>Campaign Optimization & A/B Testing</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🚀</div>
+                <h3>Marketing Value Stream</h3>
+            </div>
+            <div class="value-chain">
+                <div class="value-step">Customer<br>Acquisition</div>
+                <div class="value-step">Lead<br>Nurturing</div>
+                <div class="value-step">Conversion<br>Optimization</div>
+                <div class="value-step">Customer<br>Retention</div>
+                <div class="value-step">Revenue<br>Growth</div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value">47M</div>
+                    <div class="metric-label">Campaign Interactions</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">2.3TB</div>
+                    <div class="metric-label">Campaign Data Processed</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">24/7</div>
+                    <div class="metric-label">Real-time Campaigns</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">99.9%</div>
+                    <div class="metric-label">Platform Uptime</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <h3>Business Outcomes</h3>
+                </div>
+                <ul class="list">
+                    <li>847% Marketing ROI through automated campaigns</li>
+                    <li>67% improvement in lead conversion rates</li>
+                    <li>3.2M qualified leads generated annually</li>
+                    <li>89% email deliverability with 34% open rates</li>
+                    <li>125M personalized email campaigns monthly</li>
+                    <li>Real-time campaign optimization & attribution</li>
+                    <li>Omnichannel customer experience consistency</li>
+                    <li>Reduced campaign launch time by 75%</li>
+                    <li>Marketing attribution accuracy of 95%</li>
+                    <li>Enterprise-scale marketing automation</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎨</div>
+                    <h3>Marketing Capabilities</h3>
+                </div>
+                <ul class="list">
+                    <li>Dynamic Content & Personalization Engine</li>
+                    <li>Behavioral Trigger Campaign Automation</li>
+                    <li>Multi-channel Campaign Orchestration</li>
+                    <li>Advanced Lead Scoring & Segmentation</li>
+                    <li>Real-time A/B Testing & Optimization</li>
+                    <li>Marketing Attribution & Revenue Tracking</li>
+                    <li>Customer Journey Mapping & Automation</li>
+                    <li>Email Template Management & Optimization</li>
+                    <li>Social Media Integration & Publishing</li>
+                    <li>Marketing Performance Dashboards</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

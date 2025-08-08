@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Loyalty Platform - Capability View</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .viewpoint-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .viewpoint-header {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+        }
+        .viewpoint-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        .viewpoint-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .capability-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 5px solid #8e44ad;
+        }
+        .capability-section h3 {
+            color: #8e44ad;
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .capability-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .capability-list li {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #9b59b6;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .capability-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .capability-desc {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .maturity-level {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .maturity-optimized { background: #27ae60; color: white; }
+        .maturity-defined { background: #3498db; color: white; }
+        .maturity-managed { background: #f39c12; color: white; }
+        .maturity-performed { background: #e74c3c; color: white; }
+        .value-stream-section {
+            background: #f4f1f9;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 2px solid #e8d9f0;
+        }
+        .value-stream-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .value-stream-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-top: 4px solid #8e44ad;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .value-stream-card h4 {
+            color: #8e44ad;
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+        .integration-section {
+            background: #e8f4f8;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .integration-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .integration-card h4 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        .tech-enabler {
+            display: inline-block;
+            background: #9b59b6;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin: 3px 3px 3px 0;
+        }
+        .impact-metrics {
+            background: #e8f8f5;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-top: 3px solid #27ae60;
+        }
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .summary-text {
+            font-size: 1.1rem;
+            color: #34495e;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f4ff;
+            border-radius: 8px;
+            border-left: 4px solid #8e44ad;
+        }
+        .dependency-flow {
+            background: #fff5e6;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #f39c12;
+        }
+        .dependency-arrow {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #8e44ad;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewpoint-container">
+        <div class="viewpoint-header">
+            <h2>Capability & Value Stream Perspective</h2>
+        </div>
+        <div class="viewpoint-content">
+            <div class="summary-text">
+                The Customer Loyalty Platform orchestrates enterprise-wide customer engagement capabilities, serving as the master system for loyalty program operations while facilitating cross-functional business capabilities and consuming upstream customer data services. It participates in four critical value streams that drive customer acquisition, retention, revenue growth, and experience optimization.
+            </div>
+
+            <div class="capability-grid">
+                <div class="capability-section">
+                    <h3>Core Capabilities (Master)</h3>
+                    <ul class="capability-list">
+                        <li>
+                            <div class="capability-name">Loyalty Points Management</div>
+                            <div class="capability-desc">Real-time points earning, spending, expiration, and balance tracking across all touchpoints</div>
+                            <span class="maturity-level maturity-optimized">Level 5 - Optimized</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Customer Tier Management</div>
+                            <div class="capability-desc">Automated tier progression (Bronze→Silver→Gold→Platinum) with benefit activation</div>
+                            <span class="maturity-level maturity-defined">Level 4 - Defined</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Personalized Offers Engine</div>
+                            <div class="capability-desc">AI-driven offer personalization based on behavior, preferences, and tier status</div>
+                            <span class="maturity-level maturity-managed">Level 3 - Managed</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Gamification & Engagement</div>
+                            <div class="capability-desc">Challenge campaigns, streaks, badges, and social sharing features</div>
+                            <span class="maturity-level maturity-defined">Level 4 - Defined</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Coalition Partner Management</div>
+                            <div class="capability-desc">Multi-brand point earning/redemption with external partner ecosystem</div>
+                            <span class="maturity-level maturity-managed">Level 3 - Managed</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="capability-section">
+                    <h3>Capabilities Facilitated</h3>
+                    <ul class="capability-list">
+                        <li>
+                            <div class="capability-name">Customer Analytics</div>
+                            <div class="capability-desc">Provides behavioral data, engagement metrics, and loyalty insights to analytics platforms</div>
+                            <span class="maturity-level maturity-optimized">Level 5 - Optimized</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Marketing Campaign Management</div>
+                            <div class="capability-desc">Enables segmentation by loyalty tier, engagement level, and earning patterns</div>
+                            <span class="maturity-level maturity-defined">Level 4 - Defined</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Customer Service Integration</div>
+                            <div class="capability-desc">Real-time loyalty status, transaction history, and redemption capabilities in service tools</div>
+                            <span class="maturity-level maturity-defined">Level 4 - Defined</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Omnichannel Personalization</div>
+                            <div class="capability-desc">Feeds loyalty context to web, mobile, and in-store personalization engines</div>
+                            <span class="maturity-level maturity-managed">Level 3 - Managed</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="capability-section">
+                    <h3>Capabilities Consumed</h3>
+                    <ul class="capability-list">
+                        <li>
+                            <div class="capability-name">Customer Profile Data</div>
+                            <div class="capability-desc">Consumes unified customer profiles, preferences, and demographic data from CRM</div>
+                            <span class="maturity-level maturity-optimized">Level 5 - Optimized</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Transaction Data Services</div>
+                            <div class="capability-desc">Real-time purchase events from POS, eCommerce, and mobile app platforms</div>
+                            <span class="maturity-level maturity-defined">Level 4 - Defined</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Product Catalog Services</div>
+                            <div class="capability-desc">Product information for targeted offers, category-based earning rules</div>
+                            <span class="maturity-level maturity-defined">Level 4 - Defined</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Location Services</div>
+                            <div class="capability-desc">Geolocation data for proximity rewards, store-specific offers</div>
+                            <span class="maturity-level maturity-managed">Level 3 - Managed</span>
+                        </li>
+                        <li>
+                            <div class="capability-name">Payment Processing</div>
+                            <div class="capability-desc">Payment confirmation for points earning validation and redemption processing</div>
+                            <span class="maturity-level maturity-optimized">Level 5 - Optimized</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="value-stream-section">
+                <h3>Value Stream Participation</h3>
+                <div class="value-stream-grid">
+                    <div class="value-stream-card">
+                        <h4>Customer Acquisition</h4>
+                        <p>Drives new customer enrollment through sign-up bonuses, referral programs, and onboarding campaigns. Contributes 34% of new customer acquisition.</p>
+                        <div><strong>Key Activities:</strong> Welcome bonuses, referral tracking, onboarding journeys</div>
+                        <div><strong>Success Metrics:</strong> 47% enrollment rate, 72% first-purchase conversion</div>
+                    </div>
+                    <div class="value-stream-card">
+                        <h4>Customer Retention</h4>
+                        <p>Prevents churn through engagement campaigns, win-back offers, and tier benefit utilization. Reduces churn by 23% among active members.</p>
+                        <div><strong>Key Activities:</strong> Churn prediction, win-back campaigns, engagement scoring</div>
+                        <div><strong>Success Metrics:</strong> 87% retention rate, 31% win-back success rate</div>
+                    </div>
+                    <div class="value-stream-card">
+                        <h4>Revenue Growth</h4>
+                        <p>Drives incremental purchases through targeted offers, tier benefits, and redemption incentives. Generates $47M+ incremental revenue annually.</p>
+                        <div><strong>Key Activities:</strong> Offer targeting, tier progression rewards, redemption campaigns</div>
+                        <div><strong>Success Metrics:</strong> 31% higher purchase frequency, 18% larger basket size</div>
+                    </div>
+                    <div class="value-stream-card">
+                        <h4>Customer Experience</h4>
+                        <p>Delivers seamless rewards experience across all touchpoints with real-time balance updates and instant redemption capabilities.</p>
+                        <div><strong>Key Activities:</strong> Omnichannel integration, instant gratification, personalization</div>
+                        <div><strong>Success Metrics:</strong> 4.7/5 program satisfaction, 92% digital engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="integration-section">
+                <h3>Key Integration Points</h3>
+                <div class="integration-grid">
+                    <div class="integration-card">
+                        <h4>Customer Data Platform (CDP)</h4>
+                        <p>Bidirectional integration for unified customer profiles and behavioral insights</p>
+                        <div>
+                            <span class="tech-enabler">REST APIs</span>
+                            <span class="tech-enabler">Event Streaming</span>
+                            <span class="tech-enabler">Real-time Sync</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>eCommerce Platform</h4>
+                        <p>Real-time points earning, redemption at checkout, tier-based pricing</p>
+                        <div>
+                            <span class="tech-enabler">GraphQL</span>
+                            <span class="tech-enabler">Webhook Events</span>
+                            <span class="tech-enabler">Microservices</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Point of Sale Systems</h4>
+                        <p>In-store points earning, redemption, and real-time balance inquiries</p>
+                        <div>
+                            <span class="tech-enabler">SOAP APIs</span>
+                            <span class="tech-enabler">Message Queues</span>
+                            <span class="tech-enabler">Batch Processing</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Mobile Application</h4>
+                        <p>Native loyalty features, push notifications, digital card presentation</p>
+                        <div>
+                            <span class="tech-enabler">Mobile SDK</span>
+                            <span class="tech-enabler">Push Notifications</span>
+                            <span class="tech-enabler">Offline Sync</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Marketing Automation</h4>
+                        <p>Loyalty segment data for campaign targeting and personalization</p>
+                        <div>
+                            <span class="tech-enabler">Data Feeds</span>
+                            <span class="tech-enabler">ETL Pipelines</span>
+                            <span class="tech-enabler">Scheduled Sync</span>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <h4>Partner Ecosystem</h4>
+                        <p>Coalition partner point transfers, cross-brand redemption capabilities</p>
+                        <div>
+                            <span class="tech-enabler">EDI</span>
+                            <span class="tech-enabler">B2B APIs</span>
+                            <span class="tech-enabler">Blockchain</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dependency-flow">
+                <h3>Capability Flow Dependencies</h3>
+                <p><strong>Upstream Dependencies:</strong></p>
+                <p>Customer Identity → Customer Profiles → Transaction Processing → Product Catalog</p>
+                <div class="dependency-arrow">↓</div>
+                <p><strong>Loyalty Platform Core Processing:</strong></p>
+                <p>Points Calculation → Tier Assessment → Offer Generation → Reward Fulfillment</p>
+                <div class="dependency-arrow">↓</div>
+                <p><strong>Downstream Capabilities Enabled:</strong></p>
+                <p>Customer Analytics → Marketing Campaigns → Personalization → Customer Service</p>
+            </div>
+
+            <div class="impact-metrics">
+                <h3>Business Impact Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">15.2B</div>
+                        <div class="metric-label">Points Processed Monthly</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.7%</div>
+                        <div class="metric-label">System Availability</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">47ms</div>
+                        <div class="metric-label">Average Response Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">2.8M</div>
+                        <div class="metric-label">Active Member Base</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">67%</div>
+                        <div class="metric-label">Revenue from Members</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">312M</div>
+                        <div class="metric-label">Incremental Revenue ($)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">23%</div>
+                        <div class="metric-label">Churn Reduction</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">5.7x</div>
+                        <div class="metric-label">Platform ROI</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
