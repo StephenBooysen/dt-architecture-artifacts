@@ -181,6 +181,29 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
+// Capability detail pages
+app.get('/:solution/capability-detail/:capabilityId', (req, res) => {
+    const solution = req.params.solution;
+    const capabilityId = req.params.capabilityId;
+    
+    // Map capability IDs to file names
+    const capabilityFiles = {
+        'order-management': 'order-management-detail.html'
+    };
+    
+    const fileName = capabilityFiles[capabilityId];
+    if (!fileName) {
+        return res.status(404).send('Capability detail not found');
+    }
+    
+    const filePath = path.join(__dirname, 'public', solution, fileName);
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send('Capability detail file not found');
+    }
+    
+    res.sendFile(filePath);
+});
+
 // Individual solution pages with Knowledge View design
 app.get('/:solution', (req, res) => {
     const solution = req.params.solution;
@@ -269,16 +292,22 @@ app.get('/:solution', (req, res) => {
                 <!-- Navigation Tabs -->
                 <nav class="content-tabs">
                     <button class="tab-button active" data-tab="business">Business View</button>
-                    <button class="tab-button" data-tab="capability">Capability View</button>
-                    <button class="tab-button" data-tab="data">Data View</button>
-                    <button class="tab-button" data-tab="principles">Principles View</button>
-                    <button class="tab-button" data-tab="context">Context View</button>
-                    <button class="tab-button" data-tab="technology">Technology View</button>
+                    <button class="tab-button" data-tab="product-management">Product Management</button>
+                    <button class="tab-button" data-tab="capability">Capabilities</button>
+                    <button class="tab-button" data-tab="data">Data Context</button>
+                    <button class="tab-button" data-tab="principles">Design Principles</button>
+                    <button class="tab-button" data-tab="context">Landscape</button>
+                    <button class="tab-button" data-tab="technology">Technologies</button>
+                    <button class="tab-button" data-tab="engineering">Engineering</button>
                 </nav>
 
                 <!-- Tab Content -->
                 <div id="business" class="tab-content active">
                     <iframe src="/${solution}/business.html"></iframe>
+                </div>
+
+                <div id="product-management" class="tab-content">
+                    <iframe src="/${solution}/product-management.html"></iframe>
                 </div>
 
                 <div id="capability" class="tab-content">
@@ -299,6 +328,10 @@ app.get('/:solution', (req, res) => {
 
                 <div id="technology" class="tab-content">
                     <iframe src="/${solution}/technology.html"></iframe>
+                </div>
+
+                <div id="engineering" class="tab-content">
+                    <iframe src="/${solution}/engineering.html"></iframe>
                 </div>
             </div>
         </main>

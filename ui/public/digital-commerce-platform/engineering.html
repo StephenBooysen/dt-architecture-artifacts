@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Commerce Platform - Engineering View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
+</head>
+<body data-theme="engineering">
+    <div class="viewpoint-container">
+        <div class="viewpoint-content">
+            <!-- Engineering Dashboard Header -->
+            <div class="engineering-header">
+                <div class="header-icon">⚙️</div>
+                <div class="header-content">
+                    <h1>Engineering Dashboard</h1>
+                    <p class="header-subtitle">Digital Commerce Platform - Technical Implementation Guide</p>
+                    <div class="environment-status">
+                        <span class="env-badge env-prod">Production: Stable</span>
+                        <span class="env-badge env-staging">Staging: Available</span>
+                        <span class="env-badge env-dev">Development: Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="quick-nav">
+                <a href="#architecture" class="nav-item">🏗️ Architecture</a>
+                <a href="#implementation" class="nav-item">🔧 Implementation</a>
+                <a href="#apis" class="nav-item">📡 APIs</a>
+                <a href="#quality" class="nav-item">✅ Quality</a>
+                <a href="#security" class="nav-item">🔒 Security</a>
+                <a href="#performance" class="nav-item">⚡ Performance</a>
+            </div>
+
+            <!-- System Architecture Overview -->
+            <section id="architecture" class="architecture-section">
+                <h2>🏗️ System Architecture & Development Context</h2>
+                
+                <div class="architecture-overview">
+                    <div class="arch-diagram">
+                        <div class="arch-layer">
+                            <h3>Frontend Layer</h3>
+                            <div class="tech-stack">
+                                <span class="tech-tag">React 18.2</span>
+                                <span class="tech-tag">TypeScript 5.0</span>
+                                <span class="tech-tag">Next.js 14</span>
+                                <span class="tech-tag">TailwindCSS</span>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <h3>API Gateway Layer</h3>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Kong Gateway</span>
+                                <span class="tech-tag">GraphQL Federation</span>
+                                <span class="tech-tag">Rate Limiting</span>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <h3>Microservices Layer</h3>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Node.js 20</span>
+                                <span class="tech-tag">Express.js</span>
+                                <span class="tech-tag">Docker</span>
+                                <span class="tech-tag">Kubernetes</span>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <h3>Data Layer</h3>
+                            <div class="tech-stack">
+                                <span class="tech-tag">PostgreSQL 15</span>
+                                <span class="tech-tag">Redis Cluster</span>
+                                <span class="tech-tag">Elasticsearch</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="deployment-info">
+                        <h3>Deployment Pipelines</h3>
+                        <div class="pipeline-grid">
+                            <div class="pipeline-card">
+                                <h4>🚀 CI/CD Pipeline</h4>
+                                <p><strong>Tool:</strong> GitHub Actions</p>
+                                <p><strong>Stages:</strong> Build → Test → Security Scan → Deploy</p>
+                                <p><strong>Deployment:</strong> Blue/Green with automatic rollback</p>
+                            </div>
+                            <div class="pipeline-card">
+                                <h4>🧪 Testing Pipeline</h4>
+                                <p><strong>Unit Tests:</strong> Jest + React Testing Library</p>
+                                <p><strong>Integration:</strong> Supertest + TestContainers</p>
+                                <p><strong>E2E:</strong> Playwright</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Implementation Guidance -->
+            <section id="implementation" class="implementation-section">
+                <h2>🔧 Implementation Guidance</h2>
+                
+                <div class="guidance-grid">
+                    <div class="guidance-card">
+                        <h3>Getting Started</h3>
+                        <div class="code-example">
+                            <h4>Repository Setup:</h4>
+                            <pre><code># Clone the main repository
+git clone https://github.com/company/digital-commerce-platform.git
+cd digital-commerce-platform
+
+# Install dependencies
+npm install
+
+# Set up local environment
+cp .env.example .env.local
+docker-compose up -d
+
+# Run development server
+npm run dev</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="guidance-card">
+                        <h3>Project Structure</h3>
+                        <div class="folder-structure">
+                            <pre><code>src/
+├── components/         # Reusable UI components
+│   ├── ui/            # Base design system components
+│   └── feature/       # Feature-specific components
+├── pages/             # Next.js pages and API routes
+├── services/          # Business logic and API clients
+├── hooks/             # Custom React hooks
+├── types/             # TypeScript type definitions
+├── utils/             # Utility functions
+└── __tests__/         # Test files</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="guidance-card">
+                        <h3>Development Workflow</h3>
+                        <ol class="workflow-steps">
+                            <li>Create feature branch from <code>develop</code></li>
+                            <li>Implement changes following coding standards</li>
+                            <li>Write unit and integration tests</li>
+                            <li>Run quality gates: <code>npm run lint && npm run test</code></li>
+                            <li>Submit PR with proper template</li>
+                            <li>Pass code review and automated checks</li>
+                            <li>Merge to develop, auto-deploy to staging</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Technical Dependencies -->
+                <div class="dependencies-section">
+                    <h3>Technical Dependencies</h3>
+                    <div class="dependency-grid">
+                        <div class="dependency-card">
+                            <h4>🛒 Order Management Service</h4>
+                            <p><strong>Endpoint:</strong> <code>https://api.commerce.internal/orders/v2</code></p>
+                            <p><strong>Auth:</strong> JWT Bearer Token</p>
+                            <p><strong>Rate Limit:</strong> 1000 req/min per service</p>
+                            <p><strong>SLA:</strong> 99.9% uptime, <200ms p95</p>
+                        </div>
+                        <div class="dependency-card">
+                            <h4>💳 Payment Gateway</h4>
+                            <p><strong>Provider:</strong> Stripe Connect</p>
+                            <p><strong>SDK:</strong> <code>@stripe/stripe-js</code></p>
+                            <p><strong>Webhook URL:</strong> <code>/api/webhooks/stripe</code></p>
+                            <p><strong>PCI Compliance:</strong> Level 1</p>
+                        </div>
+                        <div class="dependency-card">
+                            <h4>📦 Inventory Service</h4>
+                            <p><strong>Endpoint:</strong> <code>wss://inventory.commerce.internal/v1</code></p>
+                            <p><strong>Protocol:</strong> WebSocket + REST fallback</p>
+                            <p><strong>Updates:</strong> Real-time inventory levels</p>
+                            <p><strong>Caching:</strong> 5min TTL in Redis</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API Contracts & Specifications -->
+            <section id="apis" class="apis-section">
+                <h2>📡 API Contracts & Interface Specifications</h2>
+                
+                <div class="api-grid">
+                    <div class="api-card">
+                        <h3>Order Management API</h3>
+                        <div class="api-details">
+                            <div class="endpoint-info">
+                                <h4>Create Order</h4>
+                                <div class="http-method">POST</div>
+                                <code>/api/v2/orders</code>
+                            </div>
+                            <div class="schema-example">
+                                <h5>Request Schema:</h5>
+                                <pre><code>{
+  "customerId": "string",
+  "items": [{
+    "productId": "string",
+    "quantity": number,
+    "price": number
+  }],
+  "shippingAddress": {
+    "street": "string",
+    "city": "string",
+    "postalCode": "string",
+    "country": "string"
+  },
+  "paymentMethod": {
+    "type": "card" | "paypal" | "apple_pay",
+    "token": "string"
+  }
+}</code></pre>
+                            </div>
+                            <div class="response-codes">
+                                <h5>Response Codes:</h5>
+                                <ul>
+                                    <li><span class="status-201">201</span> Order created successfully</li>
+                                    <li><span class="status-400">400</span> Invalid request data</li>
+                                    <li><span class="status-402">402</span> Payment failed</li>
+                                    <li><span class="status-409">409</span> Inventory insufficient</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-card">
+                        <h3>Product Catalog API</h3>
+                        <div class="api-details">
+                            <div class="endpoint-info">
+                                <h4>Search Products</h4>
+                                <div class="http-method get">GET</div>
+                                <code>/api/v2/products/search</code>
+                            </div>
+                            <div class="query-params">
+                                <h5>Query Parameters:</h5>
+                                <ul>
+                                    <li><code>q</code> - Search query (string)</li>
+                                    <li><code>category</code> - Filter by category (string)</li>
+                                    <li><code>minPrice</code> - Minimum price (number)</li>
+                                    <li><code>maxPrice</code> - Maximum price (number)</li>
+                                    <li><code>limit</code> - Results per page (default: 20)</li>
+                                    <li><code>offset</code> - Pagination offset (default: 0)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="graphql-section">
+                    <h3>GraphQL Federation Schema</h3>
+                    <div class="schema-card">
+                        <h4>Order Type Definition</h4>
+                        <pre><code>type Order @key(fields: "id") {
+  id: ID!
+  customerId: String!
+  status: OrderStatus!
+  items: [OrderItem!]!
+  totalAmount: Money!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  
+  # Extended from Customer service
+  customer: Customer @external
+  
+  # Extended from Payment service  
+  payment: Payment @external
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Code Quality & Standards -->
+            <section id="quality" class="quality-section">
+                <h2>✅ Code Quality & Standards</h2>
+                
+                <div class="standards-grid">
+                    <div class="standard-card">
+                        <h3>Coding Standards</h3>
+                        <div class="standards-list">
+                            <div class="standard-item">
+                                <h4>TypeScript Configuration</h4>
+                                <ul>
+                                    <li>Strict mode enabled</li>
+                                    <li>No implicit any</li>
+                                    <li>Exact optional property types</li>
+                                    <li>Import/export type annotations</li>
+                                </ul>
+                            </div>
+                            <div class="standard-item">
+                                <h4>ESLint Rules</h4>
+                                <ul>
+                                    <li>Airbnb TypeScript config</li>
+                                    <li>React hooks rules</li>
+                                    <li>Import order enforcement</li>
+                                    <li>Unused variable detection</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="standard-card">
+                        <h3>Design Patterns</h3>
+                        <div class="pattern-examples">
+                            <div class="pattern-item">
+                                <h4>Error Handling Pattern</h4>
+                                <pre><code>// Use Result pattern for error handling
+type Result&lt;T, E = Error&gt; = 
+  | { success: true; data: T }
+  | { success: false; error: E }
+
+async function createOrder(orderData: OrderInput): Promise&lt;Result&lt;Order&gt;&gt; {
+  try {
+    const order = await orderService.create(orderData)
+    return { success: true, data: order }
+  } catch (error) {
+    return { success: false, error }
+  }
+}</code></pre>
+                            </div>
+                            <div class="pattern-item">
+                                <h4>React Component Pattern</h4>
+                                <pre><code>// Use composition over inheritance
+interface OrderSummaryProps {
+  order: Order
+  onEdit?: () =&gt; void
+  className?: string
+}
+
+export const OrderSummary: FC&lt;OrderSummaryProps&gt; = ({
+  order,
+  onEdit,
+  className
+}) =&gt; {
+  return (
+    &lt;div className={cn('order-summary', className)}&gt;
+      {/* Component implementation */}
+    &lt;/div&gt;
+  )
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testing Strategy -->
+                <div class="testing-section">
+                    <h3>Testing Strategies & Quality Gates</h3>
+                    <div class="testing-grid">
+                        <div class="test-card">
+                            <h4>🧪 Unit Testing</h4>
+                            <p><strong>Framework:</strong> Jest + React Testing Library</p>
+                            <p><strong>Coverage Target:</strong> >90% line coverage</p>
+                            <p><strong>Focus:</strong> Business logic, utils, hooks</p>
+                            <div class="test-example">
+                                <pre><code>// Example unit test
+describe('calculateOrderTotal', () => {
+  it('should calculate total with tax and shipping', () => {
+    const items = [
+      { price: 100, quantity: 2 },
+      { price: 50, quantity: 1 }
+    ]
+    const result = calculateOrderTotal(items, 0.08, 15)
+    expect(result).toBe(281) // (250 * 1.08) + 15
+  })
+})</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="test-card">
+                            <h4>🔄 Integration Testing</h4>
+                            <p><strong>Framework:</strong> Supertest + TestContainers</p>
+                            <p><strong>Scope:</strong> API endpoints, database interactions</p>
+                            <p><strong>Environment:</strong> Isolated test containers</p>
+                        </div>
+                        
+                        <div class="test-card">
+                            <h4>🎭 End-to-End Testing</h4>
+                            <p><strong>Framework:</strong> Playwright</p>
+                            <p><strong>Scope:</strong> Critical user journeys</p>
+                            <p><strong>Frequency:</strong> Pre-deployment, nightly</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Patterns -->
+            <section id="security" class="security-section">
+                <h2>🔒 Security Patterns & Compliance</h2>
+                
+                <div class="security-grid">
+                    <div class="security-card">
+                        <h3>Authentication & Authorization</h3>
+                        <div class="auth-details">
+                            <h4>JWT Token Structure</h4>
+                            <pre><code>// Token payload structure
+{
+  "sub": "user-id",
+  "iss": "commerce-auth-service",
+  "aud": "commerce-api",
+  "exp": 1640995200,
+  "iat": 1640908800,
+  "roles": ["customer", "premium"],
+  "permissions": ["read:orders", "write:orders"]
+}</code></pre>
+                            <h4>Authorization Middleware</h4>
+                            <pre><code>// Protect routes with permissions
+app.get('/api/orders', 
+  authenticate,
+  authorize(['read:orders']),
+  getOrders
+)</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="security-card">
+                        <h3>Data Protection</h3>
+                        <div class="protection-measures">
+                            <h4>Encryption Standards</h4>
+                            <ul>
+                                <li><strong>At Rest:</strong> AES-256 encryption</li>
+                                <li><strong>In Transit:</strong> TLS 1.3</li>
+                                <li><strong>PII Fields:</strong> Field-level encryption</li>
+                                <li><strong>Keys:</strong> AWS KMS rotation</li>
+                            </ul>
+                            
+                            <h4>Input Validation</h4>
+                            <pre><code>// Use Zod for runtime validation
+const CreateOrderSchema = z.object({
+  customerId: z.string().uuid(),
+  items: z.array(z.object({
+    productId: z.string().uuid(),
+    quantity: z.number().int().positive().max(100),
+    price: z.number().positive()
+  })).min(1).max(50)
+})</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="security-card">
+                        <h3>Compliance Requirements</h3>
+                        <div class="compliance-list">
+                            <h4>PCI DSS Level 1</h4>
+                            <ul>
+                                <li>No card data storage in application</li>
+                                <li>Use Stripe for payment processing</li>
+                                <li>Regular vulnerability scans</li>
+                                <li>Network segmentation</li>
+                            </ul>
+                            
+                            <h4>GDPR Compliance</h4>
+                            <ul>
+                                <li>Data processing consent tracking</li>
+                                <li>Right to be forgotten implementation</li>
+                                <li>Data portability APIs</li>
+                                <li>Privacy by design patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Performance Benchmarks -->
+            <section id="performance" class="performance-section">
+                <h2>⚡ Performance Benchmarks & SLA Requirements</h2>
+                
+                <div class="performance-grid">
+                    <div class="perf-card">
+                        <h3>API Performance SLAs</h3>
+                        <div class="sla-metrics">
+                            <div class="metric-row">
+                                <span class="metric-name">Order Creation</span>
+                                <span class="metric-target">&lt; 200ms p95</span>
+                                <span class="metric-current">178ms</span>
+                                <span class="metric-status status-success">✅</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Product Search</span>
+                                <span class="metric-target">&lt; 100ms p95</span>
+                                <span class="metric-current">87ms</span>
+                                <span class="metric-status status-success">✅</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">User Authentication</span>
+                                <span class="metric-target">&lt; 50ms p95</span>
+                                <span class="metric-current">34ms</span>
+                                <span class="metric-status status-success">✅</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-name">Payment Processing</span>
+                                <span class="metric-target">&lt; 2s p95</span>
+                                <span class="metric-current">1.8s</span>
+                                <span class="metric-status status-success">✅</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="perf-card">
+                        <h3>Frontend Performance</h3>
+                        <div class="frontend-metrics">
+                            <h4>Core Web Vitals</h4>
+                            <div class="vitals-grid">
+                                <div class="vital-item">
+                                    <div class="vital-name">LCP</div>
+                                    <div class="vital-value">1.2s</div>
+                                    <div class="vital-target">(&lt; 2.5s)</div>
+                                </div>
+                                <div class="vital-item">
+                                    <div class="vital-name">FID</div>
+                                    <div class="vital-value">45ms</div>
+                                    <div class="vital-target">(&lt; 100ms)</div>
+                                </div>
+                                <div class="vital-item">
+                                    <div class="vital-name">CLS</div>
+                                    <div class="vital-value">0.08</div>
+                                    <div class="vital-target">(&lt; 0.1)</div>
+                                </div>
+                            </div>
+                            
+                            <h4>Optimization Techniques</h4>
+                            <ul>
+                                <li>Code splitting at route level</li>
+                                <li>Image optimization with Next.js</li>
+                                <li>API response caching (5min TTL)</li>
+                                <li>CDN for static assets</li>
+                                <li>Lazy loading for non-critical components</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="perf-card">
+                        <h3>Monitoring & Alerting</h3>
+                        <div class="monitoring-tools">
+                            <h4>Application Monitoring</h4>
+                            <ul>
+                                <li><strong>APM:</strong> New Relic</li>
+                                <li><strong>Logs:</strong> Datadog</li>
+                                <li><strong>Metrics:</strong> Prometheus + Grafana</li>
+                                <li><strong>Uptime:</strong> Pingdom</li>
+                            </ul>
+                            
+                            <h4>Alert Thresholds</h4>
+                            <ul>
+                                <li>Error rate > 1% (5min window)</li>
+                                <li>Response time > 500ms p95</li>
+                                <li>Memory usage > 80%</li>
+                                <li>CPU usage > 70% (sustained)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Documentation & Resources -->
+            <div class="resources-section">
+                <h2>📚 Documentation & Resources</h2>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <h3>📖 Technical Documentation</h3>
+                        <ul>
+                            <li><a href="/docs/api">API Documentation</a></li>
+                            <li><a href="/docs/architecture">Architecture Decision Records</a></li>
+                            <li><a href="/docs/runbooks">Operational Runbooks</a></li>
+                            <li><a href="/docs/troubleshooting">Troubleshooting Guides</a></li>
+                        </ul>
+                    </div>
+                    <div class="resource-card">
+                        <h3>🔗 Quick Links</h3>
+                        <ul>
+                            <li><a href="https://github.com/company/digital-commerce-platform">Main Repository</a></li>
+                            <li><a href="https://commerce-staging.company.com">Staging Environment</a></li>
+                            <li><a href="https://grafana.company.com/commerce">Monitoring Dashboard</a></li>
+                            <li><a href="https://company.slack.com/channels/eng-commerce">Slack Channel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .engineering-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+            border-radius: 8px;
+            color: white;
+        }
+        
+        .header-icon {
+            font-size: 3rem;
+            flex-shrink: 0;
+        }
+        
+        .header-content h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+        
+        .environment-status {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .env-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .env-prod { background: var(--confluence-success); }
+        .env-staging { background: var(--confluence-warning); color: #2d3436; }
+        .env-dev { background: var(--confluence-info); }
+        
+        .quick-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-item {
+            padding: 0.75rem 1rem;
+            background: var(--confluence-bg-card);
+            border: 1px solid var(--confluence-border);
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--confluence-text);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            background: var(--confluence-primary);
+            color: white;
+        }
+        
+        .architecture-section, .implementation-section, .apis-section,
+        .quality-section, .security-section, .performance-section {
+            margin: 3rem 0;
+            scroll-margin-top: 2rem;
+        }
+        
+        .arch-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .arch-layer {
+            padding: 1.5rem;
+            background: var(--confluence-bg-card);
+            border: 1px solid var(--confluence-border);
+            border-radius: 8px;
+            border-left: 4px solid var(--confluence-primary);
+        }
+        
+        .arch-layer h3 {
+            margin: 0 0 1rem 0;
+            color: var(--confluence-text);
+            font-size: 1.1rem;
+        }
+        
+        .tech-stack {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .tech-tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--confluence-primary);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .pipeline-grid, .guidance-grid, .dependency-grid, .api-grid,
+        .standards-grid, .testing-grid, .security-grid, .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .pipeline-card, .guidance-card, .dependency-card, .api-card,
+        .standard-card, .test-card, .security-card, .perf-card {
+            background: var(--confluence-bg-card);
+            border: 1px solid var(--confluence-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .code-example pre, .schema-example pre, .pattern-item pre {
+            background: #f8f9fa;
+            border: 1px solid var(--confluence-border);
+            border-radius: 4px;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            margin: 0.5rem 0;
+        }
+        
+        .workflow-steps {
+            padding-left: 1.5rem;
+        }
+        
+        .workflow-steps li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        
+        .http-method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: var(--confluence-success);
+            color: white;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
+        .http-method.get {
+            background: var(--confluence-info);
+        }
+        
+        .status-201 { color: var(--confluence-success); font-weight: 600; }
+        .status-400, .status-402, .status-409 { color: var(--confluence-danger); font-weight: 600; }
+        
+        .sla-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .metric-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--confluence-border-subtle);
+            border-radius: 4px;
+        }
+        
+        .metric-name { font-weight: 500; }
+        .metric-target { color: var(--confluence-text-subtle); font-size: 0.875rem; }
+        .metric-current { font-weight: 600; }
+        .status-success { color: var(--confluence-success); }
+        
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .vital-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--confluence-border-subtle);
+            border-radius: 6px;
+        }
+        
+        .vital-name {
+            font-weight: 600;
+            color: var(--confluence-text);
+        }
+        
+        .vital-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--confluence-success);
+            margin: 0.5rem 0;
+        }
+        
+        .vital-target {
+            font-size: 0.75rem;
+            color: var(--confluence-text-subtle);
+        }
+        
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .resource-card {
+            background: var(--confluence-bg-card);
+            border: 1px solid var(--confluence-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .resource-card ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+        
+        .resource-card li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .resource-card a {
+            color: var(--confluence-primary);
+            text-decoration: none;
+        }
+        
+        .resource-card a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .engineering-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .quick-nav {
+                justify-content: center;
+            }
+            
+            .arch-diagram {
+                gap: 0.5rem;
+            }
+            
+            .pipeline-grid, .guidance-grid, .dependency-grid, .api-grid,
+            .standards-grid, .testing-grid, .security-grid, .performance-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metric-row {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            
+            .vitals-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

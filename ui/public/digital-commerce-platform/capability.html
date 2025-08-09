@@ -25,10 +25,13 @@
                     <span class="role-indicator role-master">Master</span>
                     <p>Core customer-facing interface providing browsing, search, personalization, and shopping cart functionality.</p>
                 </div>
-                <div class="capability-card">
+                <div class="capability-card clickable-card" onclick="navigateToCapabilityDetail('order-management')">
                     <h3>Order Management</h3>
                     <span class="role-indicator role-master">Master</span>
                     <p>Captures and manages customer orders, payment processing, and order status tracking from placement to fulfillment.</p>
+                    <div class="capability-actions">
+                        <button class="drill-down-btn">View Details →</button>
+                    </div>
                 </div>
                 <div class="capability-card">
                     <h3>Inventory Visibility</h3>
@@ -102,5 +105,46 @@
             </ul>
         </div>
     </div>
+
+    <style>
+        .clickable-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .clickable-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 82, 204, 0.15);
+        }
+        
+        .capability-actions {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--confluence-border);
+        }
+        
+        .drill-down-btn {
+            background: var(--confluence-primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .drill-down-btn:hover {
+            background: var(--confluence-primary-hover);
+        }
+    </style>
+
+    <script>
+        function navigateToCapabilityDetail(capabilityId) {
+            window.location.href = `/digital-commerce-platform/capability-detail/${capabilityId}`;
+        }
+    </script>
 </body>
 </html>
