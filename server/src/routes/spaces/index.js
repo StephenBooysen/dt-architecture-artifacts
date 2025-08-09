@@ -20,6 +20,12 @@ const EventEmitter = require('events');
 const multer = require('multer');
 const createFilingService = require('../../services/filing/index.js');
 const userStorage = require('../../auth/userStorage');
+const {
+  cacheFirstContent,
+  cacheFirstTree,
+  cacheFirstTemplates,
+  invalidateCacheOnWrite
+} = require('../../../middleware/personalSpaceCache');
 
 const router = express.Router();
 
@@ -351,7 +357,7 @@ const upload = multer({
 });
 
 // Get files tree for a specific space
-router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
+router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), cacheFirstTree(), async (req, res) => {
   try {
     const filing = req.filing;
     const spaceConfig = req.spaceConfig;
@@ -365,7 +371,7 @@ router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), async 
 });
 
 // Get templates for a space
-router.get('/:space/templates', loadFilingProvider, checkSpaceAccess('read'), async (req, res) => {
+router.get('/:space/templates', loadFilingProvider, checkSpaceAccess('read'), cacheFirstTemplates(), async (req, res) => {
   try {
     const filing = req.filing;
     const spaceConfig = req.spaceConfig;
@@ -413,7 +419,7 @@ router.get('/:space/templates', loadFilingProvider, checkSpaceAccess('read'), as
 });
 
 // Create template in a space
-router.post('/:space/templates', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
+router.post('/:space/templates', loadFilingProvider, checkSpaceAccess('write'), invalidateCacheOnWrite(), async (req, res) => {
   try {
     const filing = req.filing;
     const { name, content } = req.body;
@@ -432,7 +438,7 @@ router.post('/:space/templates', loadFilingProvider, checkSpaceAccess('write'), 
 });
 
 // File upload endpoint for a specific space
-router.post('/:space/upload', loadFilingProvider, checkSpaceAccess('write'), upload.single('file'), async (req, res) => {
+router.post('/:space/upload', loadFilingProvider, checkSpaceAccess('write'), invalidateCacheOnWrite(), upload.single('file'), async (req, res) => {
   try {
     const filing = req.filing;
     const spaceConfig = req.spaceConfig;
@@ -475,6 +481,87 @@ router.post('/:space/upload', loadFilingProvider, checkSpaceAccess('write'), upl
   } catch (error) {
     console.error('Error uploading file to space:', error);
     res.status(500).json({ error: 'Failed to upload file' });
+  }
+});
+
+// Get file content for a specific space
+router.get('/:space/content/*', loadFilingProvider, checkSpaceAccess('read'), cacheFirstContent(), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const filePath = req.params[0] || '';
+    
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+
+    // Use space-aware file path
+    const fullSpacePath = getSpaceFilePath(filePath, isReadonly);
+    const fileName = path.basename(filePath);
+    
+    console.log(`Get content from space ${req.params.space}:`, {
+      filePath,
+      fullSpacePath,
+      isReadonly
+    });
+    
+    // Get file stats
+    const stats = await filing.stat(fullSpacePath);
+    
+    // Determine file type and handle accordingly
+    const fileType = detectFileType(fileName);
+    
+    if (fileType === 'markdown' || fileType === 'text') {
+      // Read as text
+      const content = await filing.read(fullSpacePath, 'utf8');
+      
+      // For markdown files, return both full content and clean content
+      if (fileType === 'markdown') {
+        // Note: You may want to integrate comment parsing here if available
+        res.json({
+          content,
+          cleanContent: content, // Would need comment parser integration
+          path: filePath,
+          fileType,
+          size: stats.size,
+          mtime: stats.mtime,
+          hasComments: false
+        });
+      } else {
+        res.json({
+          content,
+          path: filePath,
+          fileType,
+          size: stats.size,
+          mtime: stats.mtime
+        });
+      }
+    } else if (fileType === 'image' || fileType === 'pdf') {
+      // Read as binary and convert to base64
+      const buffer = await filing.read(fullSpacePath);
+      const base64Content = buffer.toString('base64');
+      res.json({
+        content: base64Content,
+        path: filePath,
+        fileType,
+        encoding: 'base64',
+        size: stats.size,
+        mtime: stats.mtime
+      });
+    } else {
+      // Unknown file type - return file info for download
+      res.json({
+        path: filePath,
+        fileType,
+        size: stats.size,
+        mtime: stats.mtime,
+        downloadable: true
+      });
+    }
+  } catch (error) {
+    console.error('Error getting file content from space:', error);
+    res.status(404).json({ error: 'File not found' });
   }
 });
 
@@ -543,6 +630,75 @@ router.get('/:space/download/*', loadFilingProvider, checkSpaceAccess('read'), a
   } catch (error) {
     console.error('Error downloading file from space:', error);
     res.status(404).json({ error: 'File not found' });
+  }
+});
+
+
+// Update file content in a space (alternative content API)
+router.put('/:space/content/*', loadFilingProvider, checkSpaceAccess('write'), invalidateCacheOnWrite(), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const filePath = req.params[0] || '';
+    const { content } = req.body;
+    
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+    
+    // Use space-aware file path
+    const fullSpacePath = getSpaceFilePath(filePath, isReadonly);
+    
+    // Ensure directory exists
+    const dirPath = path.dirname(fullSpacePath);
+    if (dirPath && dirPath !== '.' && dirPath !== '/') {
+      await filing.mkdir(dirPath, { recursive: true });
+    }
+    
+    // Handle both text content and base64 data URLs for binary files
+    let fileContent = content;
+    if (typeof content === 'string' && content.startsWith('data:')) {
+      const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
+      if (base64Match) {
+        fileContent = Buffer.from(base64Match[1], 'base64');
+      }
+    }
+    
+    await filing.update(fullSpacePath, fileContent);
+    res.json({ message: 'File updated successfully', path: filePath });
+  } catch (error) {
+    console.error('Error updating file in space:', error);
+    res.status(500).json({ error: 'Failed to update file' });
+  }
+});
+
+// Delete file in a space
+router.delete('/:space/content/*', loadFilingProvider, checkSpaceAccess('write'), invalidateCacheOnWrite(), async (req, res) => {
+  try {
+    const filing = req.filing;
+    const spaceConfig = req.spaceConfig;
+    const isReadonly = spaceConfig.access === 'readonly';
+    const filePath = req.params[0] || '';
+    
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+    
+    // Use space-aware file path
+    const fullSpacePath = getSpaceFilePath(filePath, isReadonly);
+    
+    const stats = await filing.stat(fullSpacePath);
+    if (stats.isDirectory) {
+      await filing.delete(fullSpacePath);
+      res.json({ message: 'Folder deleted successfully', path: filePath });
+    } else {
+      await filing.delete(fullSpacePath);
+      res.json({ message: 'File deleted successfully', path: filePath });
+    }
+  } catch (error) {
+    console.error('Error deleting file/folder in space:', error);
+    res.status(500).json({ error: 'Failed to delete file/folder' });
   }
 });
 

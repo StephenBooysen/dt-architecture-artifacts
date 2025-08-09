@@ -21,6 +21,7 @@ const authRoutes = require('./auth');
 const userRoutes = require('./users');
 const apiKeyRoutes = require('./api-keys');
 const { router: spacesRoutes, loadFilingProvider, checkSpaceAccess } = require('./spaces');
+const { invalidateCacheOnWrite } = require('../../middleware/personalSpaceCache');
 const folderRoutes = require('./folders');
 const fileRoutes = require('./files');
 const serverRoutes = require('./server');
@@ -243,7 +244,7 @@ router.post('/:space/files', loadFilingProvider, checkSpaceAccess('write'), asyn
 });
 
 // Create file in a space (with filePath in URL path)
-router.post('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
+router.post('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), invalidateCacheOnWrite(), async (req, res) => {
   try {
     const filing = req.filing;
     const spaceConfig = req.spaceConfig;
@@ -252,7 +253,22 @@ router.post('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), as
     const isReadonly = spaceConfig.access === 'readonly';
     const actualFilePath = getSpaceFilePath(filePath, isReadonly);
     
-    await filing.create(actualFilePath, content || '');
+    // Ensure directory exists
+    const dirPath = path.dirname(actualFilePath);
+    if (dirPath && dirPath !== '.' && dirPath !== '/') {
+      await filing.mkdir(dirPath, { recursive: true });
+    }
+    
+    // Handle both text content and base64 data URLs for binary files
+    let fileContent = content || '';
+    if (typeof content === 'string' && content.startsWith('data:')) {
+      const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
+      if (base64Match) {
+        fileContent = Buffer.from(base64Match[1], 'base64');
+      }
+    }
+    
+    await filing.create(actualFilePath, fileContent);
     res.json({ message: 'File created successfully', path: filePath });
   } catch (error) {
     console.error('Error creating file for space:', error);
@@ -299,7 +315,7 @@ router.put('/:space/files', loadFilingProvider, checkSpaceAccess('write'), async
 });
 
 // Update file in a space (with filePath in URL path)
-router.put('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
+router.put('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), invalidateCacheOnWrite(), async (req, res) => {
   try {
     const filing = req.filing;
     const spaceConfig = req.spaceConfig;
@@ -308,7 +324,22 @@ router.put('/:space/files/*', loadFilingProvider, checkSpaceAccess('write'), asy
     const isReadonly = spaceConfig.access === 'readonly';
     const actualFilePath = getSpaceFilePath(filePath, isReadonly);
     
-    await filing.update(actualFilePath, content);
+    // Ensure directory exists
+    const dirPath = path.dirname(actualFilePath);
+    if (dirPath && dirPath !== '.' && dirPath !== '/') {
+      await filing.mkdir(dirPath, { recursive: true });
+    }
+    
+    // Handle both text content and base64 data URLs for binary files
+    let fileContent = content || '';
+    if (typeof content === 'string' && content.startsWith('data:')) {
+      const base64Match = content.match(/^data:[^;]+;base64,(.+)$/);
+      if (base64Match) {
+        fileContent = Buffer.from(base64Match[1], 'base64');
+      }
+    }
+    
+    await filing.update(actualFilePath, fileContent);
     res.json({ message: 'File updated successfully', path: filePath });
   } catch (error) {
     console.error('Error updating file for space:', error);

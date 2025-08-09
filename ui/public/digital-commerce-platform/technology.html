@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Commerce Platform - Technology View</title>
     <link rel="stylesheet" href="/styles/unified-solution.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
 </head>
 <body data-theme="technology">
     <div class="viewpoint-container">
@@ -264,28 +265,179 @@
                 </div>
             </div>
 
+            <div class="vendors-section">
+                <h3>Key Vendors</h3>
+                <p style="color: #666; margin-bottom: 25px;">Strategic technology partners and vendors critical to the Digital Commerce Platform operation and success.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #dc3545;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #dc3545; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 14px;">AWS</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Amazon Web Services</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">Cloud Infrastructure</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Primary cloud platform providing compute, storage, networking, and managed services including EKS, RDS, ElastiCache, and S3.</p>
+                        <div style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">MISSION CRITICAL</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #dc3545;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #dc3545; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 12px;">💳</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Stripe</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">Payment Processing</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Primary payment gateway handling all credit card transactions, subscription billing, and marketplace payments with PCI DSS compliance.</p>
+                        <div style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">MISSION CRITICAL</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #fd7e14;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #fd7e14; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 12px;">🛍️</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Shopify Plus</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">E-commerce Platform</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Enterprise e-commerce platform providing storefront capabilities, inventory management, and multi-channel commerce features.</p>
+                        <div style="background: #fd7e14; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">HIGH IMPACT</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #fd7e14;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #fd7e14; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 12px;">📧</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Twilio SendGrid</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">Email & Communications</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Email delivery service for transactional emails, marketing campaigns, and customer notifications with deliverability optimization.</p>
+                        <div style="background: #fd7e14; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">HIGH IMPACT</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #fd7e14;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #fd7e14; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 12px;">🛡️</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Cloudflare</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">CDN & Security</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Global content delivery network, DDoS protection, Web Application Firewall, and DNS services for performance and security.</p>
+                        <div style="background: #fd7e14; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">HIGH IMPACT</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #fd7e14;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #fd7e14; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 12px;">🔐</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Okta</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">Identity & Access Mgmt</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Enterprise identity provider for single sign-on, multi-factor authentication, and user directory services across applications.</p>
+                        <div style="background: #fd7e14; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">HIGH IMPACT</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #6f42c1;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #6f42c1; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 12px;">📊</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Datadog</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">Monitoring & Observability</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">Application performance monitoring, infrastructure monitoring, log aggregation, and real-time dashboards for system health visibility.</p>
+                        <div style="background: #6f42c1; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">MEDIUM IMPACT</div>
+                    </div>
+
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #6f42c1;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #6f42c1; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 11px;">SFDC</div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #2c3e50;">Salesforce Commerce</h4>
+                                <div style="font-size: 12px; color: #666; font-weight: 500;">B2B Commerce</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 13px; color: #555; margin: 0 0 12px 0; line-height: 1.4;">B2B e-commerce capabilities including account-based pricing, bulk ordering, and integration with Salesforce CRM ecosystem.</p>
+                        <div style="background: #6f42c1; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;">MEDIUM IMPACT</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="modernization-section">
-                <h4 style="color: #856404; margin: 0 0 15px 0;">Technology Modernization Roadmap</h4>
-                <div class="modernization-grid">
-                    <div class="modernization-item">
-                        <h4>Legacy jQuery Removal</h4>
-                        <p><strong>Target Q1 2024:</strong> Complete migration from jQuery 3.6.0 to pure modern JavaScript and React components.</p>
+                <h3>Technology Modernization Roadmap</h3>
+                <p style="color: #666; margin-bottom: 25px;">Strategic technology upgrades and modernization initiatives planned for 2024-2025.</p>
+                
+                <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 25px; overflow-x: auto;">
+                    <div style="min-width: 800px;">
+                        <pre class="mermaid">
+gantt
+    title Technology Modernization Roadmap 2024
+    dateFormat YYYY-MM-DD
+    axisFormat %m/%d
+    
+    section Frontend Modernization
+    jQuery Assessment    :done, assess, 2024-01-01, 2024-01-31
+    React Migration      :active, migrate, 2024-02-01, 2024-04-30
+    Testing              :testing, 2024-05-01, 2024-05-31
+    
+    section Database Infrastructure  
+    Planning             :done, db-plan, 2024-03-01, 2024-03-31
+    Migration            :crit, db-migrate, 2024-04-01, 2024-06-30
+    Optimization         :db-opt, 2024-07-01, 2024-07-31
+    
+    section Observability Stack
+    Tool Evaluation      :obs-eval, 2024-06-01, 2024-06-30
+    Prometheus Setup     :prom, 2024-07-01, 2024-08-31
+    Grafana & Jaeger     :graf, 2024-09-01, 2024-10-31
+    
+    section CI/CD Pipeline
+    GitHub Actions       :cicd, 2024-10-01, 2024-12-31
+                        </pre>
                     </div>
-                    <div class="modernization-item">
-                        <h4>Database Upgrade</h4>
-                        <p><strong>Target Q2 2024:</strong> Upgrade PostgreSQL from 13.7 to 15.4 for improved performance and security features.</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <h4 style="color: #155724; margin: 0 0 10px 0;">Completed Initiatives</h4>
+                        <ul style="color: #155724; margin: 0; padding-left: 20px;">
+                            <li>Legacy code assessment and migration planning</li>
+                            <li>Database upgrade feasibility study</li>
+                            <li>Tool evaluation for monitoring stack</li>
+                        </ul>
                     </div>
-                    <div class="modernization-item">
-                        <h4>Monitoring Stack</h4>
-                        <p><strong>Target Q3 2024:</strong> Implement Prometheus + Grafana + Jaeger for comprehensive observability.</p>
-                    </div>
-                    <div class="modernization-item">
-                        <h4>CI/CD Enhancement</h4>
-                        <p><strong>Target Q4 2024:</strong> Migrate from Jenkins to GitHub Actions for improved developer experience.</p>
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                        <h4 style="color: #856404; margin: 0 0 10px 0;">In Progress</h4>
+                        <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                            <li>React component migration (75% complete)</li>
+                            <li>Database migration planning phase</li>
+                            <li>Security vulnerability scanning implementation</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            gantt: {
+                fontSize: 12,
+                fontFamily: 'Arial, sans-serif',
+                sectionFontSize: 14,
+                numberSectionStyles: 4,
+                axisFormat: '%m/%d',
+                gridLineStartPadding: 350,
+                bottomPadding: 25,
+                rightPadding: 75
+            }
+        });
+    </script>
 </body>
 </html>
