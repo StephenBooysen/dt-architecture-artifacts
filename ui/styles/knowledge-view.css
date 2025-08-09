@@ -34,13 +34,14 @@ html, body {
     color: var(--kv-text);
     font-size: 14px;
     line-height: 1.5;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Main App Layout */
 .app-container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
 }
 
@@ -217,18 +218,15 @@ html, body {
     flex: 1;
     margin-left: var(--kv-sidebar-width);
     margin-top: var(--kv-header-height);
-    height: calc(100vh - var(--kv-header-height));
+    min-height: calc(100vh - var(--kv-header-height));
     background: var(--kv-bg-content);
-    overflow: hidden;
 }
 
 .content-container {
     width: 100%;
-    height: 100%;
     margin: 0;
     padding: 40px 32px;
     background: var(--kv-bg-content);
-    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -303,7 +301,6 @@ html, body {
 .tab-content {
     display: none;
     width: 100%;
-    height: calc(100vh - var(--kv-header-height) - 200px);
 }
 
 .tab-content.active {
@@ -312,7 +309,7 @@ html, body {
 
 .tab-content iframe {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - var(--kv-header-height) - 140px);
     border: none;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -498,14 +495,12 @@ html, body {
     .app-main {
         margin-left: 0;
         margin-top: var(--kv-header-height);
-        height: calc(100vh - var(--kv-header-height));
+        min-height: calc(100vh - var(--kv-header-height));
     }
     
     .content-container {
         padding: 24px 16px;
         width: 100%;
-        height: 100%;
-        overflow-y: auto;
     }
     
     .cards-grid {

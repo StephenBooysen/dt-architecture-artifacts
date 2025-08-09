@@ -9,19 +9,6 @@
 <body data-theme="engineering">
     <div class="viewpoint-container">
         <div class="viewpoint-content">
-            <!-- Engineering Dashboard Header -->
-            <div class="engineering-header">
-                <div class="header-icon">⚙️</div>
-                <div class="header-content">
-                    <h1>Engineering Dashboard</h1>
-                    <p class="header-subtitle">Digital Commerce Platform - Technical Implementation Guide</p>
-                    <div class="environment-status">
-                        <span class="env-badge env-prod">Production: Stable</span>
-                        <span class="env-badge env-staging">Staging: Available</span>
-                        <span class="env-badge env-dev">Development: Active</span>
-                    </div>
-                </div>
-            </div>
 
             <!-- Quick Navigation -->
             <div class="quick-nav">
@@ -580,50 +567,6 @@ const CreateOrderSchema = z.object({
     </div>
 
     <style>
-        .engineering-header {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 2rem;
-            background: linear-gradient(135deg, #2d3748, #4a5568);
-            border-radius: 8px;
-            color: white;
-        }
-        
-        .header-icon {
-            font-size: 3rem;
-            flex-shrink: 0;
-        }
-        
-        .header-content h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 2rem;
-            font-weight: 700;
-        }
-        
-        .header-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 1rem;
-        }
-        
-        .environment-status {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-        
-        .env-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .env-prod { background: var(--confluence-success); }
-        .env-staging { background: var(--confluence-warning); color: #2d3436; }
-        .env-dev { background: var(--confluence-info); }
         
         .quick-nav {
             display: flex;
@@ -831,11 +774,6 @@ const CreateOrderSchema = z.object({
         }
         
         @media (max-width: 768px) {
-            .engineering-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
             .quick-nav {
                 justify-content: center;
             }
