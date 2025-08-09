@@ -3,378 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Platform - Context View</title>
-    <link rel="stylesheet" href="/styles/viewpoint.css">
+    <title>Digital Commerce Platform - Context View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
 </head>
-<body>
+<body data-theme="context">
     <div class="viewpoint-container">
-    <div class="header">
-        <h1>Marketing Platform</h1>
-        <p>Context Architecture View - System Integrations & External Touchpoints</p>
-    </div>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                This view shows the Digital Commerce Platform's integration landscape, including connected systems, communication interfaces, middleware components, and integration patterns used for system-to-system communication.
+            </p>
 
-    <div class="container">
-        <div class="integration-grid">
-            <div class="integration-card">
-                <div class="card-header">
-                    <div class="card-icon">📥</div>
-                    <div>
-                        <div class="card-title">Inbound Integrations</div>
-                        <div class="card-subtitle">Data Sources & Customer Information</div>
-                    </div>
+            <div class="context-diagram">
+                <h3>System Context Overview</h3>
+                <div class="platform-center">
+                    Digital Commerce Platform
                 </div>
-                <div class="integration-list">
-                    <div class="integration-item">
-                        <div class="connection-type type-inbound">INBOUND</div>
-                        <div class="item-title">Customer Data Platform (CDP)</div>
-                        <div class="item-desc">Unified customer profiles, behavioral data, segmentation, and journey tracking for personalized campaigns</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-inbound">INBOUND</div>
-                        <div class="item-title">CRM System Integration</div>
-                        <div class="item-desc">Lead data, contact information, sales pipeline status, and account relationship management</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-inbound">INBOUND</div>
-                        <div class="item-title">Web Analytics Platform</div>
-                        <div class="item-desc">Website behavior, conversion tracking, user journey analytics, and engagement metrics</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-inbound">INBOUND</div>
-                        <div class="item-title">Social Media Platforms</div>
-                        <div class="item-desc">Social engagement data, brand mentions, influencer content, and viral marketing metrics</div>
-                    </div>
+                <p style="color: #7f8c8d; margin-top: 20px;">Central hub connecting customer-facing channels with backend enterprise systems</p>
+            </div>
+
+            <h3>Connected Systems & Interfaces</h3>
+            <div class="connections-grid">
+                <div class="connection-card">
+                    <h3>
+                        Product Information Management (PIM)
+                        <span class="connection-type type-inbound">Inbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Master product data, catalog information, and content management</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Product Catalog Sync</span>
+                            <span class="interface-tag">REST API</span>
+                        </li>
+                        <li>
+                            <span>Product Images & Media</span>
+                            <span class="interface-tag">CDN/S3</span>
+                        </li>
+                        <li>
+                            <span>Pricing Updates</span>
+                            <span class="interface-tag">Webhook</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="data-flow-metrics">
-                    <div class="flow-metric">
-                        <div class="metric-value">50M</div>
-                        <div class="metric-label">Customer Profiles</div>
+
+                <div class="connection-card">
+                    <h3>
+                        Warehouse Management System (WMS)
+                        <span class="connection-type type-bidirectional">Bidirectional</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Real-time inventory levels and order fulfillment processing</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Inventory Levels</span>
+                            <span class="interface-tag">Message Queue</span>
+                        </li>
+                        <li>
+                            <span>Order Fulfillment</span>
+                            <span class="interface-tag">API Gateway</span>
+                        </li>
+                        <li>
+                            <span>Shipment Tracking</span>
+                            <span class="interface-tag">Event Stream</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="connection-card">
+                    <h3>
+                        Customer Relationship Management (CRM)
+                        <span class="connection-type type-bidirectional">Bidirectional</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Customer profiles, preferences, and service interactions</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Customer Profiles</span>
+                            <span class="interface-tag">GraphQL</span>
+                        </li>
+                        <li>
+                            <span>Order History</span>
+                            <span class="interface-tag">REST API</span>
+                        </li>
+                        <li>
+                            <span>Support Tickets</span>
+                            <span class="interface-tag">Webhook</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="connection-card">
+                    <h3>
+                        Payment Gateway Services
+                        <span class="connection-type type-outbound">Outbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Secure payment processing and transaction management</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Payment Processing</span>
+                            <span class="interface-tag">HTTPS API</span>
+                        </li>
+                        <li>
+                            <span>Payment Validation</span>
+                            <span class="interface-tag">OAuth 2.0</span>
+                        </li>
+                        <li>
+                            <span>Fraud Detection</span>
+                            <span class="interface-tag">Real-time API</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="connection-card">
+                    <h3>
+                        Analytics & Business Intelligence
+                        <span class="connection-type type-outbound">Outbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Customer behavior data and business metrics streaming</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Customer Events</span>
+                            <span class="interface-tag">Event Stream</span>
+                        </li>
+                        <li>
+                            <span>Sales Data</span>
+                            <span class="interface-tag">Data Pipeline</span>
+                        </li>
+                        <li>
+                            <span>Performance Metrics</span>
+                            <span class="interface-tag">Time Series</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="connection-card">
+                    <h3>
+                        Email & Marketing Automation
+                        <span class="connection-type type-outbound">Outbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Transactional emails and marketing campaign triggers</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Order Confirmations</span>
+                            <span class="interface-tag">SMTP API</span>
+                        </li>
+                        <li>
+                            <span>Abandoned Cart</span>
+                            <span class="interface-tag">Webhook</span>
+                        </li>
+                        <li>
+                            <span>Product Recommendations</span>
+                            <span class="interface-tag">REST API</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="middleware-section">
+                <h3>Middleware & Integration Infrastructure</h3>
+                <div class="middleware-grid">
+                    <div class="middleware-card">
+                        <h4>API Gateway</h4>
+                        <p>AWS API Gateway for routing, authentication, rate limiting, and monitoring</p>
                     </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">2.3TB</div>
-                        <div class="metric-label">Monthly Data</div>
+                    <div class="middleware-card">
+                        <h4>Message Queues</h4>
+                        <p>Amazon SQS for asynchronous processing and decoupled communication</p>
                     </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">Real-time</div>
-                        <div class="metric-label">Data Sync</div>
+                    <div class="middleware-card">
+                        <h4>Event Streaming</h4>
+                        <p>Apache Kafka for real-time data streaming and event-driven architecture</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>Load Balancer</h4>
+                        <p>Application Load Balancer for high availability and traffic distribution</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>CDN</h4>
+                        <p>CloudFront for global content delivery and performance optimization</p>
+                    </div>
+                    <div class="middleware-card">
+                        <h4>Service Mesh</h4>
+                        <p>Istio for microservices communication, security, and observability</p>
                     </div>
                 </div>
             </div>
 
-            <div class="integration-card">
-                <div class="card-header">
-                    <div class="card-icon">📤</div>
-                    <div>
-                        <div class="card-title">Outbound Integrations</div>
-                        <div class="card-subtitle">Campaign Execution & Delivery Channels</div>
-                    </div>
-                </div>
-                <div class="integration-list">
-                    <div class="integration-item">
-                        <div class="connection-type type-outbound">OUTBOUND</div>
-                        <div class="item-title">Email Service Provider (SendGrid)</div>
-                        <div class="item-desc">High-volume email delivery, template management, deliverability optimization, and engagement tracking</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-outbound">OUTBOUND</div>
-                        <div class="item-title">SMS Gateway (Twilio)</div>
-                        <div class="item-desc">Multi-channel SMS campaigns, shortcode management, delivery confirmation, and opt-out handling</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-outbound">OUTBOUND</div>
-                        <div class="item-title">Advertising Platforms</div>
-                        <div class="item-desc">Paid media campaign management, audience targeting, budget optimization, and performance tracking</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-outbound">OUTBOUND</div>
-                        <div class="item-title">Website Personalization</div>
-                        <div class="item-desc">Dynamic content delivery, behavioral targeting, A/B testing, and conversion optimization</div>
-                    </div>
-                </div>
-                <div class="data-flow-metrics">
-                    <div class="flow-metric">
-                        <div class="metric-value">125M</div>
-                        <div class="metric-label">Emails/Month</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">89%</div>
-                        <div class="metric-label">Deliverability</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">15+</div>
-                        <div class="metric-label">Channels</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="integration-grid">
-            <div class="integration-card">
-                <div class="card-header">
-                    <div class="card-icon">🔄</div>
-                    <div>
-                        <div class="card-title">Bidirectional Integrations</div>
-                        <div class="card-subtitle">Two-Way Data Exchange & Synchronization</div>
-                    </div>
-                </div>
-                <div class="integration-list">
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
-                        <div class="item-title">CRM Lead Synchronization</div>
-                        <div class="item-desc">Real-time lead scoring updates, qualification status, sales attribution, and pipeline progression tracking</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
-                        <div class="item-title">Sales Attribution Tools</div>
-                        <div class="item-desc">Revenue attribution tracking, multi-touch conversion paths, deal influence scoring, and ROI measurement</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
-                        <div class="item-title">Business Intelligence Platforms</div>
-                        <div class="item-desc">Marketing performance dashboards, cross-platform analytics, KPI tracking, and executive reporting</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">BIDIRECTIONAL</div>
-                        <div class="item-title">Customer Support Systems</div>
-                        <div class="item-desc">Support ticket integration, customer satisfaction data, service interaction history, and feedback loops</div>
-                    </div>
-                </div>
-                <div class="data-flow-metrics">
-                    <div class="flow-metric">
-                        <div class="metric-value">3.2M</div>
-                        <div class="metric-label">Lead Updates</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">847%</div>
-                        <div class="metric-label">ROI Tracked</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">99.9%</div>
-                        <div class="metric-label">Sync Accuracy</div>
-                    </div>
+            <div class="integration-patterns">
+                <h3>Integration Patterns & Standards</h3>
+                <div class="pattern-list">
+                    <div class="pattern-tag">RESTful APIs</div>
+                    <div class="pattern-tag">GraphQL</div>
+                    <div class="pattern-tag">Event-Driven Architecture</div>
+                    <div class="pattern-tag">Microservices</div>
+                    <div class="pattern-tag">Circuit Breaker</div>
+                    <div class="pattern-tag">Bulkhead Pattern</div>
+                    <div class="pattern-tag">Saga Pattern</div>
+                    <div class="pattern-tag">CQRS</div>
+                    <div class="pattern-tag">API Versioning</div>
+                    <div class="pattern-tag">OAuth 2.0 / OIDC</div>
+                    <div class="pattern-tag">JSON Schema</div>
+                    <div class="pattern-tag">OpenAPI 3.0</div>
                 </div>
             </div>
 
-            <div class="integration-card">
-                <div class="card-header">
-                    <div class="card-icon">⚙️</div>
-                    <div>
-                        <div class="card-title">Middleware & Orchestration</div>
-                        <div class="card-subtitle">API Management & Event Processing</div>
-                    </div>
-                </div>
-                <div class="integration-list">
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
-                        <div class="item-title">Marketing Automation Workflows</div>
-                        <div class="item-desc">Event-driven campaign triggers, behavioral automation, drip campaigns, and journey orchestration</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
-                        <div class="item-title">API Gateway & Management</div>
-                        <div class="item-desc">RESTful API orchestration, rate limiting, security authentication, and integration monitoring</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
-                        <div class="item-title">Event Streaming Platform</div>
-                        <div class="item-desc">Real-time event processing, message queuing, data transformation, and workflow triggering</div>
-                    </div>
-                    <div class="integration-item">
-                        <div class="connection-type type-bidirectional">MIDDLEWARE</div>
-                        <div class="item-title">Data Transformation Layer</div>
-                        <div class="item-desc">ETL processes, data normalization, format conversion, and quality validation</div>
-                    </div>
-                </div>
-                <div class="data-flow-metrics">
-                    <div class="flow-metric">
-                        <div class="metric-value">47M</div>
-                        <div class="metric-label">Events/Month</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">< 100ms</div>
-                        <div class="metric-label">Response Time</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">24/7</div>
-                        <div class="metric-label">Processing</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="context-diagram">
-            <div class="diagram-title">Marketing Platform Integration Context</div>
-            <div class="diagram-container">
-                <div class="integration-section inbound">
-                    <div class="section-title">Data Sources</div>
-                    <div class="integration-node">Customer Data Platform</div>
-                    <div class="integration-node">CRM System</div>
-                    <div class="integration-node">Web Analytics</div>
-                    <div class="integration-node">Social Media</div>
-                </div>
-
-                <div class="platform-core">
-                    <div>Marketing Platform</div>
-                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">Campaign Orchestration Hub</div>
-                </div>
-
-                <div class="integration-section outbound">
-                    <div class="section-title">Delivery Channels</div>
-                    <div class="integration-node">Email (SendGrid)</div>
-                    <div class="integration-node">SMS (Twilio)</div>
-                    <div class="integration-node">Ad Platforms</div>
-                    <div class="integration-node">Web Personalization</div>
-                </div>
-
-                <div class="integration-section bidirectional">
-                    <div class="section-title">Two-Way Sync</div>
-                    <div class="integration-node">CRM Lead Sync</div>
-                    <div class="integration-node">Sales Attribution</div>
-                    <div class="integration-node">BI Platforms</div>
-                    <div class="integration-node">Support Systems</div>
-                </div>
-
-                <div class="integration-section middleware">
-                    <div class="section-title">Orchestration</div>
-                    <div class="integration-node">API Gateway</div>
-                    <div class="integration-node">Event Processing</div>
-                    <div class="integration-node">Workflow Engine</div>
-                    <div class="integration-node">Data Transform</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="api-showcase">
-            <div class="api-card">
-                <div class="api-title">Campaign Management APIs</div>
-                <ul class="api-endpoints">
-                    <li>Campaign Creation & Management</li>
-                    <li>A/B Testing Configuration</li>
-                    <li>Audience Segmentation</li>
-                    <li>Performance Analytics</li>
-                    <li>Attribution Tracking</li>
-                </ul>
-            </div>
-            <div class="api-card">
-                <div class="api-title">Customer Data APIs</div>
-                <ul class="api-endpoints">
-                    <li>Profile Data Synchronization</li>
-                    <li>Behavioral Event Ingestion</li>
-                    <li>Lead Scoring Updates</li>
-                    <li>Journey Tracking</li>
-                    <li>Consent Management</li>
-                </ul>
-            </div>
-            <div class="api-card">
-                <div class="api-title">Channel Integration APIs</div>
-                <ul class="api-endpoints">
-                    <li>Email Template Management</li>
-                    <li>SMS Campaign Execution</li>
-                    <li>Social Media Publishing</li>
-                    <li>Ad Platform Synchronization</li>
-                    <li>Website Personalization</li>
-                </ul>
-            </div>
-            <div class="api-card">
-                <div class="api-title">Analytics & Reporting APIs</div>
-                <ul class="api-endpoints">
-                    <li>Real-time Performance Metrics</li>
-                    <li>Attribution Model Results</li>
-                    <li>Campaign ROI Tracking</li>
-                    <li>Customer Journey Analytics</li>
-                    <li>Conversion Funnel Analysis</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="middleware-flows">
-            <div class="middleware-title">Integration Middleware Components</div>
-            <div class="middleware-items">
-                <div class="middleware-item">
-                    <strong>Apache Kafka</strong><br>
-                    Event streaming & message queuing
-                </div>
-                <div class="middleware-item">
-                    <strong>API Gateway</strong><br>
-                    Request routing & rate limiting
-                </div>
-                <div class="middleware-item">
-                    <strong>ETL Pipelines</strong><br>
-                    Data transformation & loading
-                </div>
-                <div class="middleware-item">
-                    <strong>Workflow Engine</strong><br>
-                    Campaign orchestration
-                </div>
-                <div class="middleware-item">
-                    <strong>Event Processor</strong><br>
-                    Real-time trigger handling
-                </div>
-                <div class="middleware-item">
-                    <strong>Data Validator</strong><br>
-                    Quality assurance & monitoring
-                </div>
-            </div>
-        </div>
-
-        <div class="integration-grid">
-            <div class="integration-card">
-                <div class="card-header">
-                    <div class="card-icon">🔧</div>
-                    <div>
-                        <div class="card-title">Integration Performance</div>
-                        <div class="card-subtitle">System Performance & Reliability Metrics</div>
-                    </div>
-                </div>
-                <div class="data-flow-metrics">
-                    <div class="flow-metric">
-                        <div class="metric-value">99.9%</div>
-                        <div class="metric-label">Integration Uptime</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">< 100ms</div>
-                        <div class="metric-label">API Response Time</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">10K+</div>
-                        <div class="metric-label">Requests/Second</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">50+</div>
-                        <div class="metric-label">Active Integrations</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="integration-card">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <div>
-                        <div class="card-title">Data Integration Volume</div>
-                        <div class="card-subtitle">Monthly Integration Traffic & Processing</div>
-                    </div>
-                </div>
-                <div class="data-flow-metrics">
-                    <div class="flow-metric">
-                        <div class="metric-value">2.3TB</div>
-                        <div class="metric-label">Data Processed</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">47M</div>
-                        <div class="metric-label">Events Handled</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">125M</div>
-                        <div class="metric-label">Messages Sent</div>
-                    </div>
-                    <div class="flow-metric">
-                        <div class="metric-value">3.2M</div>
-                        <div class="metric-label">Records Synced</div>
-                    </div>
-                </div>
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin-top: 25px;">
+                <h4 style="color: #856404; margin: 0 0 10px 0;">Integration Monitoring & Observability</h4>
+                <p style="color: #856404; margin: 0;">All integrations are monitored using distributed tracing (Jaeger), metrics collection (Prometheus), centralized logging (ELK Stack), and real-time alerting for SLA compliance and error tracking.</p>
             </div>
         </div>
     </div>
-</div>
 </body>
 </html>

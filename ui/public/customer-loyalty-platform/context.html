@@ -3,252 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Loyalty Platform - Context View</title>
-    <link rel="stylesheet" href="/styles/viewpoint.css">
+    <title>Digital Commerce Platform - Context View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
 </head>
-<body>
+<body data-theme="context">
     <div class="viewpoint-container">
-    <div class="viewpoint-container">
-        <div class="viewpoint-header">
-            <h2>System Integration Context</h2>
-        </div>
         <div class="viewpoint-content">
-            <div class="summary-text">
-                The Customer Loyalty Platform operates within a complex ecosystem of enterprise systems, managing data flows and integrations across customer touchpoints, operational systems, and partner networks. The platform serves as a central hub for loyalty data while maintaining real-time synchronization with 18+ integrated systems.
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                This view shows the Digital Commerce Platform's integration landscape, including connected systems, communication interfaces, middleware components, and integration patterns used for system-to-system communication.
+            </p>
+
+            <div class="context-diagram">
+                <h3>System Context Overview</h3>
+                <div class="platform-center">
+                    Digital Commerce Platform
+                </div>
+                <p style="color: #7f8c8d; margin-top: 20px;">Central hub connecting customer-facing channels with backend enterprise systems</p>
             </div>
 
-            <div class="integration-stats">
-                <h3>Integration Overview</h3>
-                <div class="stats-grid">
-                    <div class="stats-card">
-                        <div class="stats-value">18+</div>
-                        <div class="stats-label">Active Integrations</div>
-                    </div>
-                    <div class="stats-card">
-                        <div class="stats-value">847M</div>
-                        <div class="stats-label">Monthly API Calls</div>
-                    </div>
-                    <div class="stats-card">
-                        <div class="stats-value">99.95%</div>
-                        <div class="stats-label">Integration Uptime</div>
-                    </div>
-                    <div class="stats-card">
-                        <div class="stats-value">2.4M</div>
-                        <div class="stats-label">Daily Events</div>
-                    </div>
-                    <div class="stats-card">
-                        <div class="stats-value">14ms</div>
-                        <div class="stats-label">Avg Response Time</div>
-                    </div>
-                    <div class="stats-card">
-                        <div class="stats-value">24/7</div>
-                        <div class="stats-label">Monitoring</div>
-                    </div>
+            <h3>Connected Systems & Interfaces</h3>
+            <div class="connections-grid">
+                <div class="connection-card">
+                    <h3>
+                        Product Information Management (PIM)
+                        <span class="connection-type type-inbound">Inbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Master product data, catalog information, and content management</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Product Catalog Sync</span>
+                            <span class="interface-tag">REST API</span>
+                        </li>
+                        <li>
+                            <span>Product Images & Media</span>
+                            <span class="interface-tag">CDN/S3</span>
+                        </li>
+                        <li>
+                            <span>Pricing Updates</span>
+                            <span class="interface-tag">Webhook</span>
+                        </li>
+                    </ul>
                 </div>
-            </div>
 
-            <div class="integration-section">
-                <div class="integration-header">
-                    <h3>Inbound Integrations</h3>
-                    <p>Systems that provide data and events to the Customer Loyalty Platform</p>
+                <div class="connection-card">
+                    <h3>
+                        Warehouse Management System (WMS)
+                        <span class="connection-type type-bidirectional">Bidirectional</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Real-time inventory levels and order fulfillment processing</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Inventory Levels</span>
+                            <span class="interface-tag">Message Queue</span>
+                        </li>
+                        <li>
+                            <span>Order Fulfillment</span>
+                            <span class="interface-tag">API Gateway</span>
+                        </li>
+                        <li>
+                            <span>Shipment Tracking</span>
+                            <span class="interface-tag">Event Stream</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="integration-grid">
-                    <div class="integration-card">
-                        <h4>CRM System (Salesforce)</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Customer profiles, preferences, contact information, and demographic data synchronized in real-time via REST APIs.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Enables personalized offers and tier-based communications based on complete customer view.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 2.8M customer profiles • 150K daily updates • 99.9% sync success rate
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>POS Systems (Multiple)</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Transaction data, purchase details, store locations, and payment methods streamed via event messaging.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Real-time points earning, tier progression tracking, and purchase behavior analysis.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 1.2M daily transactions • 3,400 store locations • <500ms processing time
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>eCommerce Platform (Magento)</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Online purchases, cart abandonment events, product interactions, and digital engagement metrics.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Omnichannel points earning, personalized product recommendations, and digital engagement tracking.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 450K monthly online transactions • 89% cart recovery rate • Real-time sync
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Mobile Applications</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> App usage patterns, location data, push notification interactions, and in-app behavior events.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Mobile engagement scoring, location-based offers, and app-specific loyalty features.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 2.1M monthly active users • 78% mobile transaction volume • 340K daily app sessions
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="integration-section">
-                <div class="integration-header">
-                    <h3>Outbound Integrations</h3>
-                    <p>Systems that consume data and insights from the Customer Loyalty Platform</p>
+                <div class="connection-card">
+                    <h3>
+                        Customer Relationship Management (CRM)
+                        <span class="connection-type type-bidirectional">Bidirectional</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Customer profiles, preferences, and service interactions</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Customer Profiles</span>
+                            <span class="interface-tag">GraphQL</span>
+                        </li>
+                        <li>
+                            <span>Order History</span>
+                            <span class="interface-tag">REST API</span>
+                        </li>
+                        <li>
+                            <span>Support Tickets</span>
+                            <span class="interface-tag">Webhook</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="integration-grid">
-                    <div class="integration-card">
-                        <h4>Marketing Platform (Adobe Campaign)</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Customer segmentation data, loyalty status, engagement scores, and behavioral insights for targeted campaigns.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Enables precision marketing with loyalty-based segmentation and personalized campaign targeting.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 47 customer segments • 890K monthly campaigns • 34% uplift in engagement
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Customer Service Platform</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Real-time loyalty status, points balance, tier benefits, and transaction history for service agents.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Empowers customer service with complete loyalty context for enhanced support experiences.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 125K monthly service interactions • 67% first-call resolution • 4.8/5 satisfaction
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Analytics Platform (Snowflake)</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Loyalty program performance metrics, customer behavior data, and operational KPIs for business intelligence.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Provides comprehensive analytics for program optimization and strategic decision making.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 2.4M daily events • 50+ business dashboards • Real-time metric updates
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Email Systems (SendGrid)</h4>
-                        <div class="integration-details">
-                            <strong>Data Flow:</strong> Loyalty status changes, points earning notifications, tier progression alerts, and personalized offer communications.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Automated loyalty communications and engagement campaigns based on program activities.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 1.8M monthly emails • 42% open rate • 8.7% click-through rate
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="integration-section">
-                <div class="integration-header">
-                    <h3>Bidirectional Integrations</h3>
-                    <p>Systems with two-way data exchange and synchronized operations</p>
+                <div class="connection-card">
+                    <h3>
+                        Payment Gateway Services
+                        <span class="connection-type type-outbound">Outbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Secure payment processing and transaction management</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Payment Processing</span>
+                            <span class="interface-tag">HTTPS API</span>
+                        </li>
+                        <li>
+                            <span>Payment Validation</span>
+                            <span class="interface-tag">OAuth 2.0</span>
+                        </li>
+                        <li>
+                            <span>Fraud Detection</span>
+                            <span class="interface-tag">Real-time API</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="integration-grid">
-                    <div class="integration-card">
-                        <h4>Payment Processors (Stripe, PayPal)</h4>
-                        <div class="integration-details">
-                            <strong>Data Exchange:</strong> Points redemption transactions, refund processing, payment status updates, and fraud detection signals.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Secure points-to-currency redemptions and maintaining payment integrity with loyalty features.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 89K monthly redemptions • $2.3M redemption value • 99.97% success rate
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Partner Coalition Systems</h4>
-                        <div class="integration-details">
-                            <strong>Data Exchange:</strong> Cross-brand points earning/redemption, partner transaction data, and coalition member synchronization.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Enables coalition loyalty programs with 12+ brand partners and cross-ecosystem rewards.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 12 active partners • 340K cross-brand transactions • 15% partner revenue contribution
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Inventory Management System</h4>
-                        <div class="integration-details">
-                            <strong>Data Exchange:</strong> Product availability for rewards catalog, redemption inventory levels, and promotional stock management.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Real-time rewards catalog management and inventory-aware redemption offerings.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 50K+ reward SKUs • 99.2% availability accuracy • Real-time sync
-                        </div>
-                    </div>
-                    <div class="integration-card">
-                        <h4>Fraud Detection System</h4>
-                        <div class="integration-details">
-                            <strong>Data Exchange:</strong> Transaction patterns, anomaly detection, risk scores, and suspicious activity alerts.
-                        </div>
-                        <div class="integration-details">
-                            <strong>Purpose:</strong> Prevents loyalty fraud, protects member accounts, and maintains program integrity.
-                        </div>
-                        <div class="integration-metrics">
-                            <strong>Volume:</strong> 100% transaction monitoring • <0.01% fraud rate • Real-time risk scoring
-                        </div>
-                    </div>
+
+                <div class="connection-card">
+                    <h3>
+                        Analytics & Business Intelligence
+                        <span class="connection-type type-outbound">Outbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Customer behavior data and business metrics streaming</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Customer Events</span>
+                            <span class="interface-tag">Event Stream</span>
+                        </li>
+                        <li>
+                            <span>Sales Data</span>
+                            <span class="interface-tag">Data Pipeline</span>
+                        </li>
+                        <li>
+                            <span>Performance Metrics</span>
+                            <span class="interface-tag">Time Series</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="connection-card">
+                    <h3>
+                        Email & Marketing Automation
+                        <span class="connection-type type-outbound">Outbound</span>
+                    </h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Transactional emails and marketing campaign triggers</p>
+                    <ul class="interfaces-list">
+                        <li>
+                            <span>Order Confirmations</span>
+                            <span class="interface-tag">SMTP API</span>
+                        </li>
+                        <li>
+                            <span>Abandoned Cart</span>
+                            <span class="interface-tag">Webhook</span>
+                        </li>
+                        <li>
+                            <span>Product Recommendations</span>
+                            <span class="interface-tag">REST API</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
             <div class="middleware-section">
-                <h3>Integration Middleware & Infrastructure</h3>
+                <h3>Middleware & Integration Infrastructure</h3>
                 <div class="middleware-grid">
                     <div class="middleware-card">
-                        <h4>API Gateway (Kong)</h4>
-                        <p>Central entry point managing authentication, rate limiting, request routing, and API analytics across all integrations.</p>
+                        <h4>API Gateway</h4>
+                        <p>AWS API Gateway for routing, authentication, rate limiting, and monitoring</p>
                     </div>
                     <div class="middleware-card">
-                        <h4>Message Queues (Apache Kafka)</h4>
-                        <p>High-throughput event streaming for real-time data synchronization, transaction processing, and system decoupling.</p>
+                        <h4>Message Queues</h4>
+                        <p>Amazon SQS for asynchronous processing and decoupled communication</p>
                     </div>
                     <div class="middleware-card">
-                        <h4>CDN (CloudFlare)</h4>
-                        <p>Global content delivery for mobile apps, reducing latency and improving user experience across geographic regions.</p>
+                        <h4>Event Streaming</h4>
+                        <p>Apache Kafka for real-time data streaming and event-driven architecture</p>
                     </div>
                     <div class="middleware-card">
-                        <h4>Event Streaming Platform</h4>
-                        <p>Real-time event processing for personalization engine, enabling immediate response to customer behavior patterns.</p>
+                        <h4>Load Balancer</h4>
+                        <p>Application Load Balancer for high availability and traffic distribution</p>
                     </div>
                     <div class="middleware-card">
-                        <h4>Data Integration Hub</h4>
-                        <p>ETL/ELT processes for batch data synchronization, data quality validation, and integration monitoring.</p>
+                        <h4>CDN</h4>
+                        <p>CloudFront for global content delivery and performance optimization</p>
                     </div>
                     <div class="middleware-card">
-                        <h4>Service Mesh (Istio)</h4>
-                        <p>Microservices communication management with security, observability, and traffic management capabilities.</p>
+                        <h4>Service Mesh</h4>
+                        <p>Istio for microservices communication, security, and observability</p>
                     </div>
                 </div>
             </div>
+
+            <div class="integration-patterns">
+                <h3>Integration Patterns & Standards</h3>
+                <div class="pattern-list">
+                    <div class="pattern-tag">RESTful APIs</div>
+                    <div class="pattern-tag">GraphQL</div>
+                    <div class="pattern-tag">Event-Driven Architecture</div>
+                    <div class="pattern-tag">Microservices</div>
+                    <div class="pattern-tag">Circuit Breaker</div>
+                    <div class="pattern-tag">Bulkhead Pattern</div>
+                    <div class="pattern-tag">Saga Pattern</div>
+                    <div class="pattern-tag">CQRS</div>
+                    <div class="pattern-tag">API Versioning</div>
+                    <div class="pattern-tag">OAuth 2.0 / OIDC</div>
+                    <div class="pattern-tag">JSON Schema</div>
+                    <div class="pattern-tag">OpenAPI 3.0</div>
+                </div>
+            </div>
+
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin-top: 25px;">
+                <h4 style="color: #856404; margin: 0 0 10px 0;">Integration Monitoring & Observability</h4>
+                <p style="color: #856404; margin: 0;">All integrations are monitored using distributed tracing (Jaeger), metrics collection (Prometheus), centralized logging (ELK Stack), and real-time alerting for SLA compliance and error tracking.</p>
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>

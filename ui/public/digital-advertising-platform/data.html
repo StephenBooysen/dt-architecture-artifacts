@@ -3,385 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Advertising Platform - Data Viewpoint</title>
-    <link rel="stylesheet" href="/styles/viewpoint.css">
+    <title>Digital Commerce Platform - Data View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
 </head>
-<body>
+<body data-theme="data">
     <div class="viewpoint-container">
-        <div class="header">
-            <h1>Digital Advertising Platform</h1>
-            <p class="subtitle">Data Architecture & Processing Pipeline</p>
-            <span class="viewpoint-badge">Data Viewpoint</span>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                This view shows the data types originated, processed, and consumed by the Digital Commerce Platform, including data sources, destinations, and quality characteristics.
+            </p>
+
+            <h3>Data Types & Ownership</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Customer Orders</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Primary source for all customer order data including order details, line items, customer information, payment data, and delivery preferences.</p>
+                    <small><strong>Volume:</strong> ~50K orders/day | <strong>Retention:</strong> 7 years</small>
+                </div>
+                <div class="data-card">
+                    <h3>Customer Behavior</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Generates clickstream data, product views, cart interactions, search queries, and user session information for analytics and personalization.</p>
+                    <small><strong>Volume:</strong> ~2M events/day | <strong>Retention:</strong> 2 years</small>
+                </div>
+                <div class="data-card">
+                    <h3>Product Catalog</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Enriches product data from PIM systems with pricing, promotions, availability, and merchandising information for customer presentation.</p>
+                    <small><strong>Volume:</strong> ~100K products | <strong>Update Frequency:</strong> Real-time</small>
+                </div>
+                <div class="data-card">
+                    <h3>Inventory Levels</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Consumes real-time inventory data from warehouse management systems to display product availability and estimated delivery dates.</p>
+                    <small><strong>Source:</strong> WMS Systems | <strong>Update Frequency:</strong> Every 15 minutes</small>
+                </div>
+                <div class="data-card">
+                    <h3>Customer Profiles</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Reads customer master data, preferences, loyalty status, and purchase history from CRM systems for personalization and account management.</p>
+                    <small><strong>Source:</strong> CRM Platform | <strong>Update Frequency:</strong> Near real-time</small>
+                </div>
+                <div class="data-card">
+                    <h3>Payment Transactions</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Processes payment requests and receives transaction confirmations from payment gateways while maintaining audit trails.</p>
+                    <small><strong>Volume:</strong> ~45K transactions/day | <strong>Retention:</strong> 10 years</small>
+                </div>
+            </div>
+
+            <div class="data-flow-section">
+                <h3>Key Data Flows</h3>
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Product Information Management</strong>
+                        <div class="metric-label">Source System</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Digital Commerce Platform</strong>
+                        <div class="metric-label">Processing Layer</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Customer Interface</strong>
+                        <div class="metric-label">Presentation Layer</div>
+                    </div>
+                </div>
+                
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Warehouse Management</strong>
+                        <div class="metric-label">Inventory Source</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Commerce Platform</strong>
+                        <div class="metric-label">Availability Display</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Order Management</strong>
+                        <div class="metric-label">Fulfillment Trigger</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-quality-section">
+                <h3>Data Quality Metrics</h3>
+                <div class="quality-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">99.8%</div>
+                        <div class="metric-label">Data Accuracy</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">System Availability</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 2s</div>
+                        <div class="metric-label">Data Freshness</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.5%</div>
+                        <div class="metric-label">Completeness</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Data Governance & Compliance</h3>
+            <ul class="data-list">
+                <li>
+                    <span>GDPR Compliance - Customer Data</span>
+                    <span class="data-role role-originator">Compliant</span>
+                </li>
+                <li>
+                    <span>PCI DSS - Payment Data</span>
+                    <span class="data-role role-processor">Level 1 Certified</span>
+                </li>
+                <li>
+                    <span>Data Encryption at Rest</span>
+                    <span class="data-role role-processor">AES-256</span>
+                </li>
+                <li>
+                    <span>Data Encryption in Transit</span>
+                    <span class="data-role role-processor">TLS 1.3</span>
+                </li>
+                <li>
+                    <span>Backup & Recovery</span>
+                    <span class="data-role role-processor">Daily/4hr RPO</span>
+                </li>
+                <li>
+                    <span>Data Retention Policy</span>
+                    <span class="data-role role-processor">Automated</span>
+                </li>
+            </ul>
         </div>
-
-        <div class="content-grid">
-            <div class="data-section">
-                <div class="section-header originates-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Data Originates
-                </div>
-                <div class="section-content">
-                    <div class="data-item originates-item">
-                        <div class="data-title">Ad Impression Data</div>
-                        <div class="data-description">
-                            Real-time impression logs including ad placement, creative details, targeting parameters, and user interaction data across all digital properties.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">2.3B</div>
-                                <div class="metric-label">Monthly Impressions</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">15TB</div>
-                                <div class="metric-label">Monthly Volume</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item originates-item">
-                        <div class="data-title">Click-Through & Conversion Data</div>
-                        <div class="data-description">
-                            Comprehensive click tracking, conversion events, and post-click user behavior data for attribution modeling and performance optimization.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">45M</div>
-                                <div class="metric-label">Monthly Clicks</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">3.2M</div>
-                                <div class="metric-label">Conversions</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item originates-item">
-                        <div class="data-title">Yield & Revenue Metrics</div>
-                        <div class="data-description">
-                            Real-time revenue data, eCPM calculations, fill rates, and yield optimization metrics across all advertising inventory and demand sources.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">$127M</div>
-                                <div class="metric-label">Annual Revenue</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">67%</div>
-                                <div class="metric-label">Fill Rate</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item originates-item">
-                        <div class="data-title">Audience Insights & Segments</div>
-                        <div class="data-description">
-                            Behavioral audience segments, interest profiles, and targeting insights derived from ad interaction patterns and first-party data integration.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">200+</div>
-                                <div class="metric-label">Segments</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">45M</div>
-                                <div class="metric-label">Profiles</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="data-section">
-                <div class="section-header consumes-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                    </svg>
-                    Data Consumes
-                </div>
-                <div class="section-content">
-                    <div class="data-item consumes-item">
-                        <div class="data-title">Customer Profile Data</div>
-                        <div class="data-description">
-                            Comprehensive customer profiles from CDP including demographics, behavior patterns, purchase history, and preferences for targeted advertising.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">45M</div>
-                                <div class="metric-label">Customer Records</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">Real-time</div>
-                                <div class="metric-label">Sync Frequency</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item consumes-item">
-                        <div class="data-title">Product Catalog Data</div>
-                        <div class="data-description">
-                            Product information, pricing, availability, and metadata for sponsored product advertising and dynamic product ad generation.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">2M+</div>
-                                <div class="metric-label">Products</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">24/7</div>
-                                <div class="metric-label">Updates</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item consumes-item">
-                        <div class="data-title">Web Analytics Data</div>
-                        <div class="data-description">
-                            Page performance metrics, user journey data, and conversion funnel analytics for ad placement optimization and performance measurement.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">5TB</div>
-                                <div class="metric-label">Monthly Analytics</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">99.9%</div>
-                                <div class="metric-label">Data Quality</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item consumes-item">
-                        <div class="data-title">Inventory & Pricing Data</div>
-                        <div class="data-description">
-                            Real-time inventory levels, pricing updates, and availability status for sponsored product advertising and inventory-driven targeting.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">Real-time</div>
-                                <div class="metric-label">Inventory Updates</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">99.8%</div>
-                                <div class="metric-label">Accuracy</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="data-section">
-                <div class="section-header processes-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                    Data Processing
-                </div>
-                <div class="section-content">
-                    <div class="data-item processes-item">
-                        <div class="data-title">Real-Time Bidding (RTB) Processing</div>
-                        <div class="data-description">
-                            High-frequency bid request processing, auction logic execution, and winner determination across multiple ad exchanges and demand sources.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">847M</div>
-                                <div class="metric-label">Daily Bid Requests</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">&lt;100ms</div>
-                                <div class="metric-label">Response Time</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item processes-item">
-                        <div class="data-title">Audience Segmentation Engine</div>
-                        <div class="data-description">
-                            Dynamic audience segmentation using machine learning algorithms, behavioral analysis, and real-time data processing for targeted advertising.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">200+</div>
-                                <div class="metric-label">Active Segments</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">15min</div>
-                                <div class="metric-label">Update Frequency</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item processes-item">
-                        <div class="data-title">Yield Optimization Engine</div>
-                        <div class="data-description">
-                            Advanced algorithms for revenue maximization including header bidding optimization, price floor adjustments, and demand source prioritization.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">34%</div>
-                                <div class="metric-label">eCPM Improvement</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">Real-time</div>
-                                <div class="metric-label">Optimization</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-item processes-item">
-                        <div class="data-title">Fraud Detection & Filtering</div>
-                        <div class="data-description">
-                            ML-powered bot detection, invalid traffic filtering, and brand safety verification to maintain premium inventory quality and advertiser trust.
-                        </div>
-                        <div class="data-metrics">
-                            <div class="metric">
-                                <div class="metric-value">99.2%</div>
-                                <div class="metric-label">Valid Traffic</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">95%</div>
-                                <div class="metric-label">Brand Safety Score</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="data-section">
-                <div class="section-header volume-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-6L12 2 4.5 5 12 8l7.5-3zM12 10L4.5 7v10l7.5 3 7.5-3V7L12 10z"/>
-                    </svg>
-                    Data Volume & Scale
-                </div>
-                <div class="section-content">
-                    <div class="volume-grid">
-                        <div class="volume-card">
-                            <span class="volume-value">2.3B</span>
-                            <div class="volume-label">Monthly Ad Impressions</div>
-                        </div>
-                        <div class="volume-card">
-                            <span class="volume-value">847M</span>
-                            <div class="volume-label">Daily Bid Requests</div>
-                        </div>
-                        <div class="volume-card">
-                            <span class="volume-value">15TB</span>
-                            <div class="volume-label">Monthly Log Data</div>
-                        </div>
-                        <div class="volume-card">
-                            <span class="volume-value">45M</span>
-                            <div class="volume-label">Customer Profiles</div>
-                        </div>
-                        <div class="volume-card">
-                            <span class="volume-value">2M+</span>
-                            <div class="volume-label">Product Records</div>
-                        </div>
-                        <div class="volume-card">
-                            <span class="volume-value">500+</span>
-                            <div class="volume-label">Active Campaigns</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="data-section full-width">
-                <div class="section-header realtime-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-                    </svg>
-                    Real-Time Data Processing
-                </div>
-                <div class="section-content">
-                    <div class="realtime-item">
-                        <div class="realtime-title">Sub-100ms Ad Serving</div>
-                        <div class="realtime-description">
-                            Ultra-low latency ad serving infrastructure processing bid requests, executing auctions, and delivering creative content within 100 milliseconds to maintain optimal user experience.
-                        </div>
-                    </div>
-
-                    <div class="realtime-item">
-                        <div class="realtime-title">Real-Time Performance Tracking</div>
-                        <div class="realtime-description">
-                            Continuous monitoring of campaign performance, revenue metrics, and KPI dashboards with sub-second data freshness for immediate optimization decisions.
-                        </div>
-                    </div>
-
-                    <div class="realtime-item">
-                        <div class="realtime-title">Dynamic Audience Updates</div>
-                        <div class="realtime-description">
-                            Real-time audience segmentation updates based on user behavior, transaction data, and interaction patterns to ensure targeting precision and relevance.
-                        </div>
-                    </div>
-
-                    <div class="realtime-item">
-                        <div class="realtime-title">Fraud Detection & Blocking</div>
-                        <div class="realtime-description">
-                            Immediate identification and blocking of suspicious traffic patterns, bot activity, and invalid clicks to protect advertiser investments and maintain inventory quality.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="data-flow">
-            <div class="flow-title">Data Processing Pipeline</div>
-            <div class="flow-diagram">
-                <div class="flow-step">
-                    <div class="flow-icon">IN</div>
-                    <div class="flow-label">Data Ingestion</div>
-                    <small>Customer, Product, Analytics</small>
-                </div>
-                <div class="flow-step">
-                    <div class="flow-icon">RTB</div>
-                    <div class="flow-label">Real-Time Bidding</div>
-                    <small>847M Daily Requests</small>
-                </div>
-                <div class="flow-step">
-                    <div class="flow-icon">OPT</div>
-                    <div class="flow-label">Yield Optimization</div>
-                    <small>Revenue Maximization</small>
-                </div>
-                <div class="flow-step">
-                    <div class="flow-icon">OUT</div>
-                    <div class="flow-label">Performance Data</div>
-                    <small>Analytics & Reporting</small>
-                </div>
-            </div>
-
-            <div class="data-pipeline">
-                <div class="pipeline-title">Data Processing Architecture</div>
-                <div class="pipeline-steps">
-                    <div class="pipeline-step">
-                        <strong>Stream Processing</strong><br>
-                        Apache Kafka<br>
-                        Real-time ingestion
-                    </div>
-                    <div class="pipeline-step">
-                        <strong>RTB Engine</strong><br>
-                        Custom bidding logic<br>
-                        &lt;100ms response
-                    </div>
-                    <div class="pipeline-step">
-                        <strong>ML Processing</strong><br>
-                        Audience segmentation<br>
-                        Fraud detection
-                    </div>
-                    <div class="pipeline-step">
-                        <strong>Analytics Engine</strong><br>
-                        Performance metrics<br>
-                        Attribution modeling
-                    </div>
-                    <div class="pipeline-step">
-                        <strong>Data Lake</strong><br>
-                        Historical storage<br>
-                        15TB monthly logs
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 </body>
 </html>

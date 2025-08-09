@@ -3,300 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Platform - Data View</title>
-    <link rel="stylesheet" href="/styles/viewpoint.css">
+    <title>Digital Commerce Platform - Data View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
 </head>
-<body>
+<body data-theme="data">
     <div class="viewpoint-container">
-    <div class="header">
-        <h1>Marketing Platform</h1>
-        <p>Data Architecture View - Marketing Data Processing & Integration Hub</p>
-    </div>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                This view shows the data types originated, processed, and consumed by the Digital Commerce Platform, including data sources, destinations, and quality characteristics.
+            </p>
 
-    <div class="container">
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📤</div>
-                    <h3>Data Originates</h3>
+            <h3>Data Types & Ownership</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Customer Orders</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Primary source for all customer order data including order details, line items, customer information, payment data, and delivery preferences.</p>
+                    <small><strong>Volume:</strong> ~50K orders/day | <strong>Retention:</strong> 7 years</small>
                 </div>
-                <div class="data-grid">
-                    <div class="data-item">
-                        <div class="data-title">Campaign Performance Data</div>
-                        <div class="data-desc">Email opens, clicks, conversions, A/B test results, campaign attribution metrics</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">47M interactions/month</span>
-                            <span class="frequency-metric">Real-time</span>
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-title">Lead Scores & Qualification</div>
-                        <div class="data-desc">Behavioral scoring, demographic weighting, engagement metrics, sales readiness indicators</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">3.2M leads/year</span>
-                            <span class="frequency-metric">Real-time</span>
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-title">Marketing Attribution Data</div>
-                        <div class="data-desc">Multi-touch attribution models, revenue tracking, campaign ROI, customer journey touchpoints</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">847% ROI tracked</span>
-                            <span class="frequency-metric">Daily</span>
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-title">Content Engagement Analytics</div>
-                        <div class="data-desc">Content performance, personalization effectiveness, A/B test results, dynamic content metrics</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">125M emails/month</span>
-                            <span class="frequency-metric">Real-time</span>
-                        </div>
-                    </div>
+                <div class="data-card">
+                    <h3>Customer Behavior</h3>
+                    <span class="data-role role-originator">Originator</span>
+                    <p>Generates clickstream data, product views, cart interactions, search queries, and user session information for analytics and personalization.</p>
+                    <small><strong>Volume:</strong> ~2M events/day | <strong>Retention:</strong> 2 years</small>
+                </div>
+                <div class="data-card">
+                    <h3>Product Catalog</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Enriches product data from PIM systems with pricing, promotions, availability, and merchandising information for customer presentation.</p>
+                    <small><strong>Volume:</strong> ~100K products | <strong>Update Frequency:</strong> Real-time</small>
+                </div>
+                <div class="data-card">
+                    <h3>Inventory Levels</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Consumes real-time inventory data from warehouse management systems to display product availability and estimated delivery dates.</p>
+                    <small><strong>Source:</strong> WMS Systems | <strong>Update Frequency:</strong> Every 15 minutes</small>
+                </div>
+                <div class="data-card">
+                    <h3>Customer Profiles</h3>
+                    <span class="data-role role-consumer">Consumer</span>
+                    <p>Reads customer master data, preferences, loyalty status, and purchase history from CRM systems for personalization and account management.</p>
+                    <small><strong>Source:</strong> CRM Platform | <strong>Update Frequency:</strong> Near real-time</small>
+                </div>
+                <div class="data-card">
+                    <h3>Payment Transactions</h3>
+                    <span class="data-role role-processor">Processor</span>
+                    <p>Processes payment requests and receives transaction confirmations from payment gateways while maintaining audit trails.</p>
+                    <small><strong>Volume:</strong> ~45K transactions/day | <strong>Retention:</strong> 10 years</small>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📥</div>
-                    <h3>Data Consumes</h3>
-                </div>
-                <div class="data-grid">
-                    <div class="data-item">
-                        <div class="data-title">Customer Profiles from CDP</div>
-                        <div class="data-desc">Unified customer profiles, behavioral history, preferences, demographic data, journey stages</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">50M profiles</span>
-                            <span class="frequency-metric">Real-time sync</span>
-                        </div>
+            <div class="data-flow-section">
+                <h3>Key Data Flows</h3>
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Product Information Management</strong>
+                        <div class="metric-label">Source System</div>
                     </div>
-                    <div class="data-item">
-                        <div class="data-title">Transaction & Purchase Data</div>
-                        <div class="data-desc">Order history, purchase behavior, product preferences, lifetime value, revenue attribution</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">12M transactions</span>
-                            <span class="frequency-metric">Hourly</span>
-                        </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Digital Commerce Platform</strong>
+                        <div class="metric-label">Processing Layer</div>
                     </div>
-                    <div class="data-item">
-                        <div class="data-title">Website & App Analytics</div>
-                        <div class="data-desc">Page views, user sessions, conversion funnels, behavioral tracking, engagement patterns</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">2.3TB/month</span>
-                            <span class="frequency-metric">Real-time</span>
-                        </div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-title">Social Media & Engagement</div>
-                        <div class="data-desc">Social interactions, brand mentions, influencer content, engagement rates, viral metrics</div>
-                        <div class="data-metrics">
-                            <span class="volume-metric">8M interactions</span>
-                            <span class="frequency-metric">15-min intervals</span>
-                        </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Customer Interface</strong>
+                        <div class="metric-label">Presentation Layer</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon">⚙️</div>
-                <h3>Data Processing Engines</h3>
-            </div>
-            
-            <div class="processing-pipeline">
-                <div class="pipeline-title">Marketing Attribution Modeling</div>
-                <div class="pipeline-steps">
-                    <div class="pipeline-step">
-                        <div class="step-title">Data Ingestion</div>
-                        <div class="step-desc">Multi-channel touchpoint collection, event streaming, behavioral tracking</div>
+                
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>Warehouse Management</strong>
+                        <div class="metric-label">Inventory Source</div>
                     </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Journey Mapping</div>
-                        <div class="step-desc">Customer path reconstruction, touchpoint sequencing, interaction weighting</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Commerce Platform</strong>
+                        <div class="metric-label">Availability Display</div>
                     </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Attribution Modeling</div>
-                        <div class="step-desc">Multi-touch attribution, conversion credit distribution, ROI calculation</div>
-                    </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Revenue Attribution</div>
-                        <div class="step-desc">Campaign ROI tracking, channel performance, revenue contribution analysis</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box">
+                        <strong>Order Management</strong>
+                        <div class="metric-label">Fulfillment Trigger</div>
                     </div>
                 </div>
             </div>
 
-            <div class="processing-pipeline">
-                <div class="pipeline-title">Lead Scoring Algorithms</div>
-                <div class="pipeline-steps">
-                    <div class="pipeline-step">
-                        <div class="step-title">Behavioral Analysis</div>
-                        <div class="step-desc">Website activity, email engagement, content consumption patterns</div>
+            <div class="data-quality-section">
+                <h3>Data Quality Metrics</h3>
+                <div class="quality-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">99.8%</div>
+                        <div class="metric-label">Data Accuracy</div>
                     </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Demographic Scoring</div>
-                        <div class="step-desc">Firmographic data, role-based scoring, company size weighting</div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">System Availability</div>
                     </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Predictive Modeling</div>
-                        <div class="step-desc">ML-based scoring, conversion probability, sales readiness prediction</div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 2s</div>
+                        <div class="metric-label">Data Freshness</div>
                     </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Score Optimization</div>
-                        <div class="step-desc">Continuous model tuning, performance feedback, threshold adjustment</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="processing-pipeline">
-                <div class="pipeline-title">Campaign Optimization Engine</div>
-                <div class="pipeline-steps">
-                    <div class="pipeline-step">
-                        <div class="step-title">Performance Monitoring</div>
-                        <div class="step-desc">Real-time campaign metrics, engagement tracking, conversion monitoring</div>
-                    </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">A/B Testing</div>
-                        <div class="step-desc">Statistical testing framework, variant performance, significance testing</div>
-                    </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">Dynamic Optimization</div>
-                        <div class="step-desc">Automated adjustments, budget reallocation, targeting optimization</div>
-                    </div>
-                    <div class="pipeline-step">
-                        <div class="step-title">ML Enhancement</div>
-                        <div class="step-desc">Machine learning optimization, predictive adjustments, performance forecasting</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <h3>Data Volume & Processing</h3>
-                </div>
-                <div class="metrics-showcase">
-                    <div class="metric">
-                        <div class="metric-value">125M</div>
-                        <div class="metric-label">Email Sends/Month</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">47M</div>
-                        <div class="metric-label">Campaign Interactions</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">2.3TB</div>
-                        <div class="metric-label">Campaign Data</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">50M</div>
-                        <div class="metric-label">Customer Profiles</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">3.2M</div>
-                        <div class="metric-label">Leads Generated</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">12M</div>
-                        <div class="metric-label">Transactions</div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.5%</div>
+                        <div class="metric-label">Completeness</div>
                     </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">⚡</div>
-                    <h3>Real-time Data Streams</h3>
-                </div>
-                <ul class="list">
-                    <li>Campaign Performance Triggers<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Behavioral Event Streaming<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Dynamic Content Personalization<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Lead Score Updates<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Email Engagement Tracking<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Website Activity Monitoring<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Customer Profile Synchronization<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Campaign Optimization Triggers<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>A/B Test Performance Updates<span class="realtime-badge">REAL-TIME</span></li>
-                    <li>Social Media Engagement Feed<span class="realtime-badge">REAL-TIME</span></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon">🔄</div>
-                <h3>Data Integration Flow</h3>
-            </div>
-            <div class="data-flow">
-                <div class="data-node">CDP<br>Ingestion</div>
-                <div class="data-node">Data<br>Processing</div>
-                <div class="data-node">Campaign<br>Execution</div>
-                <div class="data-node">Performance<br>Tracking</div>
-                <div class="data-node">Attribution<br>Analysis</div>
-            </div>
-            <div class="metrics-showcase">
-                <div class="metric">
-                    <div class="metric-value">99.9%</div>
-                    <div class="metric-label">Data Accuracy</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">< 100ms</div>
-                    <div class="metric-label">Processing Latency</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">847%</div>
-                    <div class="metric-label">ROI Attribution</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">24/7</div>
-                    <div class="metric-label">Data Availability</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🔄</div>
-                    <h3>Batch Processing</h3>
-                </div>
-                <ul class="list">
-                    <li>Daily Attribution Model Updates<span class="batch-badge">DAILY</span></li>
-                    <li>Customer Segmentation Refresh<span class="batch-badge">DAILY</span></li>
-                    <li>Campaign Performance Reports<span class="batch-badge">HOURLY</span></li>
-                    <li>Lead Score Recalculation<span class="batch-badge">HOURLY</span></li>
-                    <li>Revenue Attribution Analysis<span class="batch-badge">DAILY</span></li>
-                    <li>A/B Testing Statistical Analysis<span class="batch-badge">HOURLY</span></li>
-                    <li>Customer Journey Mapping<span class="batch-badge">DAILY</span></li>
-                    <li>Content Performance Analytics<span class="batch-badge">HOURLY</span></li>
-                    <li>Marketing Mix Modeling<span class="batch-badge">WEEKLY</span></li>
-                    <li>Predictive Model Training<span class="batch-badge">WEEKLY</span></li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🎯</div>
-                    <h3>Data Quality & Governance</h3>
-                </div>
-                <ul class="list">
-                    <li>GDPR & Privacy Compliance Processing</li>
-                    <li>Consent Management & Tracking</li>
-                    <li>Data Quality Monitoring & Validation</li>
-                    <li>Customer Data Unification & Deduplication</li>
-                    <li>Campaign Data Lineage & Audit Trails</li>
-                    <li>Performance Data Accuracy Validation</li>
-                    <li>Attribution Model Accuracy Testing</li>
-                    <li>Lead Scoring Model Performance Monitoring</li>
-                    <li>Campaign ROI Calculation Verification</li>
-                    <li>Customer Profile Completeness Tracking</li>
-                </ul>
-            </div>
+            <h3>Data Governance & Compliance</h3>
+            <ul class="data-list">
+                <li>
+                    <span>GDPR Compliance - Customer Data</span>
+                    <span class="data-role role-originator">Compliant</span>
+                </li>
+                <li>
+                    <span>PCI DSS - Payment Data</span>
+                    <span class="data-role role-processor">Level 1 Certified</span>
+                </li>
+                <li>
+                    <span>Data Encryption at Rest</span>
+                    <span class="data-role role-processor">AES-256</span>
+                </li>
+                <li>
+                    <span>Data Encryption in Transit</span>
+                    <span class="data-role role-processor">TLS 1.3</span>
+                </li>
+                <li>
+                    <span>Backup & Recovery</span>
+                    <span class="data-role role-processor">Daily/4hr RPO</span>
+                </li>
+                <li>
+                    <span>Data Retention Policy</span>
+                    <span class="data-role role-processor">Automated</span>
+                </li>
+            </ul>
         </div>
     </div>
-</div>
 </body>
 </html>

@@ -3,438 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Platform - Technology View</title>
-    <link rel="stylesheet" href="/styles/viewpoint.css">
+    <title>Digital Commerce Platform - Technology View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
 </head>
-<body>
+<body data-theme="technology">
     <div class="viewpoint-container">
-    <div class="header">
-        <h1>Marketing Platform</h1>
-        <p>Technology Architecture View - Marketing Technology Stack & Infrastructure</p>
-    </div>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                Comprehensive view of the technology components, versions, support status, and infrastructure architecture powering the Digital Commerce Platform.
+            </p>
 
-    <div class="container">
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">⚙️</div>
-                    <div>
-                        <div class="card-title">Campaign Engine</div>
-                        <div class="card-subtitle">Workflow Orchestration & Automation</div>
-                    </div>
+            <h3>Technology Stack by Layer</h3>
+            <div class="tech-stack-grid">
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">UI</div>
+                        Frontend / Presentation Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">React</span>
+                            <div>
+                                <span class="tech-version">18.2.0</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Next.js</span>
+                            <div>
+                                <span class="tech-version">13.5.6</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">TypeScript</span>
+                            <div>
+                                <span class="tech-version">5.1.6</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Styled Components</span>
+                            <div>
+                                <span class="tech-version">6.0.7</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Redux Toolkit</span>
+                            <div>
+                                <span class="tech-version">1.9.5</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-                <div class="tech-stack">
-                    <div class="tech-item">
-                        <div class="tech-name">Apache Airflow</div>
-                        <div class="tech-desc">Campaign workflow orchestration, DAG management, task scheduling, and dependency handling</div>
-                        <div class="tech-version">v2.7.1</div>
+
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">API</div>
+                        Backend / API Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">Node.js</span>
+                            <div>
+                                <span class="tech-version">20.6.1</span>
+                                <span class="support-status status-lts">LTS</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Express.js</span>
+                            <div>
+                                <span class="tech-version">4.18.2</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">GraphQL</span>
+                            <div>
+                                <span class="tech-version">16.8.1</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Apollo Server</span>
+                            <div>
+                                <span class="tech-version">4.9.3</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Jest</span>
+                            <div>
+                                <span class="tech-version">29.7.0</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">DB</div>
+                        Data Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">PostgreSQL</span>
+                            <div>
+                                <span class="tech-version">15.4</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Redis</span>
+                            <div>
+                                <span class="tech-version">7.2.0</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Elasticsearch</span>
+                            <div>
+                                <span class="tech-version">8.9.2</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Amazon S3</span>
+                            <div>
+                                <span class="tech-version">Latest</span>
+                                <span class="support-status status-current">Managed</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Prisma ORM</span>
+                            <div>
+                                <span class="tech-version">5.3.1</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tech-layer-card">
+                    <h3>
+                        <div class="layer-icon">☁️</div>
+                        Infrastructure Layer
+                    </h3>
+                    <ul class="tech-list">
+                        <li class="tech-item">
+                            <span class="tech-name">Amazon EKS</span>
+                            <div>
+                                <span class="tech-version">1.28</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Docker</span>
+                            <div>
+                                <span class="tech-version">24.0.5</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Nginx</span>
+                            <div>
+                                <span class="tech-version">1.25.2</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">Terraform</span>
+                            <div>
+                                <span class="tech-version">1.5.7</span>
+                                <span class="support-status status-current">Current</span>
+                            </div>
+                        </li>
+                        <li class="tech-item">
+                            <span class="tech-name">AWS CloudFormation</span>
+                            <div>
+                                <span class="tech-version">Latest</span>
+                                <span class="support-status status-current">Managed</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Deployment Architecture</h3>
+                <div class="layer-box">
+                    <h4>CDN & Load Balancing (CloudFront + ALB)</h4>
+                    <p>Global content delivery and traffic distribution across multiple availability zones</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Container Orchestration (Amazon EKS)</h4>
+                    <p>Kubernetes-managed containerized applications with auto-scaling and service mesh</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Microservices (Node.js + Express)</h4>
+                    <p>API Gateway, User Service, Product Service, Order Service, Payment Service</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Data Layer (RDS PostgreSQL + ElastiCache Redis)</h4>
+                    <p>Multi-AZ database deployment with read replicas and distributed caching</p>
+                </div>
+            </div>
+
+            <div class="security-section">
+                <h3>Security Technologies</h3>
+                <div class="security-grid">
+                    <div class="security-card">
+                        <h4>Identity & Access</h4>
+                        <p>AWS Cognito, OAuth 2.0, JWT tokens, MFA</p>
                     </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Python Automation</div>
-                        <div class="tech-desc">Campaign logic, data processing scripts, ML model integration, and API orchestration</div>
-                        <div class="tech-version">v3.11</div>
+                    <div class="security-card">
+                        <h4>Data Encryption</h4>
+                        <p>TLS 1.3, AES-256, AWS KMS key management</p>
                     </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Celery Workers</div>
-                        <div class="tech-desc">Distributed task processing, background job execution, and scalable campaign processing</div>
-                        <div class="tech-version">v5.3.1</div>
+                    <div class="security-card">
+                        <h4>Network Security</h4>
+                        <p>VPC, Security Groups, NACLs, WAF</p>
                     </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Redis Queue</div>
-                        <div class="tech-desc">Message queuing, task distribution, caching, and real-time data storage</div>
-                        <div class="tech-version">v7.0</div>
+                    <div class="security-card">
+                        <h4>Vulnerability Scanning</h4>
+                        <p>Snyk, AWS Inspector, OWASP ZAP</p>
                     </div>
                 </div>
             </div>
 
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">📝</div>
-                    <div>
-                        <div class="card-title">Content Management</div>
-                        <div class="card-subtitle">Dynamic Content & Template Systems</div>
-                    </div>
-                </div>
-                <div class="tech-stack">
-                    <div class="tech-item">
-                        <div class="tech-name">Headless CMS</div>
-                        <div class="tech-desc">Content creation, template management, asset library, and dynamic content delivery</div>
-                        <div class="tech-version">Strapi v4.12</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">CDN Distribution</div>
-                        <div class="tech-desc">Global content delivery, asset optimization, caching, and performance acceleration</div>
-                        <div class="tech-version">CloudFlare</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Dynamic Rendering</div>
-                        <div class="tech-desc">Real-time content personalization, template compilation, and contextual adaptation</div>
-                        <div class="tech-version">React v18</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Image Processing</div>
-                        <div class="tech-desc">Automated image optimization, format conversion, responsive sizing, and quality adjustment</div>
-                        <div class="tech-version">ImageMagick</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">📧</div>
-                    <div>
-                        <div class="card-title">Email Platform</div>
-                        <div class="card-subtitle">Email Delivery & Engagement Tracking</div>
-                    </div>
-                </div>
-                <div class="tech-stack">
-                    <div class="tech-item">
-                        <div class="tech-name">SendGrid Integration</div>
-                        <div class="tech-desc">High-volume email delivery, reputation management, bounce handling, and deliverability optimization</div>
-                        <div class="tech-version">API v3</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Template Engine</div>
-                        <div class="tech-desc">Dynamic email templates, personalization tokens, A/B testing variants, and responsive design</div>
-                        <div class="tech-version">Handlebars</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Deliverability Monitor</div>
-                        <div class="tech-desc">Reputation tracking, spam score monitoring, blacklist checking, and sender authentication</div>
-                        <div class="tech-version">Custom v2.1</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Engagement Analytics</div>
-                        <div class="tech-desc">Open tracking, click analytics, engagement scoring, and campaign performance measurement</div>
-                        <div class="tech-version">Custom v1.8</div>
-                    </div>
-                </div>
-                <div class="performance-metrics">
-                    <div class="perf-metric">
-                        <div class="metric-value">125M</div>
-                        <div class="metric-label">Emails/Month</div>
-                    </div>
-                    <div class="perf-metric">
-                        <div class="metric-value">89%</div>
-                        <div class="metric-label">Deliverability</div>
-                    </div>
-                    <div class="perf-metric">
-                        <div class="metric-value">34%</div>
-                        <div class="metric-label">Open Rate</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <div>
-                        <div class="card-title">Analytics Engine</div>
-                        <div class="card-subtitle">Performance Tracking & Attribution</div>
-                    </div>
-                </div>
-                <div class="tech-stack">
-                    <div class="tech-item">
-                        <div class="tech-name">Adobe Analytics</div>
-                        <div class="tech-desc">Cross-channel analytics, customer journey tracking, conversion attribution, and behavioral analysis</div>
-                        <div class="tech-version">v15.0</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Attribution Modeling</div>
-                        <div class="tech-desc">Multi-touch attribution, revenue tracking, campaign influence scoring, and ROI calculation</div>
-                        <div class="tech-version">Custom ML</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">ML Optimization</div>
-                        <div class="tech-desc">Predictive analytics, campaign optimization, audience modeling, and performance forecasting</div>
-                        <div class="tech-version">TensorFlow</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Real-time Dashboards</div>
-                        <div class="tech-desc">Live performance monitoring, campaign metrics, KPI tracking, and executive reporting</div>
-                        <div class="tech-version">Grafana v9.5</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">🧪</div>
-                    <div>
-                        <div class="card-title">A/B Testing Platform</div>
-                        <div class="card-subtitle">Statistical Testing & Optimization</div>
-                    </div>
-                </div>
-                <div class="tech-stack">
-                    <div class="tech-item">
-                        <div class="tech-name">Optimizely Integration</div>
-                        <div class="tech-desc">Multivariate testing, feature flagging, audience targeting, and statistical significance validation</div>
-                        <div class="tech-version">SDK v4.0</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Statistical Engine</div>
-                        <div class="tech-desc">Bayesian analysis, confidence intervals, sample size calculation, and test result validation</div>
-                        <div class="tech-version">R v4.3</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Variant Management</div>
-                        <div class="tech-desc">Test configuration, traffic allocation, winner selection, and automated rollout</div>
-                        <div class="tech-version">Custom v2.0</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Performance Tracking</div>
-                        <div class="tech-desc">Conversion tracking, lift measurement, statistical power analysis, and result reporting</div>
-                        <div class="tech-version">Custom v1.5</div>
-                    </div>
-                </div>
-                <div class="performance-metrics">
-                    <div class="perf-metric">
-                        <div class="metric-value">1000+</div>
-                        <div class="metric-label">Tests/Month</div>
-                    </div>
-                    <div class="perf-metric">
-                        <div class="metric-value">95%</div>
-                        <div class="metric-label">Statistical Confidence</div>
-                    </div>
-                    <div class="perf-metric">
-                        <div class="metric-value">23%</div>
-                        <div class="metric-label">Avg Lift</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">☁️</div>
-                    <div>
-                        <div class="card-title">Infrastructure Platform</div>
-                        <div class="card-subtitle">Scalable Cloud Architecture</div>
-                    </div>
-                </div>
-                <div class="tech-stack">
-                    <div class="tech-item">
-                        <div class="tech-name">Kubernetes Orchestration</div>
-                        <div class="tech-desc">Container orchestration, auto-scaling, service mesh, load balancing, and deployment automation</div>
-                        <div class="tech-version">v1.28</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Redis Caching</div>
-                        <div class="tech-desc">In-memory caching, session storage, real-time data, and performance optimization</div>
-                        <div class="tech-version">v7.0.12</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">PostgreSQL Database</div>
-                        <div class="tech-desc">Primary data storage, campaign metadata, customer profiles, and transactional consistency</div>
-                        <div class="tech-version">v15.4</div>
-                    </div>
-                    <div class="tech-item">
-                        <div class="tech-name">Elasticsearch</div>
-                        <div class="tech-desc">Log aggregation, search capabilities, analytics storage, and real-time indexing</div>
-                        <div class="tech-version">v8.9</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="architecture-diagram">
-            <div class="diagram-title">Marketing Platform Technology Architecture</div>
-            <div class="architecture-layers">
-                <div class="arch-layer">
-                    <div class="layer-title">Presentation Layer</div>
-                    <div class="layer-components">
-                        <div class="component">React Web UI</div>
-                        <div class="component">Mobile Apps</div>
-                        <div class="component">Admin Dashboard</div>
-                        <div class="component">API Gateway</div>
-                    </div>
-                </div>
-                <div class="arch-layer">
-                    <div class="layer-title">Application Services</div>
-                    <div class="layer-components">
-                        <div class="component">Campaign Engine</div>
-                        <div class="component">Content Manager</div>
-                        <div class="component">Analytics Service</div>
-                        <div class="component">A/B Testing</div>
-                    </div>
-                </div>
-                <div class="arch-layer">
-                    <div class="layer-title">Integration Layer</div>
-                    <div class="layer-components">
-                        <div class="component">API Orchestration</div>
-                        <div class="component">Message Queue</div>
-                        <div class="component">Event Streaming</div>
-                        <div class="component">Data Pipeline</div>
-                    </div>
-                </div>
-                <div class="arch-layer">
-                    <div class="layer-title">Data & Storage</div>
-                    <div class="layer-components">
-                        <div class="component">PostgreSQL</div>
-                        <div class="component">Redis Cache</div>
-                        <div class="component">Elasticsearch</div>
-                        <div class="component">File Storage</div>
-                    </div>
-                </div>
-                <div class="arch-layer">
-                    <div class="layer-title">Infrastructure</div>
-                    <div class="layer-components">
-                        <div class="component">Kubernetes</div>
-                        <div class="component">Docker Containers</div>
-                        <div class="component">Load Balancers</div>
-                        <div class="component">CDN Network</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">🔗</div>
-                    <div>
-                        <div class="card-title">Integration Technologies</div>
-                        <div class="card-subtitle">APIs & Middleware Components</div>
-                    </div>
-                </div>
-                <ul class="integration-tech">
-                    <li>RESTful API Framework <span class="tech-badge">FastAPI</span></li>
-                    <li>GraphQL Query Layer <span class="tech-badge">Apollo</span></li>
-                    <li>Message Streaming <span class="tech-badge">Apache Kafka</span></li>
-                    <li>Webhook Management <span class="tech-badge">Custom</span></li>
-                    <li>OAuth 2.0 Authentication <span class="tech-badge">Auth0</span></li>
-                    <li>Rate Limiting & Throttling <span class="tech-badge">Kong</span></li>
-                    <li>API Documentation <span class="tech-badge">OpenAPI</span></li>
-                    <li>Health Monitoring <span class="tech-badge">New Relic</span></li>
-                </ul>
-            </div>
-
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">🔧</div>
-                    <div>
-                        <div class="card-title">DevOps & Deployment</div>
-                        <div class="card-subtitle">CI/CD Pipeline & Operations</div>
-                    </div>
-                </div>
-                <div class="deployment-info">
-                    <div class="deployment-title">Deployment Configuration</div>
-                    <div class="deployment-grid">
-                        <div class="deployment-item">
-                            <div class="deployment-feature">CI/CD Pipeline</div>
-                            <div class="deployment-detail">GitLab CI, automated testing, blue-green deployment</div>
-                        </div>
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Container Registry</div>
-                            <div class="deployment-detail">Docker Hub, image scanning, version management</div>
-                        </div>
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Infrastructure as Code</div>
-                            <div class="deployment-detail">Terraform, Helm charts, configuration management</div>
-                        </div>
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Monitoring Stack</div>
-                            <div class="deployment-detail">Prometheus, Grafana, AlertManager, log aggregation</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="monitoring-dashboard">
-            <div class="dashboard-title">System Performance & Monitoring</div>
-            <div class="monitoring-grid">
-                <div class="monitoring-item">
-                    <div class="monitoring-metric">99.9%</div>
-                    <div class="monitoring-desc">Platform Uptime SLA</div>
-                </div>
-                <div class="monitoring-item">
-                    <div class="monitoring-metric">< 100ms</div>
-                    <div class="monitoring-desc">API Response Time</div>
-                </div>
-                <div class="monitoring-item">
-                    <div class="monitoring-metric">10K+</div>
-                    <div class="monitoring-desc">Requests/Second</div>
-                </div>
-                <div class="monitoring-item">
-                    <div class="monitoring-metric">2.3TB</div>
-                    <div class="monitoring-desc">Data Processed/Month</div>
-                </div>
-                <div class="monitoring-item">
-                    <div class="monitoring-metric">847%</div>
-                    <div class="monitoring-desc">Marketing ROI Tracked</div>
-                </div>
-                <div class="monitoring-item">
-                    <div class="monitoring-metric">24/7</div>
-                    <div class="monitoring-desc">Automated Monitoring</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">🛡️</div>
-                    <div>
-                        <div class="card-title">Security & Compliance</div>
-                        <div class="card-subtitle">Data Protection & Privacy Technologies</div>
-                    </div>
-                </div>
-                <div class="deployment-info">
-                    <div class="deployment-title">Security Implementation</div>
-                    <div class="deployment-grid">
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Encryption</div>
-                            <div class="deployment-detail">AES-256 at rest, TLS 1.3 in transit</div>
-                        </div>
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Authentication</div>
-                            <div class="deployment-detail">Multi-factor authentication, SSO integration</div>
-                        </div>
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Privacy Compliance</div>
-                            <div class="deployment-detail">GDPR, CAN-SPAM, consent management</div>
-                        </div>
-                        <div class="deployment-item">
-                            <div class="deployment-feature">Security Monitoring</div>
-                            <div class="deployment-detail">SOC compliance, vulnerability scanning</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tech-card">
-                <div class="card-header">
-                    <div class="card-icon">📈</div>
-                    <div>
-                        <div class="card-title">Scalability Features</div>
-                        <div class="card-subtitle">Enterprise-Grade Performance</div>
-                    </div>
-                </div>
-                <div class="performance-metrics">
-                    <div class="perf-metric">
-                        <div class="metric-value">Auto</div>
-                        <div class="metric-label">Scaling</div>
-                    </div>
-                    <div class="perf-metric">
-                        <div class="metric-value">Global</div>
-                        <div class="metric-label">CDN</div>
-                    </div>
-                    <div class="perf-metric">
+            <div class="performance-metrics">
+                <h3>Technology Performance Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
                         <div class="metric-value">99.9%</div>
-                        <div class="metric-label">Availability</div>
+                        <div class="metric-label">Uptime SLA</div>
                     </div>
-                    <div class="perf-metric">
-                        <div class="metric-value">Multi-Region</div>
-                        <div class="metric-label">Deployment</div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 200ms</div>
+                        <div class="metric-label">API Response Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">10K+</div>
+                        <div class="metric-label">Concurrent Users</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">50K+</div>
+                        <div class="metric-label">Requests/Second</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">< 1.5s</div>
+                        <div class="metric-label">Page Load Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">95+</div>
+                        <div class="metric-label">Lighthouse Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modernization-section">
+                <h4 style="color: #856404; margin: 0 0 15px 0;">Technology Modernization Roadmap</h4>
+                <div class="modernization-grid">
+                    <div class="modernization-item">
+                        <h4>Legacy jQuery Removal</h4>
+                        <p><strong>Target Q1 2024:</strong> Complete migration from jQuery 3.6.0 to pure modern JavaScript and React components.</p>
+                    </div>
+                    <div class="modernization-item">
+                        <h4>Database Upgrade</h4>
+                        <p><strong>Target Q2 2024:</strong> Upgrade PostgreSQL from 13.7 to 15.4 for improved performance and security features.</p>
+                    </div>
+                    <div class="modernization-item">
+                        <h4>Monitoring Stack</h4>
+                        <p><strong>Target Q3 2024:</strong> Implement Prometheus + Grafana + Jaeger for comprehensive observability.</p>
+                    </div>
+                    <div class="modernization-item">
+                        <h4>CI/CD Enhancement</h4>
+                        <p><strong>Target Q4 2024:</strong> Migrate from Jenkins to GitHub Actions for improved developer experience.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 </html>

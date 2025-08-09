@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{SOLUTION_NAME}} - Knowledge Management System</title>
+    <link rel="stylesheet" href="/styles/knowledge-view.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="app-title">
+                <div class="app-icon">📊</div>
+                <h1>Architecture Artifacts Editor</h1>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search files and content...">
+            </div>
+            <div class="user-info">
+                <span>Welcome, admin!</span>
+                <span>Authenticated</span>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="app-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-search">
+                    <input type="text" placeholder="Knowledge Search">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <p style="color: var(--kv-text-light); font-size: 12px; text-align: center; margin: 8px 0;">
+                    Please type a search term to find content
+                </p>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Spaces</h3>
+                <ul class="sidebar-nav">
+                    <li><a href="/"><span class="nav-icon">👤</span>Personal <small>(write)</small></a></li>
+                    <li><a href="/"><span class="nav-icon">🌐</span>local-shared <small>(write)</small></a></li>
+                    <li><a href="/"><span class="nav-icon">💎</span>Shared <small>(write)</small></a></li>
+                    <li><a href="/" class="active"><span class="nav-icon">📖</span>Knowledge <small>(readonly)</small></a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <div class="content-container">
+                <!-- Solution Header -->
+                <div class="solution-header">
+                    <div class="solution-icon">📊</div>
+                    <h1>{{SOLUTION_NAME}}</h1>
+                    <p>{{SOLUTION_DESCRIPTION}}</p>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="content-tabs">
+                    <button class="tab-button active" data-tab="business">Business View</button>
+                    <button class="tab-button" data-tab="capability">Capability View</button>
+                    <button class="tab-button" data-tab="data">Data View</button>
+                    <button class="tab-button" data-tab="principles">Principles View</button>
+                    <button class="tab-button" data-tab="context">Context View</button>
+                    <button class="tab-button" data-tab="technology">Technology View</button>
+                </nav>
+
+                <!-- Tab Content -->
+                <div id="business" class="tab-content active">
+                    {{BUSINESS_CONTENT}}
+                </div>
+
+                <div id="capability" class="tab-content">
+                    {{CAPABILITY_CONTENT}}
+                </div>
+
+                <div id="data" class="tab-content">
+                    {{DATA_CONTENT}}
+                </div>
+
+                <div id="principles" class="tab-content">
+                    {{PRINCIPLES_CONTENT}}
+                </div>
+
+                <div id="context" class="tab-content">
+                    {{CONTEXT_CONTENT}}
+                </div>
+
+                <div id="technology" class="tab-content">
+                    {{TECHNOLOGY_CONTENT}}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

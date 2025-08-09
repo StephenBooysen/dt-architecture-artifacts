@@ -5,17 +5,25 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    width: 100%;
+    margin: 0;
+    padding: 0 2rem;
+    max-width: none;
 }
 
 /* Header */
@@ -67,8 +75,9 @@ body {
 
 /* Main Content */
 .main {
-    padding: 40px 0;
-    min-height: calc(100vh - 180px);
+    padding: 2rem 0;
+    min-height: calc(100vh - 120px);
+    width: 100%;
 }
 
 .intro {
@@ -190,8 +199,9 @@ body {
     background: #2c3e50;
     color: white;
     text-align: center;
-    padding: 20px 0;
+    padding: 1rem 0;
     margin-top: auto;
+    width: 100%;
 }
 
 .footer p {
@@ -200,9 +210,14 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
     .grid-container {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 1rem;
+        padding: 0 1rem;
     }
     
     .logo {
@@ -221,5 +236,9 @@ body {
     
     .intro p {
         font-size: 1rem;
+    }
+    
+    .main {
+        padding: 1rem 0;
     }
 }

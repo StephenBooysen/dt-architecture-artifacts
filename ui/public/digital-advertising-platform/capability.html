@@ -3,341 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Advertising Platform - Capability Viewpoint</title>
-    <link rel="stylesheet" href="/styles/viewpoint.css">
+    <title>Digital Commerce Platform - Capability View</title>
+    <link rel="stylesheet" href="/styles/unified-solution.css">
 </head>
-<body>
+<body data-theme="capability">
     <div class="viewpoint-container">
-        <div class="header">
-            <h1>Digital Advertising Platform</h1>
-            <p class="subtitle">Capability Architecture & Service Integration</p>
-            <span class="viewpoint-badge">Capability Viewpoint</span>
+        <div class="viewpoint-content">
+            <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 25px;">
+                This view shows the business capabilities enabled by the Digital Commerce Platform and its role within enterprise value streams, indicating whether it serves as the master system, facilitator, or consumer for each capability.
+            </p>
+
+            <h3>Digital Commerce Capabilities</h3>
+            <div class="capability-grid">
+                <div class="capability-card">
+                    <h3>Product Merchandising</h3>
+                    <span class="role-indicator role-master">Master</span>
+                    <p>Primary system for product catalog management, pricing, promotions, and merchandise presentation across all digital channels.</p>
+                </div>
+                <div class="capability-card">
+                    <h3>Customer Experience</h3>
+                    <span class="role-indicator role-master">Master</span>
+                    <p>Core customer-facing interface providing browsing, search, personalization, and shopping cart functionality.</p>
+                </div>
+                <div class="capability-card">
+                    <h3>Order Management</h3>
+                    <span class="role-indicator role-master">Master</span>
+                    <p>Captures and manages customer orders, payment processing, and order status tracking from placement to fulfillment.</p>
+                </div>
+                <div class="capability-card">
+                    <h3>Inventory Visibility</h3>
+                    <span class="role-indicator role-consumer">Consumer</span>
+                    <p>Consumes real-time inventory data from warehouse systems to display product availability and estimated delivery dates.</p>
+                </div>
+                <div class="capability-card">
+                    <h3>Customer Analytics</h3>
+                    <span class="role-indicator role-facilitator">Facilitator</span>
+                    <p>Generates customer behavior data and transaction events that feed enterprise analytics and business intelligence platforms.</p>
+                </div>
+                <div class="capability-card">
+                    <h3>Payment Processing</h3>
+                    <span class="role-indicator role-facilitator">Facilitator</span>
+                    <p>Orchestrates payment transactions through third-party payment gateways while maintaining PCI compliance.</p>
+                </div>
+            </div>
+
+            <div class="value-stream-section">
+                <h3>Value Stream Participation</h3>
+                <div class="value-stream-grid">
+                    <div class="stream-card">
+                        <h4>Customer Acquisition</h4>
+                        <span class="role-indicator role-master">Primary Platform</span>
+                        <p>Serves as the primary channel for new customer acquisition through digital marketing, SEO, and referral programs.</p>
+                    </div>
+                    <div class="stream-card">
+                        <h4>Order Fulfillment</h4>
+                        <span class="role-indicator role-facilitator">Order Initiator</span>
+                        <p>Initiates the fulfillment process by capturing orders and transmitting them to warehouse management systems.</p>
+                    </div>
+                    <div class="stream-card">
+                        <h4>Customer Service</h4>
+                        <span class="role-indicator role-facilitator">Data Provider</span>
+                        <p>Provides order history, customer preferences, and transaction data to customer service systems.</p>
+                    </div>
+                    <div class="stream-card">
+                        <h4>Financial Reporting</h4>
+                        <span class="role-indicator role-facilitator">Revenue Source</span>
+                        <p>Primary source of revenue data and transaction records for financial reporting and business intelligence.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Capability Maturity Assessment</h3>
+            <ul class="capability-list">
+                <li>
+                    <span>Product Catalog Management</span>
+                    <span class="role-indicator role-master">Advanced</span>
+                </li>
+                <li>
+                    <span>Personalization Engine</span>
+                    <span class="role-indicator role-facilitator">Intermediate</span>
+                </li>
+                <li>
+                    <span>Mobile Commerce</span>
+                    <span class="role-indicator role-master">Advanced</span>
+                </li>
+                <li>
+                    <span>Cross-Channel Integration</span>
+                    <span class="role-indicator role-facilitator">Developing</span>
+                </li>
+                <li>
+                    <span>Real-time Analytics</span>
+                    <span class="role-indicator role-consumer">Intermediate</span>
+                </li>
+                <li>
+                    <span>AI-Powered Recommendations</span>
+                    <span class="role-indicator role-facilitator">Developing</span>
+                </li>
+            </ul>
         </div>
-
-        <div class="content-grid">
-            <div class="capability-section">
-                <div class="capability-header master-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Master Capabilities
-                </div>
-                <div class="capability-content">
-                    <div class="capability-grid">
-                        <div class="capability-item master-item">
-                            <div class="capability-badge master-badge">CORE</div>
-                            <div class="capability-title">Ad Inventory Management</div>
-                            <div class="capability-description">
-                                Complete control over advertising inventory across all digital properties, including yield optimization, floor pricing, and inventory allocation strategies.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">2.3B</div>
-                                    <div class="metric-label">Monthly Impressions</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">67%</div>
-                                    <div class="metric-label">Fill Rate</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">97%</div>
-                                    <div class="metric-label">Viewability</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item master-item">
-                            <div class="capability-badge master-badge">ANALYTICS</div>
-                            <div class="capability-title">Campaign Performance Analytics</div>
-                            <div class="capability-description">
-                                Real-time performance monitoring, attribution modeling, and advanced analytics for campaign optimization and advertiser reporting.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">500+</div>
-                                    <div class="metric-label">Active Campaigns</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value"><1s</div>
-                                    <div class="metric-label">Report Latency</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">99.9%</div>
-                                    <div class="metric-label">Data Accuracy</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item master-item">
-                            <div class="capability-badge master-badge">OPTIMIZATION</div>
-                            <div class="capability-title">Yield Optimization</div>
-                            <div class="capability-description">
-                                Advanced algorithms for maximizing revenue per impression through dynamic pricing, header bidding optimization, and demand source prioritization.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">34%</div>
-                                    <div class="metric-label">eCPM Improvement</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">15+</div>
-                                    <div class="metric-label">Ad Exchanges</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">$127M</div>
-                                    <div class="metric-label">Annual Revenue</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item master-item">
-                            <div class="capability-badge master-badge">SAFETY</div>
-                            <div class="capability-title">Brand Safety & Fraud Detection</div>
-                            <div class="capability-description">
-                                Comprehensive content verification, advertiser protection, bot detection, and invalid traffic filtering to maintain premium inventory quality.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">95%</div>
-                                    <div class="metric-label">Safety Score</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">99.2%</div>
-                                    <div class="metric-label">Valid Traffic</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">24/7</div>
-                                    <div class="metric-label">Monitoring</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="capability-section">
-                <div class="capability-header facilitator-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                    Facilitator Capabilities
-                </div>
-                <div class="capability-content">
-                    <div class="capability-grid">
-                        <div class="capability-item facilitator-item">
-                            <div class="capability-badge facilitator-badge">RTB</div>
-                            <div class="capability-title">Programmatic Bidding Engine</div>
-                            <div class="capability-description">
-                                Real-time bidding infrastructure supporting OpenRTB 2.5, custom bidding algorithms, and millisecond-level auction processing for optimal ad placement.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">847M</div>
-                                    <div class="metric-label">Daily Bid Requests</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value"><100ms</div>
-                                    <div class="metric-label">Response Time</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item facilitator-item">
-                            <div class="capability-badge facilitator-badge">TARGETING</div>
-                            <div class="capability-title">Audience Targeting & Segmentation</div>
-                            <div class="capability-description">
-                                Advanced audience segmentation using first-party data, behavioral patterns, and contextual signals for precise ad targeting and personalization.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">200+</div>
-                                    <div class="metric-label">Segments</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">87%</div>
-                                    <div class="metric-label">Targeting Accuracy</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item facilitator-item">
-                            <div class="capability-badge facilitator-badge">CREATIVE</div>
-                            <div class="capability-title">Creative Management & Optimization</div>
-                            <div class="capability-description">
-                                Dynamic creative optimization, A/B testing frameworks, and automated creative delivery to maximize engagement and conversion rates.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">10K+</div>
-                                    <div class="metric-label">Creative Assets</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">45%</div>
-                                    <div class="metric-label">CTR Improvement</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item facilitator-item">
-                            <div class="capability-badge facilitator-badge">ATTRIBUTION</div>
-                            <div class="capability-title">Revenue Attribution & Tracking</div>
-                            <div class="capability-description">
-                                Multi-touch attribution modeling, conversion tracking, and revenue attribution across customer journey touchpoints and advertising channels.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">15</div>
-                                    <div class="metric-label">Touchpoint Tracking</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">92%</div>
-                                    <div class="metric-label">Attribution Accuracy</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="capability-section">
-                <div class="capability-header consumer-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                    </svg>
-                    Consumer Capabilities
-                </div>
-                <div class="capability-content">
-                    <div class="capability-grid">
-                        <div class="capability-item consumer-item">
-                            <div class="capability-badge consumer-badge">DATA</div>
-                            <div class="capability-title">Customer Data Integration</div>
-                            <div class="capability-description">
-                                Leverages customer profiles, behavioral data, and transaction history from CDP for precise audience targeting and personalized ad experiences.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">45M</div>
-                                    <div class="metric-label">Customer Profiles</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">Real-time</div>
-                                    <div class="metric-label">Data Sync</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item consumer-item">
-                            <div class="capability-badge consumer-badge">CATALOG</div>
-                            <div class="capability-title">Product Catalog Services</div>
-                            <div class="capability-description">
-                                Integrates with product information management systems for sponsored product advertising, dynamic product ads, and inventory-based targeting.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">2M+</div>
-                                    <div class="metric-label">Products</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">24/7</div>
-                                    <div class="metric-label">Catalog Sync</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item consumer-item">
-                            <div class="capability-badge consumer-badge">ANALYTICS</div>
-                            <div class="capability-title">Web Analytics Integration</div>
-                            <div class="capability-description">
-                                Consumes web analytics data for performance measurement, user journey analysis, and conversion optimization across advertising touchpoints.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">15TB</div>
-                                    <div class="metric-label">Monthly Analytics</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">99.9%</div>
-                                    <div class="metric-label">Data Quality</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="capability-item consumer-item">
-                            <div class="capability-badge consumer-badge">INVENTORY</div>
-                            <div class="capability-title">Inventory Management Integration</div>
-                            <div class="capability-description">
-                                Real-time inventory data consumption for sponsored product availability, dynamic pricing updates, and inventory-driven ad targeting.
-                            </div>
-                            <div class="capability-metrics">
-                                <div class="metric">
-                                    <div class="metric-value">Real-time</div>
-                                    <div class="metric-label">Inventory Updates</div>
-                                </div>
-                                <div class="metric">
-                                    <div class="metric-value">99.8%</div>
-                                    <div class="metric-label">Availability Accuracy</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="capability-section">
-                <div class="capability-header value-streams-header">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-                    </svg>
-                    Value Streams
-                </div>
-                <div class="capability-content">
-                    <div class="value-stream-item">
-                        <div class="value-stream-title">Revenue Generation Stream</div>
-                        <div class="value-stream-description">
-                            Primary value stream focused on maximizing advertising revenue through programmatic optimization, premium inventory sales, and sponsored product placements. Delivers $127M annual revenue with 34% year-over-year growth.
-                        </div>
-                    </div>
-
-                    <div class="value-stream-item">
-                        <div class="value-stream-title">Advertiser Acquisition & Retention</div>
-                        <div class="value-stream-description">
-                            Strategic value stream for building and maintaining advertiser relationships through performance-driven solutions, premium inventory access, and advanced targeting capabilities. Supports 500+ active campaigns with 95% retention rate.
-                        </div>
-                    </div>
-
-                    <div class="value-stream-item">
-                        <div class="value-stream-title">Customer Experience Enhancement</div>
-                        <div class="value-stream-description">
-                            Value stream ensuring advertising enhances rather than detracts from customer experience through relevant ad targeting, non-intrusive placements, and personalized sponsored content. Maintains 97% viewability with minimal impact on page performance.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="integration-flow">
-            <div class="flow-step">
-                <div class="flow-icon">1</div>
-                <strong>Data Ingestion</strong><br>
-                Customer & Product Data
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">2</div>
-                <strong>Audience Targeting</strong><br>
-                Segmentation & Personalization
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">3</div>
-                <strong>RTB Processing</strong><br>
-                Real-time Bid Optimization
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">4</div>
-                <strong>Ad Delivery</strong><br>
-                Performance & Revenue
-            </div>
-        </div>
-    </div>
     </div>
 </body>
 </html>
