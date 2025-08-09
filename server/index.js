@@ -42,9 +42,14 @@ const session = require('express-session');
 const passport = require('./src/auth/passport');
 const { renderComponent } = require('./src/utils/reactRenderer');
 const apiRoutes = require('./src/routes/index');
+const PluginLoader = require('./src/utils/pluginLoader');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Initialize plugin loader
+const pluginLoader = new PluginLoader(path.join(__dirname, 'plugins'));
+let pluginMiddleware = null;
 
 
 /** @type {Array<Object>} Array to store API call logs for monitoring */
@@ -222,7 +227,7 @@ function patchEmitter(emitter) {
     const eventName = arguments[0];
     const args = Array.from(arguments).slice(1); // Get arguments excluding the event name
 
-    console.log(`Caught event: "${eventName}" with arguments:`, args);
+    //console.log(`Caught event: "${eventName}" with arguments:`, args);
 
     // Call the original emit method to ensure normal event handling continues
     return originalEmit.apply(this, arguments);
@@ -266,8 +271,38 @@ const workflow = workflowService.initialize('', { 'express-app': app }, eventEmi
 const workingService = require('./src/services/working/singleton');
 const working = workingService.initialize('', { 'express-app': app }, eventEmitter);
 
+// Load plugins
+async function initializePlugins() {
+  try {
+    console.log('🔌 Loading plugins...');
+    await pluginLoader.loadAllPlugins();
+    pluginMiddleware = pluginLoader.createPluginMiddleware(app);
+    console.log('✅ Plugins initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize plugins:', error);
+  }
+}
+
 // Apply API call logging to all API routes
 app.use('/api', logApiCall);
+
+// Apply plugin middleware for request interception
+app.use('/api', (req, res, next) => {
+  if (pluginMiddleware) {
+    pluginMiddleware.interceptRequest(req, res, next);
+  } else {
+    next();
+  }
+});
+
+// Apply plugin middleware for response interception
+app.use('/api', (req, res, next) => {
+  if (pluginMiddleware) {
+    pluginMiddleware.interceptResponse(req, res, next);
+  } else {
+    next();
+  }
+});
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -2140,7 +2175,54 @@ app.delete('/api/spaces/:index', requireServerAuth, (req, res) => {
   }
 });
 
-app.listen(PORT,  () => {
+// Plugin management routes
+app.get('/api/plugins', requireServerAuth, (req, res) => {
+  try {
+    const pluginInfo = pluginLoader.getPluginInfo();
+    res.json(pluginInfo);
+  } catch (error) {
+    console.error('Error getting plugin info:', error);
+    res.status(500).json({ error: 'Failed to get plugin information' });
+  }
+});
+
+app.post('/api/plugins/:name/reload', requireServerAuth, async (req, res) => {
+  try {
+    const pluginName = req.params.name;
+    const reloadedPlugin = await pluginLoader.reloadPlugin(pluginName);
+    
+    // Recreate plugin middleware
+    pluginMiddleware = pluginLoader.createPluginMiddleware(app);
+    
+    res.json({ 
+      message: `Plugin "${pluginName}" reloaded successfully`, 
+      plugin: reloadedPlugin 
+    });
+  } catch (error) {
+    console.error('Error reloading plugin:', error);
+    res.status(500).json({ error: `Failed to reload plugin: ${error.message}` });
+  }
+});
+
+app.delete('/api/plugins/:name', requireServerAuth, (req, res) => {
+  try {
+    const pluginName = req.params.name;
+    const success = pluginLoader.unloadPlugin(pluginName);
+    
+    if (success) {
+      // Recreate plugin middleware
+      pluginMiddleware = pluginLoader.createPluginMiddleware(app);
+      res.json({ message: `Plugin "${pluginName}" unloaded successfully` });
+    } else {
+      res.status(404).json({ error: 'Plugin not found' });
+    }
+  } catch (error) {
+    console.error('Error unloading plugin:', error);
+    res.status(500).json({ error: `Failed to unload plugin: ${error.message}` });
+  }
+});
+
+app.listen(PORT, async () => {
   console.log('🚀 Architecture Artifacts Server Started');
   console.log('=====================================');
   console.log(`📡 Server running on port: ${PORT}`);
@@ -2165,4 +2247,10 @@ app.listen(PORT,  () => {
     console.log('  - Secure cookies: enabled');
     console.log('  - Source maps: disabled');
   }
+  
+  // Initialize plugins after server startup
+  await initializePlugins();
+  
+  console.log('=====================================');
+  console.log('✅ Server initialization complete');
 });

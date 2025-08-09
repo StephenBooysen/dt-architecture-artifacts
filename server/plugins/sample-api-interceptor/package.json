@@ -1,0 +1,27 @@
+{
+  "name": "sample-api-interceptor-plugin",
+  "version": "1.0.0",
+  "description": "Sample plugin that intercepts API calls and modifies request/response data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "keywords": [
+    "plugin",
+    "api",
+    "interceptor",
+    "middleware"
+  ],
+  "author": "Architecture Artifacts Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "express": "^4.0.0"
+  }
+}

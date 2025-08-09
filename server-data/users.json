@@ -36,5 +36,17 @@
       "admin"
     ],
     "spaces": "Personal"
+  },
+  {
+    "id": "1754763732732",
+    "username": "testadmin",
+    "password": "$2b$10$xTxHtK2nTFHo4M8FAke7T.kZeOel38FLH0IMmIMGZ1jsWFaVQVGhG",
+    "createdAt": "2025-08-09T18:22:12.905Z",
+    "roles": [
+      "read",
+      "write",
+      "admin"
+    ],
+    "spaces": "Personal, local-shared, Knowledge, Shared"
   }
 ]
