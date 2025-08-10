@@ -33,11 +33,11 @@ class GitSpaceScheduler {
     this.isRunning = true;
     
     // Run initial sync
-    this.syncAllGitSpaces();
+    this.syncAllSpaces();
     
     // Set up periodic sync
     this.syncIntervalId = setInterval(() => {
-      this.syncAllGitSpaces();
+      this.syncAllSpaces();
     }, this.syncInterval);
   }
 
@@ -58,9 +58,9 @@ class GitSpaceScheduler {
   }
 
   /**
-   * Sync all git-based spaces
+   * Sync all spaces (git and local)
    */
-  async syncAllGitSpaces() {
+  async syncAllSpaces() {
     try {
       console.log('GitSpaceScheduler: Starting sync cycle...');
       const spaceConfigs = getSpaceConfigs();
@@ -68,25 +68,31 @@ class GitSpaceScheduler {
       
       for (const [spaceName, config] of Object.entries(spaceConfigs)) {
         console.log(`GitSpaceScheduler: Checking space ${spaceName}:`, config.filing);
-        // Only sync git-based spaces
-        if (config.filing && config.filing.type === 'git') {
-          console.log(`Syncing git space: ${spaceName}`);
+        // Sync all spaces that have filing providers
+        if (config.filing && (config.filing.type === 'git' || config.filing.type === 'local')) {
+          console.log(`Syncing ${config.filing.type} space: ${spaceName}`);
           await this.syncGitSpace(spaceName, config);
         } else {
-          console.log(`Skipping non-git space: ${spaceName} (type: ${config.filing?.type})`);
+          console.log(`Skipping space without filing provider: ${spaceName} (type: ${config.filing?.type})`);
         }
       }
       console.log('GitSpaceScheduler: Sync cycle completed');
     } catch (error) {
-      console.error('Error syncing git spaces:', error);
+      console.error('Error syncing spaces:', error);
     }
   }
 
   /**
-   * Sync a single git space
+   * Sync a single space (git or local)
    */
   async syncGitSpace(spaceName, config) {
     try {
+      // Skip Personal space - it needs user-specific context
+      if (spaceName === 'Personal') {
+        console.log(`Skipping Personal space - requires user-specific context`);
+        return;
+      }
+      
       // Get the filing provider for this space
       const filing = await getFilingProviderForSpace(spaceName, null); // No user context for scheduler
       
@@ -274,6 +280,51 @@ class GitSpaceScheduler {
       console.log(`Successfully indexed search data for key: ${key}`);
     } catch (error) {
       console.warn(`Error adding search data for key ${key}:`, error.message);
+    }
+  }
+
+  /**
+   * Sync Personal space for a specific user
+   */
+  async syncPersonalSpaceForUser(username) {
+    try {
+      console.log(`GitSpaceScheduler: Syncing Personal space for user: ${username}`);
+      
+      // Get the filing provider for Personal space
+      const filing = await getFilingProviderForSpace('Personal');
+      
+      if (!filing) {
+        console.error(`No filing provider found for Personal space`);
+        return;
+      }
+
+      // Set user context for Personal space
+      if (filing.setUserContext && typeof filing.setUserContext === 'function') {
+        filing.setUserContext({ username }, 'Personal');
+      }
+
+      // Get the directory tree from filing provider
+      console.log(`GitSpaceScheduler: Getting directory tree for Personal space (user: ${username})`);
+      const tree = await this.getDirectoryTreeFromFiling(filing, '', false); // Personal is not readonly
+      
+      // Cache the tree data with user-specific key
+      const cacheKey = `personal:${username}:tree`;
+      await this.setCacheValue(cacheKey, {
+        tree: tree,
+        syncedAt: new Date().toISOString(),
+        spaceName: 'Personal',
+        username: username
+      });
+
+      // Update search service with file content
+      await this.updateSearchService(filing, tree, `Personal:${username}`, false);
+
+      console.log(`Successfully synced Personal space for user: ${username} (${tree.length} items)`);
+      return tree;
+    } catch (error) {
+      console.error(`Error syncing Personal space for user ${username}:`, error.message);
+      console.error('Stack trace:', error.stack);
+      throw error;
     }
   }
 }

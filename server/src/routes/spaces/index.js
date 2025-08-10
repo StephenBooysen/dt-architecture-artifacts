@@ -467,6 +467,20 @@ router.get('/:space/files', loadSpaceConfig, checkSpaceAccess('read'), cacheFirs
       console.log(`Cache error for space ${spaceName}:`, cacheError.message);
     }
     
+    // For Personal space, try to sync immediately on cache miss
+    if (spaceName === 'Personal' && username) {
+      try {
+        console.log(`Cache miss for Personal space (user: ${username}), attempting immediate sync`);
+        const gitSpaceScheduler = require('../../services/gitSpaceScheduler');
+        const tree = await gitSpaceScheduler.syncPersonalSpaceForUser(username);
+        if (tree && Array.isArray(tree)) {
+          return res.json(tree);
+        }
+      } catch (syncError) {
+        console.error(`Error syncing Personal space for user ${username}:`, syncError.message);
+      }
+    }
+    
     // Return empty tree if no cache data - scheduler should populate this
     console.log(`No cached data available for space: ${spaceName}, returning empty tree`);
     res.json([]);
