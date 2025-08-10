@@ -1,30 +1,33 @@
-# Enterprise Architecture Data Platform - Product Requirements Document
+# Architecture Artifacts Editor - Product Requirements Document
 
 ## Executive Summary
 
-The Enterprise Architecture Data Platform is a comprehensive solution designed to aggregate, correlate, and present enterprise architecture data from multiple sources. By integrating data from ARIS (business process modeling) and Jira (project management), the platform creates a unified view of applications, technologies, integrations, business capabilities, and strategic initiatives.
+The Architecture Artifacts Editor is a comprehensive enterprise architecture documentation platform designed to capture, manage, and present architecture knowledge from multiple perspectives. Built as a glassmorphism-themed editor with microservices architecture, the platform serves architects, product owners, business analysts, delivery managers, and engineers by providing a unified knowledge repository with intelligent search, multi-client access, and collaborative editing capabilities.
 
-**Key Value Proposition:** Bring together sources (Architecture, Business, code) of information and make them available to people to make better products and decisions.
+**Key Value Proposition:** Bring together sources (Architecture, Business, Code) of information and make them available to people to make better products and decisions through an intuitive, modern interface.
 
 ## Product Overview
 
-### Vision Statementa
-To provide people with a single source of truth for enterprise knowledge, enabling better  decisions through comprehensive visibility into technology landscapes, business capabilities, and project initiatives.
+### Vision Statement
+To provide people with a single source of truth for enterprise knowledge, enabling better decisions through comprehensive visibility into technology landscapes, business capabilities, and project initiatives via an intuitive, collaborative documentation platform.
 
 ### Success Metrics
-- **Data Integration Accuracy:** 99.5% successful data sync rate from source systems
-- **Query Performance:** Sub-2 second response time for complex architecture queries
-- **User Adoption:** 80% of enterprise architects actively using the platform within 6 months
-- **Data Freshness:** Maximum 24-hour lag between source system updates and platform visibility
+- **User Experience:** Sub-2 second response time for content search and navigation
+- **User Adoption:** 80% of target users actively using the platform within 6 months
+- **Content Quality:** 95% of content accessible through knowledge view with proper formatting
+- **System Availability:** 99.9% uptime with real-time microservices health monitoring
+- **Multi-Client Usage:** Active usage across web, desktop, and browser extension clients
 
 ## Target Users
 
 ### Primary Users
-- **Enterprise Architects:** Need comprehensive view of technology landscape and dependencies
-- **Solution Architects:** Require detailed application and integration mapping
-- **Business Analysts:** Need visibility into business capability coverage and gaps
-- **IT Leadership:** Require strategic oversight and portfolio management insights
-- **Engineers** Require information to build effective systems.
+- **Enterprise Architects:** Need comprehensive view of technology landscape and dependencies with portfolio health dashboards
+- **Solution Architects:** Require detailed application and integration mapping with implementation guidance
+- **Business Analysts:** Need visibility into business capability coverage and gaps with strategic alignment views
+- **IT Leadership:** Require strategic oversight and portfolio management insights with executive dashboards
+- **Software Engineers:** Need implementation guidance, code patterns, and technical decision support
+- **Product Owners/Managers:** Require product-technology alignment and feature feasibility assessment
+- **Delivery Managers:** Need project coordination, dependency management, and delivery intelligence
 
 
 ### Secondary Users
@@ -34,180 +37,192 @@ To provide people with a single source of truth for enterprise knowledge, enabli
 
 ## Core Features & Requirements
 
-### 1. Data Integration Engine
+### 1. Document Management & Editing
 
-#### 1.1 ARIS Integration
-- **Requirement:** Scheduled import of business process models, organizational structures, and application portfolios
-- **Data Types:** Business processes, organizational units, application systems, data objects, technology components
-- **Sync Frequency:** Configurable (default: daily at 2 AM)
-- **Error Handling:** Comprehensive logging with retry mechanisms and failure notifications
+#### 1.1 Markdown Editor
+- **Requirement:** Rich markdown editor with live preview capabilities
+- **Features:** Syntax highlighting, split view, real-time preview, GitHub Flavored Markdown support
+- **File Support:** Markdown, images, PDFs, text files with automatic type detection
+- **Interface:** Glassmorphism design with blur effects and modern styling
 
-#### 1.2 Jira Integration
-- **Requirement:** Import project data, epics, stories, and initiative tracking
-- **Data Types:** Projects, epics, user stories, initiative roadmaps, resource allocations
-- **Sync Frequency:** Configurable (default: every 4 hours)
-- **Relationship Mapping:** Link Jira initiatives to ARIS business capabilities and applications
+#### 1.2 File Management
+- **Requirement:** Comprehensive file and folder management system
+- **Features:** File tree navigation, upload/download, CRUD operations, drag-and-drop support
+- **Security:** Path traversal protection, file validation, size limits (10MB)
+- **Organization:** Hierarchical folder structure with space-based organization
 
-#### 1.3 Data Correlation Engine
-- **Requirement:** Intelligent linking of data across systems using configurable rules
-- **Capabilities:** 
-  - Fuzzy matching for similar entity names
-  - Manual override capabilities for correlation rules
-  - Machine learning-based suggestion engine for new correlations
-  - Audit trail for all correlation decisions
+#### 1.3 Knowledge View
+- **Requirement:** Read-only interface for content exploration and discovery
+- **Features:** 
+  - Intelligent search with content-aware matching
+  - Space navigation with readonly and editable spaces
+  - Rich markdown rendering with syntax highlighting
+  - Contextual search results with content previews
 
-### 2. Data Model (Based on LeanIX Components)
+### 2. Microservices Architecture
 
-#### 2.1 Core Entities
+#### 2.1 Core Services
+The platform implements 11 integrated microservices:
 
-**Applications**
-- ID, Name, Description, Version
-- Business Criticality (Mission Critical, Important, Utility, Experimental)
-- Application Type (Core System, Supporting System, Infrastructure)
-- Lifecycle Phase (Plan, Active, Phaseout, End of Life)
-- Owner (Business, Technical)
-- Technologies Used
-- Integration Points
-- Business Capabilities Supported
+**Searching Service**
+- JSON data storage with Map-based in-memory storage
+- Recursive case-insensitive text search across nested structures
+- REST API for data management (add, search, delete operations)
+- UUID-based key generation for stored objects
 
-**Technologies**
-- ID, Name, Description, Version
-- Technology Type (Programming Language, Database, Framework, Infrastructure)
-- Vendor Information
-- License Information
-- End-of-Life Dates
-- Applications Using Technology
-- Risk Assessment
+**Caching Service**
+- Multi-provider support (Redis, Memcached, In-memory)
+- Configurable caching strategies and TTL settings
+- Provider abstraction for seamless switching
+- Performance optimization for frequent queries
 
-**Integrations**
-- ID, Name, Description
-- Source Application
-- Target Application
-- Integration Type (API, File Transfer, Database, Real-time)
-- Data Flow Direction
-- Protocol/Technology Used
-- SLA Requirements
-- Business Criticality
+**Filing Service**
+- Multi-cloud file storage (Local filesystem, FTP, AWS S3)
+- Provider-based architecture for storage abstraction
+- Secure file operations with validation
+- Cross-platform compatibility
 
-**Business Capabilities**
-- ID, Name, Description
-- Parent/Child Relationships (Hierarchical)
-- Maturity Level
-- Strategic Importance
-- Supporting Applications
-- Related Initiatives
-- Performance Metrics
+**Logging Service**
+- Structured logging with multiple output targets
+- Console and file-based logging providers
+- Configurable log levels and formatting
+- Integration with monitoring systems
 
-**Initiatives**
-- ID, Name, Description
-- Initiative Type (Strategic, Operational, Compliance)
-- Status (Planning, Active, On Hold, Completed)
-- Timeline (Start Date, End Date, Milestones)
-- Budget Information
-- Stakeholders
-- Related Business Capabilities
-- Impacted Applications
+**Other Services**
+- DataServe: Database operations and data management
+- Queueing: Message queue management with in-memory implementation
+- Measuring: Metrics collection and performance monitoring
+- Notifying: Multi-channel notification system
+- Scheduling: Cron-based task scheduling
+- Working: Background worker processes
+- Workflow: Step-based workflow engine with error handling
 
-#### 2.2 Relationship Models
-- **Many-to-Many:** Applications ↔ Technologies
-- **One-to-Many:** Business Capabilities → Applications
-- **Many-to-Many:** Initiatives ↔ Business Capabilities
-- **One-to-Many:** Applications → Integrations (as source/target)
+#### 2.2 Service Architecture
+- **Service Discovery:** Auto-registration with main server
+- **Health Monitoring:** Real-time status checking for all services
+- **Event-Driven:** Services communicate via EventEmitter patterns
+- **Modular Design:** Independent development and deployment
+- **API Consistency:** Standardized REST endpoints across services
 
-### 3. API Layer
+### 3. Git Integration & Version Control
 
-#### 3.1 RESTful API
-- **Requirement:** Comprehensive REST API for all data access
-- **Authentication:** JWT-based authentication with role-based access control
-- **Rate Limiting:** Configurable rate limits per user/role
-- **Documentation:** OpenAPI 3.0 specification with interactive documentation
+#### 3.1 Git Operations
+- **Requirement:** Full Git integration for version control
+- **Features:** Commit, push, pull, clone, status operations
+- **Implementation:** Simple-git library integration
+- **Security:** Repository access controls and authentication
+- **Workflow:** Direct integration with file editing interface
+
+#### 3.2 API Layer
+- **Requirement:** Comprehensive REST API for all operations
+- **Authentication:** Passport.js with local authentication and session management
+- **Rate Limiting:** Express rate limiting (100 requests per 15 minutes)
+- **Documentation:** OpenAPI 3.0 specifications with Swagger UI integration
+- **Monitoring:** Built-in API call logging and performance tracking
 
 
-### 4. Search and Query Engine
+### 4. Multi-Client Ecosystem
 
-#### 4.1 Advanced Search
-- **Requirement:** Full-text search across all entity types
-- **Capabilities:**
-  - Faceted search with filters
-  - Saved search queries
-  - Search result ranking based on relevance
-  - Auto-complete suggestions
+#### 4.1 Web Application
+- **Technology:** React 18 with modern glassmorphism design
+- **Features:** Full-featured editor, file management, Git integration
+- **Performance:** Optimized for desktop and mobile browsers
+- **Architecture:** Context API for state management, Axios for API communication
 
-#### 4.2 Analytical Queries
-- **Requirement:** Pre-built analytical queries for common architecture patterns
-- **Examples:**
-  - "Show all applications using end-of-life technologies"
-  - "Find business capabilities with no supporting applications"
-  - "Identify integration bottlenecks"
-  - "Map initiative impact across business capabilities"
+#### 4.2 Desktop Application
+- **Technology:** Electron with cross-platform support
+- **Platforms:** Windows (NSIS installer), macOS (DMG), Linux (AppImage)
+- **Features:** Native file system access, OS notifications, offline capabilities
+- **Integration:** Same React codebase as web client
 
-### 5. Reporting and Visualization
+#### 4.3 Browser Extensions
+- **Platforms:** Chrome, Edge, VS Code extensions
+- **Features:** Quick documentation search, preview files, configurable server connection
+- **Manifest:** V3 compatible for modern browser support
+- **Integration:** Popup interface with background service workers
 
-#### 5.1 Dashboard Framework
-- **Requirement:** Customizable dashboards for different user roles
-- **Components:**
-  - Architecture overview widgets
-  - Risk assessment summaries
-  - Initiative progress tracking
-  - Technology portfolio health
+#### 4.4 File Watcher Service
+- **Technology:** Node.js with Chokidar for file system monitoring
+- **Features:** Automated content synchronization, configurable watch patterns
+- **Configuration:** JSON-based configuration with verbose logging options
+- **Integration:** API client for automated content updates
 
-#### 5.2 Architecture Diagrams
-- **Requirement:** Auto-generated architecture diagrams
-- **Types:**
-  - Application landscape views
-  - Technology stack diagrams
-  - Integration flow diagrams
-  - Business capability maps
+### 5. User Experience & Interface Design
+
+#### 5.1 Glassmorphism Design System
+- **Visual Design:** Modern glass-like interface with blur effects and transparency
+- **Components:** Translucent backgrounds, subtle borders and shadows, gradient backgrounds
+- **Responsive:** Mobile-friendly design with adaptive layouts
+- **Accessibility:** High contrast support and keyboard navigation
+
+#### 5.2 Role-Based Navigation
+Different user roles have optimized navigation patterns:
+- **Executive Dashboard:** Portfolio health, strategic overview, initiative tracking
+- **Delivery Manager View:** Project timeline, dependency management, resource allocation
+- **Product Owner Interface:** Feature delivery, technical feasibility, customer journey mapping  
+- **Engineer Workspace:** Implementation guidance, code patterns, technical documentation
+
+#### 5.3 UI Prototyping System
+- **Static Mockups:** HTML-based architecture viewpoint pages
+- **Design System:** Unified CSS styling across all viewpoints
+- **Content Types:** Business, capability, context, data, technology, principles views
+- **Interactive Elements:** Solution navigation and knowledge view integration
 
 ## Technical Architecture
 
 ### Technology Stack
-- **Backend:** Node.js with Express.js framework
-- **Database:** Markdown files stored in GitHub repository
-- **Authentication:** JWT with OAuth2 integration
-- **Caching:** Redis for query result caching
-- **Search:** Elasticsearch for full-text search capabilities
-- **Scheduling:** Node-cron for scheduled data imports
-- **Documentation:** Auto-generated from code comments
+- **Backend:** Node.js with Express.js framework and microservices architecture
+- **Frontend:** React 18 with React DOM, React Markdown with syntax highlighting
+- **Desktop:** Electron for cross-platform native applications  
+- **Storage:** File-system based with Git version control integration
+- **Authentication:** Passport.js with local authentication and session management
+- **Caching:** Multi-provider (Redis, Memcached, In-memory) with provider abstraction
+- **Security:** Helmet.js, CORS, rate limiting, path traversal protection
+- **Testing:** Jest, SuperTest, Playwright for comprehensive test coverage
+- **Documentation:** OpenAPI 3.0 with Swagger UI integration
 
 ### Data Storage Strategy
 
 #### File Structure
 ```
-/data
-  /applications
-    - app-001.md
-    - app-002.md
-  /technologies
-    - tech-001.md
-    - tech-002.md
-  /integrations
-    - integration-001.md
-  /business-capabilities
-    - capability-001.md
-  /initiatives
-    - initiative-001.md
-  /relationships
-    - app-tech-relationships.md
-    - capability-app-relationships.md
+/content
+  /{space-name}
+    /markdown
+      /folders...
+        - document.md
+        - image.jpg
+        - document.pdf
+    /templates
+      - template.json
+/content-templates
+  - meeting-notes.json  
+  - daily-feedback.json
+/content-shared
+  - shared-document.md
+/content-readonly
+  - readonly-content.md
 ```
 
-#### Markdown Schema
-Each entity type will have a standardized YAML front matter schema with markdown content for descriptions and documentation.
+#### Content Organization
+- **Space-based:** Multi-tenant spaces with configurable access controls
+- **File Types:** Markdown, images, PDFs, text files with automatic type detection
+- **Templates:** JSON-based content templates for structured document creation
+- **Metadata:** YAML frontmatter support with comment parsing
+- **Git Integration:** Full repository version control with commit/push workflows
 
 ### Integration Architecture
 
-#### ARIS Connector
-- **Protocol:** REST API or XML export processing
-- **Authentication:** Service account with appropriate permissions
-- **Data Validation:** Schema validation before import
-- **Error Handling:** Comprehensive logging and alerting
+#### Plugin System
+- **Architecture:** Extensible plugin system for document processing
+- **Plugins:** Word-to-Markdown converter, PowerPoint-to-Markdown, Claude AI analysis
+- **API:** Standardized plugin interface for easy extension
+- **Processing:** Automated document conversion and content enrichment
 
-#### Jira Connector
-- **Protocol:** Jira REST API
-- **Authentication:** OAuth2 or API tokens
-- **Data Filtering:** Configurable project and issue type filters
-- **Rate Limiting:** Respect Jira API rate limits
+#### External Integrations
+- **Claude AI:** Document analysis and content enhancement
+- **Ollama AI:** Local AI integration for content processing  
+- **Office Documents:** DOCX and PPTX to Markdown conversion
+- **File Formats:** Multi-format support with automatic conversion
 
 ## Security Requirements
 
@@ -226,42 +241,48 @@ Each entity type will have a standardized YAML front matter schema with markdown
 ## Performance Requirements
 
 ### Scalability
-- **Concurrent Users:** Support 100+ concurrent users
-- **Data Volume:** Handle 10,000+ applications and 50,000+ relationships
-- **Response Time:** 95% of queries under 2 seconds
-- **Availability:** 99.9% uptime SLA
+- **Concurrent Users:** Support 100+ concurrent users across web, desktop, and extension clients
+- **Content Volume:** Handle thousands of documents with efficient file management
+- **Response Time:** Sub-2 second response time for search and content loading
+- **Availability:** 99.9% uptime SLA with microservices health monitoring
 
 ### Monitoring & Alerting
-- **Application Monitoring:** Performance metrics and error tracking
-- **Data Quality Monitoring:** Automated data quality checks
-- **Integration Monitoring:** Real-time status of data imports
-- **User Activity Monitoring:** Usage analytics and performance tracking
+- **Application Monitoring:** Built-in API monitoring dashboard with call tracking
+- **Service Health:** Real-time health checks for all 11 microservices
+- **Performance Tracking:** Load testing framework for all services
+- **User Analytics:** Usage tracking and performance optimization
 
-## Implementation Roadmap
+## Implementation Status
 
-### Phase 1: Foundation (Months 1-3)
-- Core data models and storage layer
-- Basic ARIS integration
-- RESTful API development
-- Authentication and authorization
+### ✅ Completed Features (Core Platform)
+- Glassmorphism-themed markdown editor with live preview
+- File management system with upload/download capabilities
+- Git integration (commit, push, pull, clone, status)
+- Multi-client ecosystem (web, desktop, browser extensions)
+- 11 microservices with health monitoring
+- Authentication and session management
+- API monitoring dashboard
+- Comprehensive testing framework (Jest, Playwright, load testing)
 
-### Phase 2: Integration & Search (Months 4-6)
-- Jira integration implementation
-- Data correlation engine
-- Search and query capabilities
-- Basic reporting dashboard
+### ✅ Recently Implemented (Knowledge Features)
+- Knowledge view with read-only interface
+- Intelligent search with content matching
+- Space navigation and management
+- Content preview with rich markdown rendering
+- Search results with contextual previews
+- File watcher service for content synchronization
 
-### Phase 3: Advanced Features (Months 7-9)
-- GraphQL API
-- Advanced analytics and reporting
-- Architecture diagram generation
-- Performance optimization
+### 🚧 In Progress
+- UI prototyping system with architecture viewpoints
+- Enhanced plugin system for document processing
+- Advanced search capabilities
+- Performance optimizations
 
-### Phase 4: Enterprise Features (Months 10-12)
-- Advanced security features
-- Compliance reporting
-- Enterprise integrations
-- Production deployment and monitoring
+### 📋 Future Enhancements
+- Advanced analytics and reporting dashboards
+- Integration with enterprise systems
+- Mobile application development
+- Advanced collaboration features
 
 ## Risk Assessment
 

@@ -1,6 +1,6 @@
 # Architecture Artifacts Editor
 
-A comprehensive enterprise architecture documentation platform with glassmorphism theme, featuring a modern markdown editor, microservices management platform, and multi-client ecosystem. Built for architects, product owners, and business analysts to capture, manage, and analyze architecture documentation with Git integration, collaborative editing, and comprehensive service monitoring across web, desktop, and browser extension clients.
+A comprehensive enterprise architecture documentation platform with glassmorphism theme, featuring a modern markdown editor, microservices management platform, multi-client ecosystem, and knowledge view functionality. Built for architects, product owners, and business analysts to capture, manage, and analyze architecture documentation with Git integration, collaborative editing, comprehensive service monitoring, and intelligent knowledge discovery across web, desktop, and browser extension clients.
 
 ## Features
 
@@ -45,12 +45,20 @@ A comprehensive enterprise architecture documentation platform with glassmorphis
 - **Browser Extensions**: Chrome and Edge extensions for quick documentation search
 - **Template System**: JSON-based content templates for meeting notes and daily feedback
 
+### Knowledge View & Discovery
+- **Knowledge View**: Read-only interface for content exploration and discovery
+- **Intelligent Search**: Content-aware search with file and content matching
+- **Space Navigation**: Multi-space support with readonly and editable spaces
+- **Content Preview**: Rich markdown rendering with syntax highlighting
+- **Search Results**: Contextual search results with content previews
+
 ### Additional Services
 - **Filing Service**: Multi-provider file storage (Local, FTP, AWS S3)
 - **DataServe Service**: Database operations and data management
 - **Caching Service**: Multi-provider caching (In-memory, Redis, Memcached)
 - **Authentication**: Passport.js with local authentication and session management
 - **Workflow Engine**: Step-based workflow processing with error handling
+- **File Watcher**: Automated content synchronization and monitoring
 
 ## Tech Stack
 
@@ -110,6 +118,8 @@ npm run dev
 This will start:
 - Backend server on `http://localhost:5000`
 - Frontend development server on `http://localhost:3000`
+- All microservices with health monitoring
+- File watcher service for content synchronization
 
 ## Project Structure
 
@@ -146,7 +156,11 @@ dt-architecture-artifacts/
 │   └── src/                  # Same React app as web client
 ├── client-extensions/         # Browser extensions
 │   ├── google/               # Chrome extension
-│   └── edge/                 # Edge extension
+│   ├── edge/                 # Edge extension
+│   └── vscode/               # VS Code extension
+├── client-watcher/           # File watcher service
+│   ├── src/                  # Watcher source code
+│   └── watcher.config.json   # Watcher configuration
 ├── content/                  # Markdown files storage
 ├── content-templates/        # JSON templates for content
 ├── tests/                    # Comprehensive test suite
@@ -154,7 +168,11 @@ dt-architecture-artifacts/
 │   └── mocks/                # Test mocks and fixtures
 ├── tests-api/                # HTTP API tests
 ├── tests-load/               # Load testing framework
-└── package.json              # Root dependencies
+├── tests-playwright/         # Playwright E2E tests
+├── ui/                      # Static UI mockups and prototypes
+│   ├── public/              # Architecture viewpoint HTML pages
+│   └── styles/              # UI styling and themes
+└── package.json             # Root dependencies
 ```
 
 ## API Endpoints
@@ -222,21 +240,26 @@ The application features a modern glassmorphism design with:
 - `npm run server` - Start backend server only
 - `npm run client` - Start frontend only (from client directory)
 - `npm run electron` - Start desktop application with server
+- `npm run watcher` - Start file watcher service
 - `npm run build` - Build frontend for production
-- `npm run install-deps` - Install all dependencies (root, client, electron)
+- `npm run install-deps` - Install all dependencies (root, client, electron, extensions, watcher)
 - `npm test` - Run all tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run test:client` - Run client-side tests only
 - `npm run test:server` - Run server-side tests only
+- `npm run test:playwright` - Run Playwright E2E tests
+- `npm run ui` - Start UI mockup server
 
 ### Testing & Quality Assurance
 The project includes comprehensive testing at multiple levels:
 - **Unit Tests**: Jest-based testing for all services and components
 - **Integration Tests**: API endpoint testing with SuperTest
+- **E2E Tests**: Playwright-based end-to-end testing for complete user workflows
 - **Load Tests**: Performance testing for all microservices
 - **Coverage**: 70% minimum coverage threshold across all metrics
 - **API Tests**: HTTP-based testing with dedicated .http files
+- **UI Tests**: Static UI component and mockup testing
 
 ### Contributing
 1. Fork the repository
@@ -270,6 +293,7 @@ The Electron-based desktop app provides native OS integration:
 Quick access to documentation search from any webpage:
 - **Chrome**: Load from `client-extensions/google/`
 - **Edge**: Load from `client-extensions/edge/`
+- **VS Code**: Extension for in-editor documentation access
 - **Features**: Search documentation, preview files, configurable server connection
 
 ## Enterprise Features
