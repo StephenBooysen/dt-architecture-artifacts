@@ -31,6 +31,8 @@ const TemplatesList = ({
   onTemplateSelect,
   isLoading
 }) => {
+  // Ensure templates is always an array
+  const templatesArray = Array.isArray(templates) ? templates : [];
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -192,7 +194,7 @@ const TemplatesList = ({
             {showCreateForm ? 'Create New Template' : 'Templates'}
           </h2>
           <p className="text-muted mb-0">
-            {showCreateForm ? 'Fill in the details below to create a new template.' : `Displaying ${templates.length} template${templates.length !== 1 ? 's' : ''}.`}
+            {showCreateForm ? 'Fill in the details below to create a new template.' : `Displaying ${templatesArray.length} template${templatesArray.length !== 1 ? 's' : ''}.`}
           </p>
         </div>
         {showCreateForm ? (
@@ -224,7 +226,7 @@ const TemplatesList = ({
             </div>
           </div>
         </div>
-      ) : templates.length === 0 ? (
+      ) : templatesArray.length === 0 ? (
         <div className="card shadow-sm border-0 home-section-card">
           <div className="card-body p-4 text-center" style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
             <div className="mb-4">
@@ -327,7 +329,7 @@ const TemplatesList = ({
         <div className="card shadow-sm border-0 home-section-card">
           <div className="card-body p-4">
             <div className="row">
-              {templates.map((template) => (
+              {templatesArray.map((template) => (
                 <div key={template.name} className="col-lg-3 col-md-4 col-6 mb-3">
                   <div className={`home-dashboard-block p-3 h-100 position-relative ${highlightedTemplate === template.name ? 'border-primary border-2' : ''}`}>
                     <div 
