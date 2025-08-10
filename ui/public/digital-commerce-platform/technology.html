@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Commerce Platform - Technology View</title>
     <link rel="stylesheet" href="/styles/unified-solution.css">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
 </head>
 <body data-theme="technology">
     <div class="viewpoint-container">
@@ -374,30 +373,7 @@
                 
                 <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 25px; overflow-x: auto;">
                     <div style="min-width: 800px;">
-                        <pre class="mermaid">
-gantt
-    title Technology Modernization Roadmap 2024
-    dateFormat YYYY-MM-DD
-    axisFormat %m/%d
-    
-    section Frontend Modernization
-    jQuery Assessment    :done, assess, 2024-01-01, 2024-01-31
-    React Migration      :active, migrate, 2024-02-01, 2024-04-30
-    Testing              :testing, 2024-05-01, 2024-05-31
-    
-    section Database Infrastructure  
-    Planning             :done, db-plan, 2024-03-01, 2024-03-31
-    Migration            :crit, db-migrate, 2024-04-01, 2024-06-30
-    Optimization         :db-opt, 2024-07-01, 2024-07-31
-    
-    section Observability Stack
-    Tool Evaluation      :obs-eval, 2024-06-01, 2024-06-30
-    Prometheus Setup     :prom, 2024-07-01, 2024-08-31
-    Grafana & Jaeger     :graf, 2024-09-01, 2024-10-31
-    
-    section CI/CD Pipeline
-    GitHub Actions       :cicd, 2024-10-01, 2024-12-31
-                        </pre>
+                        <div id="gantt-chart" style="height: 400px; width: 100%;"></div>
                     </div>
                 </div>
                 
@@ -422,21 +398,155 @@ gantt
             </div>
         </div>
     </div>
-    
+
+    <!-- Frappe Gantt CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
+    <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
+
     <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'default',
-            gantt: {
-                fontSize: 12,
-                fontFamily: 'Arial, sans-serif',
-                sectionFontSize: 14,
-                numberSectionStyles: 4,
-                axisFormat: '%m/%d',
-                gridLineStartPadding: 350,
-                bottomPadding: 25,
-                rightPadding: 75
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Technology Roadmap Tasks
+            const tasks = [
+                {
+                    id: 'migration-planning',
+                    name: 'Migration Planning & Assessment',
+                    start: '2024-08-01',
+                    end: '2024-10-31',
+                    progress: 100,
+                    dependencies: '',
+                    custom_class: 'completed'
+                },
+                {
+                    id: 'react-migration',
+                    name: 'React Component Modernization',
+                    start: '2024-09-15',
+                    end: '2025-03-15',
+                    progress: 75,
+                    dependencies: 'migration-planning',
+                    custom_class: 'in-progress'
+                },
+                {
+                    id: 'database-upgrade',
+                    name: 'PostgreSQL 16 Upgrade',
+                    start: '2025-01-15',
+                    end: '2025-04-30',
+                    progress: 10,
+                    dependencies: 'migration-planning',
+                    custom_class: 'planned'
+                },
+                {
+                    id: 'kubernetes-upgrade',
+                    name: 'Kubernetes 1.30 Migration',
+                    start: '2025-02-01',
+                    end: '2025-05-31',
+                    progress: 0,
+                    dependencies: 'react-migration',
+                    custom_class: 'planned'
+                },
+                {
+                    id: 'monitoring-stack',
+                    name: 'Enhanced Monitoring Implementation',
+                    start: '2024-11-01',
+                    end: '2025-02-28',
+                    progress: 40,
+                    dependencies: 'migration-planning',
+                    custom_class: 'in-progress'
+                },
+                {
+                    id: 'security-scanning',
+                    name: 'Automated Security Scanning',
+                    start: '2024-12-01',
+                    end: '2025-01-31',
+                    progress: 60,
+                    dependencies: 'migration-planning',
+                    custom_class: 'in-progress'
+                },
+                {
+                    id: 'microservices-split',
+                    name: 'Microservices Architecture Refactor',
+                    start: '2025-03-01',
+                    end: '2025-08-31',
+                    progress: 0,
+                    dependencies: 'database-upgrade',
+                    custom_class: 'planned'
+                },
+                {
+                    id: 'performance-optimization',
+                    name: 'Performance & Scaling Optimization',
+                    start: '2025-06-01',
+                    end: '2025-09-30',
+                    progress: 0,
+                    dependencies: 'kubernetes-upgrade',
+                    custom_class: 'planned'
+                }
+            ];
+
+            const gantt = new Gantt('#gantt-chart', tasks, {
+                header_height: 50,
+                column_width: 30,
+                step: 24,
+                view_modes: ['Quarter Day','Week', 'Month'],
+                bar_height: 20,
+                bar_corner_radius: 3,
+                arrow_curve: 5,
+                padding: 18,
+                view_mode: 'Month',
+                date_format: 'YYYY-MM-DD',
+                language: 'en',
+                custom_popup_html: function(task) {
+                    const start_date = task._start.toDateString();
+                    const end_date = task._end.toDateString();
+                    const progress = task.progress || 0;
+                    return `
+                        <div class="details-container" style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 300px;">
+                            <h5 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 16px;">${task.name}</h5>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Start:</strong> ${start_date}</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>End:</strong> ${end_date}</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Progress:</strong> ${progress}%</p>
+                            <div style="background: #f8f9fa; height: 6px; border-radius: 3px; margin-top: 8px;">
+                                <div style="background: ${progress === 100 ? '#28a745' : progress > 0 ? '#ffc107' : '#6c757d'}; height: 100%; width: ${progress}%; border-radius: 3px; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Add view mode switcher buttons
+            const viewModes = ['Day', 'Week', 'Month', 'Quarter Day'];
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = 'margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap;';
+            
+            viewModes.forEach(mode => {
+                const button = document.createElement('button');
+                button.textContent = mode;
+                button.style.cssText = `
+                    padding: 8px 16px; 
+                    border: 1px solid #ddd; 
+                    background: ${mode === 'Month' ? '#007bff' : 'white'}; 
+                    color: ${mode === 'Month' ? 'white' : '#333'}; 
+                    border-radius: 4px; 
+                    cursor: pointer; 
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                `;
+                
+                button.addEventListener('click', function() {
+                    // Update button styles
+                    buttonContainer.querySelectorAll('button').forEach(btn => {
+                        btn.style.background = 'white';
+                        btn.style.color = '#333';
+                    });
+                    this.style.background = '#007bff';
+                    this.style.color = 'white';
+                    
+                    // Change gantt view
+                    gantt.change_view_mode(mode);
+                });
+                
+                buttonContainer.appendChild(button);
+            });
+            
+            document.querySelector('#gantt-chart').parentNode.insertBefore(buttonContainer, document.querySelector('#gantt-chart'));
         });
     </script>
 </body>

@@ -98,7 +98,7 @@ module.exports = {
   },
 
   create: (options = {}) => {
-    const plugin = new SampleApiInterceptorPlugin(options);
+    const plugin = new (options);
     
     return {
       middleware: (req, res, next) => plugin.onRequestIntercept(req, res, next),

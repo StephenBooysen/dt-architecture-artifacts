@@ -30,7 +30,8 @@
     "test:playwright": "playwright test",
     "test:playwright:ui": "playwright test --ui",
     "test:playwright:debug": "playwright test --debug",
-    "test:playwright:headed": "playwright test --headed"
+    "test:playwright:headed": "playwright test --headed",
+    "ui": "cd ui && npm start"
   },
   "author": "Stephen Booysen",
   "license": "ISC",

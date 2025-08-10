@@ -94,7 +94,7 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search', 'new-markdown'
+  const [currentView, setCurrentView] = useState('home');
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
