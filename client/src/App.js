@@ -98,8 +98,6 @@ function AppContent() {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [draftFiles, setDraftFiles] = useState([]);
-  const [providerInfo] = useState({ provider: 'local', supportsDrafts: false });
-  const [lastSyncCheck, setLastSyncCheck] = useState(null);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('design-artifacts-sidebar-width');
     return saved ? parseInt(saved, 10) : 300;
@@ -257,98 +255,61 @@ function AppContent() {
   };
 
   /**
-   * Checks for draft files from the server if the provider supports drafts.
+   * Checks for draft files from the server by examining file metadata.
    * 
-   * This function queries the server for any draft files that haven't been
-   * published yet. It updates the draft files state and changes indicator
-   * based on the response. Only executes if the provider supports drafts.
+   * This function queries the files endpoint to check for files marked as drafts.
+   * It updates the draft files state and changes indicator based on the response.
    * 
    * @async
    * @returns {Promise<void>}
    */
   const checkForDrafts = useCallback(async () => {
-    // Only check for drafts if provider supports them
-    if (!providerInfo.supportsDrafts) {
-      setDraftFiles([]);
-      setHasChanges(false);
-      return;
-    }
+    if (!currentSpace) return;
 
     try {
-      const response = await fetch('/api/drafts', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setDraftFiles(data.drafts || []);
-        setHasChanges(data.drafts && data.drafts.length > 0);
-      }
+      const fileTree = await fetchFiles(currentSpace);
+      const draftPaths = [];
+      
+      // Recursively check all files for draft status
+      const checkFileForDrafts = (items) => {
+        items.forEach(item => {
+          if (item.type === 'file' && item.isDraft) {
+            draftPaths.push(item.path);
+          } else if (item.type === 'directory' && item.children) {
+            checkFileForDrafts(item.children);
+          }
+        });
+      };
+      
+      checkFileForDrafts(fileTree);
+      setDraftFiles(draftPaths);
+      setHasChanges(draftPaths.length > 0);
     } catch (error) {
       console.error('Failed to check for drafts:', error);
     }
-  }, [providerInfo.supportsDrafts]);
+  }, [currentSpace]);
 
-  /**
-   * Checks the remote Git sync status for changes.
-   * 
-   * This function polls the server to detect when remote changes have been
-   * pulled from the Git repository. When changes are detected, it triggers
-   * an immediate file tree sync to update the local state with the new content.
-   * 
-   * @async
-   * @returns {Promise<void>}
-   */
-  const checkSyncStatus = useCallback(async () => {
-    try {
-      const response = await fetch('/api/git/sync-status', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.lastSync && data.lastSync !== lastSyncCheck) {
-          // Remote changes were pulled, trigger immediate sync
-          console.log('Remote changes detected, syncing file tree...');
-          setLastSyncCheck(data.lastSync);
-          await syncFiles(); // Immediate sync
-        }
-      }
-    } catch (error) {
-      console.error('Failed to check sync status:', error);
-    }
-  }, [lastSyncCheck, syncFiles]);
 
   // Set up periodic sync to catch external changes and check for drafts
   useEffect(() => {
     if (isAuthenticated && files.length > 0) {
       
       const syncInterval = setInterval(syncFiles, 30000); // Sync every 30 seconds
-      const syncStatusInterval = setInterval(checkSyncStatus, 5000); // Check for remote changes every 5 seconds
-      
-      // Only set up draft polling if provider supports drafts
-      let draftInterval;
-      if (providerInfo.supportsDrafts) {
-        draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
-      }
+      const draftInterval = setInterval(checkForDrafts, 5000); // Check for drafts every 5 seconds
       
       return () => {
         clearInterval(syncInterval);
-        clearInterval(syncStatusInterval);
-        if (draftInterval) clearInterval(draftInterval);
+        clearInterval(draftInterval);
       };
     }
-  }, [isAuthenticated, files.length, providerInfo.supportsDrafts, checkForDrafts, checkSyncStatus]);
+  }, [isAuthenticated, files.length, checkForDrafts]);
 
-  // Provider info is set to default values above
-  // TODO: Implement fetchProviderInfo if dynamic provider detection is needed
-
-  // Initial draft check when authenticated and provider info is loaded
+  // Initial draft check when authenticated and space is loaded
   useEffect(() => {
-    if (isAuthenticated && providerInfo) {
+    if (isAuthenticated && currentSpace) {
       checkForDrafts();
     }
-  }, [isAuthenticated, providerInfo, checkForDrafts]);
+  }, [isAuthenticated, currentSpace, checkForDrafts]);
 
   /**
    * Finds a node in the file tree by its path.
@@ -800,9 +761,7 @@ function AppContent() {
       }
       
       // Check for drafts after saving
-      if (providerInfo.supportsDrafts) {
-        checkForDrafts();
-      }
+      checkForDrafts();
     } catch (error) {
       toast.error('Failed to save file');
     } finally {
@@ -897,9 +856,7 @@ function AppContent() {
       await handleFileSelect(filePath);
       
       // Check for drafts after creating file
-      if (providerInfo.supportsDrafts) {
-        checkForDrafts();
-      }
+      checkForDrafts();
     } catch (error) {
       // Rollback on error - remove the file from tree
       setFiles(files);
@@ -929,9 +886,7 @@ function AppContent() {
       toast.success('Item deleted successfully');
       
       // Check for drafts after deleting item
-      if (providerInfo.supportsDrafts) {
-        checkForDrafts();
-      }
+      checkForDrafts();
     } catch (error) {
       // Rollback on error - restore original tree
       setFiles(originalTree);
@@ -1051,10 +1006,8 @@ function AppContent() {
     toast.success('File uploaded successfully');
     
     // Check for drafts after uploading file
-    if (providerInfo.supportsDrafts) {
-      checkForDrafts();
-    }
-  }, [files, providerInfo.supportsDrafts, checkForDrafts]);
+    checkForDrafts();
+  }, [files, checkForDrafts]);
 
   const handleFolderToggle = useCallback((folderPath, isExpanded) => {
     const newExpanded = new Set(expandedFolders);
@@ -1641,7 +1594,6 @@ function AppContent() {
                   onPublish={() => setShowPublishModal(true)}
                   hasChanges={hasChanges}
                   draftFiles={draftFiles}
-                  providerInfo={providerInfo}
                   onViewChange={handleViewChange}
                   currentSpace={currentSpace}
                   onSpaceChange={handleSpaceChange}
@@ -1742,6 +1694,7 @@ function AppContent() {
         <PublishModal
           onPublish={handlePublish}
           onClose={() => setShowPublishModal(false)}
+          currentSpace={currentSpace}
         />
       )}
 

@@ -182,6 +182,42 @@ async function loadFilingProvider(req, res, next) {
 }
 
 /**
+ * Middleware to load space configuration without loading filing provider
+ */
+async function loadSpaceConfig(req, res, next) {
+  const spaceName = req.params.space;
+  
+  if (!spaceName) {
+    return res.status(400).json({ error: 'Space parameter is required' });
+  }
+
+  try {
+    // Load space configuration
+    const spacesPath = path.join(__dirname, '../../../../server-data/spaces.json');
+    if (!fs.existsSync(spacesPath)) {
+      throw new Error('Spaces configuration not found');
+    }
+
+    const spacesData = fs.readFileSync(spacesPath, 'utf8');
+    const spaces = JSON.parse(spacesData);
+    
+    // Find the space configuration
+    const spaceConfig = spaces.find(space => space.space === spaceName);
+    if (!spaceConfig) {
+      throw new Error(`Space '${spaceName}' not found in configuration`);
+    }
+    
+    req.spaceConfig = spaceConfig;
+    req.spaceName = spaceName;
+    
+    next();
+  } catch (error) {
+    console.error(`Error loading space config for ${spaceName}:`, error);
+    return res.status(404).json({ error: error.message });
+  }
+}
+
+/**
  * Middleware to check space access permissions
  * Includes authentication checking for both session and token-based auth
  */
@@ -277,6 +313,17 @@ async function getDirectoryTreeForSpace(filing, relativePath = '', isReadonly = 
   const items = await filing.listDetailed(basePath);
   const tree = [];
 
+  // Get draft files if the filing provider supports it
+  let draftFiles = [];
+  if (filing.getDraftFiles && typeof filing.getDraftFiles === 'function') {
+    try {
+      draftFiles = await filing.getDraftFiles();
+    } catch (error) {
+      console.warn('Failed to get draft files:', error);
+      draftFiles = [];
+    }
+  }
+
   for (const item of items) {
     // Skip hidden files and folders (starting with .)
     if (item.name.startsWith('.')) {
@@ -296,11 +343,17 @@ async function getDirectoryTreeForSpace(filing, relativePath = '', isReadonly = 
     } else {
       // Include all files, not just markdown
       const fileType = detectFileType(item.name);
+      
+      // Check if this file is a draft
+      const spacePath = isReadonly ? relPath : `markdown/${relPath}`;
+      const isDraft = draftFiles.includes(spacePath) || (item.isDraft === true);
+      
       tree.push({
         name: item.name,
         type: 'file',
         path: relPath,
         fileType: fileType,
+        isDraft: isDraft,
       });
     }
   }
@@ -356,17 +409,70 @@ const upload = multer({
   }
 });
 
-// Get files tree for a specific space
-router.get('/:space/files', loadFilingProvider, checkSpaceAccess('read'), cacheFirstTree(), async (req, res) => {
+// Publish changes for a specific space
+router.post('/:space/publish', loadFilingProvider, checkSpaceAccess('write'), async (req, res) => {
   try {
     const filing = req.filing;
-    const spaceConfig = req.spaceConfig;
-    const isReadonly = spaceConfig.access === 'readonly';
-    const tree = await getDirectoryTreeForSpace(filing, '', isReadonly);
-    res.json(tree);
+    const { message } = req.body;
+    
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Commit message is required' });
+    }
+
+    // Call the filing provider's publish method
+    const result = await filing.publish(message.trim());
+    
+    res.json({
+      success: true,
+      message: 'Changes published successfully',
+      result
+    });
   } catch (error) {
-    console.error('Error getting files for space:', error);
-    res.status(500).json({ error: 'Failed to load files' });
+    console.error('Error publishing changes for space:', error);
+    res.status(500).json({ error: error.message || 'Failed to publish changes' });
+  }
+});
+
+// Get files tree for a specific space - CACHE ONLY
+router.get('/:space/files', loadSpaceConfig, checkSpaceAccess('read'), cacheFirstTree(), async (req, res) => {
+  try {
+    // This endpoint should ONLY return cached data
+    // If cache miss occurs, return empty array - scheduler will populate cache
+    const spaceName = req.params.space;
+    const username = req.user?.username;
+    
+    // Generate appropriate cache key
+    let cacheKey;
+    if (spaceName === 'Personal' && username) {
+      cacheKey = `personal:${username}:tree`;
+    } else {
+      cacheKey = `space:${spaceName}:tree`;
+    }
+    
+    // Try to get from cache service directly
+    const cacheInstance = require('../../services/caching/singleton');
+    
+    try {
+      const cachedData = await cacheInstance.get(cacheKey);
+      
+      if (cachedData) {
+        console.log(`Cache hit for space: ${spaceName}`);
+        if (cachedData.tree && Array.isArray(cachedData.tree)) {
+          return res.json(cachedData.tree);
+        } else if (Array.isArray(cachedData)) {
+          return res.json(cachedData);
+        }
+      }
+    } catch (cacheError) {
+      console.log(`Cache error for space ${spaceName}:`, cacheError.message);
+    }
+    
+    // Return empty tree if no cache data - scheduler should populate this
+    console.log(`No cached data available for space: ${spaceName}, returning empty tree`);
+    res.json([]);
+  } catch (error) {
+    console.error('Error getting cached files for space:', error);
+    res.status(500).json({ error: 'Failed to load files from cache' });
   }
 });
 
@@ -392,7 +498,7 @@ router.get('/:space/templates', loadFilingProvider, checkSpaceAccess('read'), ca
     // Ensure files is iterable
     if (!Array.isArray(files)) {
       console.warn('filing.list returned non-array for templates:', files);
-      return res.json({ templates: [] });
+      return res.json([]);
     }
     
     for (const file of files) {

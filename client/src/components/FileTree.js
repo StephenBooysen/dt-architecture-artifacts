@@ -57,7 +57,6 @@ const FileTree = ({
   onPublish,
   hasChanges,
   draftFiles = [],
-  providerInfo = { provider: 'git', supportsDrafts: true },
   onViewChange,
   currentSpace,
   onSpaceChange,
@@ -406,7 +405,7 @@ const FileTree = ({
     const isSelected = selectedFile === item.path;
     const paddingLeft = depth * 1.5;
     const isCollapsed = collapsedFolders.has(item.path);
-    const isDraft = providerInfo.supportsDrafts && draftFiles.includes(item.path);
+    const isDraft = draftFiles.includes(item.path);
 
     if (item.type === 'directory') {
       return (
@@ -612,18 +611,12 @@ const FileTree = ({
           </h3>
           {!isReadonly && (
             <button
-              className={`btn btn-sm ${hasChanges && providerInfo.supportsDrafts ? 'btn-primary' : 'btn-secondary'}`}
+              className={`btn btn-sm ${hasChanges ? 'btn-primary' : 'btn-secondary'}`}
               onClick={onPublish}
-              disabled={!hasChanges || isLoading || !providerInfo.supportsDrafts}
-              title={
-                !providerInfo.supportsDrafts 
-                  ? "Publishing not available (local provider)" 
-                  : hasChanges 
-                    ? "Publish changes" 
-                    : "No changes to publish"
-              }>
-              <i className={`bi ${providerInfo.supportsDrafts ? 'bi-cloud-upload' : 'bi-check-circle'} me-1`}></i>
-              {providerInfo.supportsDrafts ? 'Publish' : 'Committed'}
+              disabled={!hasChanges || isLoading}
+              title={hasChanges ? "Publish changes" : "No changes to publish"}>
+              <i className="bi bi-cloud-upload me-1"></i>
+              Publish
             </button>
           )}
         </div>

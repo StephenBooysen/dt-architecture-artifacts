@@ -17,9 +17,10 @@ import { toast } from 'react-toastify';
  * @param {Object} props - Component properties.
  * @param {Function} props.onClose - Callback for closing the modal.
  * @param {Function} props.onPublish - Callback after successful publish.
+ * @param {string} props.currentSpace - Current space name.
  * @return {JSX.Element} The PublishModal component.
  */
-const PublishModal = ({ onClose, onPublish }) => {
+const PublishModal = ({ onClose, onPublish, currentSpace }) => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishMessage, setPublishMessage] = useState('');
 
@@ -33,8 +34,9 @@ const PublishModal = ({ onClose, onPublish }) => {
     setIsPublishing(true);
     
     try {
-      // Make API call to commit changes
-      const response = await fetch('/api/commit', {
+      // Make API call to publish changes for the current space
+      const publishUrl = currentSpace ? `/${currentSpace}/publish` : '/publish';
+      const response = await fetch(publishUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

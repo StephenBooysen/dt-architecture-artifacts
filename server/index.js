@@ -2383,6 +2383,15 @@ app.listen(PORT, async () => {
   console.log(`🔐 Secure Cookies: ${process.env.NODE_ENV === 'production'}`);
   console.log('=====================================');
   
+  // Start the git space scheduler
+  try {
+    const gitSpaceScheduler = require('./src/services/gitSpaceScheduler');
+    gitSpaceScheduler.start();
+    console.log('📅 Git space scheduler started');
+  } catch (error) {
+    console.error('Failed to start git space scheduler:', error);
+  }
+  
   // Log environment file loaded
   console.log(`📄 Loaded environment from: .env.${NODE_ENV}`);
   

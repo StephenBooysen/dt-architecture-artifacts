@@ -352,6 +352,13 @@ Happy documenting! 📝
   async publish(message) {
     // Local provider doesn't need publishing - files are immediately saved
     // This method exists for compatibility but does nothing
+    if (this.eventEmitter_) {
+      this.eventEmitter_.emit('filing:publish', { 
+        message, 
+        provider: 'local',
+        result: 'Files are automatically saved - no publishing required'
+      });
+    }
     return { 
       message: 'Local provider does not require publishing - files are automatically saved',
       success: true 

@@ -69,7 +69,9 @@ const HomeView = ({ onFileSelect, onTemplateSelect, onNewMarkdown, isVisible, is
         .filter(file => file.name.endsWith('.md'))
         .slice(0, 6);
       
-      const templatesLimited = (templatesData || []).slice(0, 6);
+      // Ensure templatesData is an array
+      const templatesArray = Array.isArray(templatesData) ? templatesData : [];
+      const templatesLimited = templatesArray.slice(0, 6);
       
       setRecentFiles(recentMarkdown);
       setStarredFiles(starredMarkdown);

@@ -4,27 +4,18 @@
  */
 
 const path = require('path');
-const axios = require('axios');
 
-// Cache service endpoint
-const CACHE_BASE_URL = 'http://localhost:3001/api/caching';
+// Import cache service singleton
+const cacheInstance = require('../src/services/caching/singleton');
 
 /**
  * Cache service helpers
  */
 async function getCacheValue(key) {
   try {
-    const response = await axios.get(`${CACHE_BASE_URL}/get/${encodeURIComponent(key)}`);
-    
-    if (response.status === 200 && response.data) {
-      return response.data;
-    } else {
-      return null;
-    }
+    const value = await cacheInstance.get(key);
+    return value || null;
   } catch (error) {
-    if (error.response?.status === 404) {
-      return null; // Cache miss
-    }
     console.warn(`Error accessing cache for key ${key}:`, error.message);
     return null;
   }
@@ -32,15 +23,7 @@ async function getCacheValue(key) {
 
 async function setCacheValue(key, value, ttl = 3600) {
   try {
-    const response = await axios.post(`${CACHE_BASE_URL}/put/${encodeURIComponent(key)}`, value, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (response.status !== 200) {
-      console.warn(`Failed to cache key ${key}:`, response.statusText);
-    }
+    await cacheInstance.put(key, value);
   } catch (error) {
     console.warn(`Error caching key ${key}:`, error.message);
   }
@@ -165,53 +148,61 @@ function cacheFirstContent() {
  */
 function cacheFirstTree() {
   return async (req, res, next) => {
-    // Only apply to Personal space file tree requests
-    if (req.method !== 'GET' || req.params.space !== 'Personal') {
+    // Apply to all spaces for GET /files requests
+    if (req.method !== 'GET' || !req.path.endsWith('/files')) {
       return next();
     }
     
+    const spaceName = req.params.space;
     const username = req.user?.username;
-    if (!username) {
-      return next();
-    }
     
-    // Only for /files endpoint (directory tree)
-    if (!req.path.endsWith('/files')) {
-      return next();
+    // Generate appropriate cache key
+    let cacheKey;
+    if (spaceName === 'Personal' && username) {
+      cacheKey = generateCacheKeys(username, '', 'tree');
+    } else {
+      cacheKey = `space:${spaceName}:tree`;
     }
     
     try {
       // Try cache first
-      const cacheKey = generateCacheKeys(username, '', 'tree');
-      const cachedTree = await getCacheValue(cacheKey);
+      const cachedData = await getCacheValue(cacheKey);
       
-      if (cachedTree) {
-        console.log(`Tree cache hit for user: ${username}`);
-        return res.json({
-          ...cachedTree,
-          fromCache: true,
-          cachedAt: cachedTree.cachedAt
-        });
+      if (cachedData) {
+        console.log(`Tree cache hit for space: ${spaceName}`);
+        
+        // Return the tree from cached data
+        if (cachedData.tree && Array.isArray(cachedData.tree)) {
+          return res.json(cachedData.tree);
+        } else if (Array.isArray(cachedData)) {
+          return res.json(cachedData);
+        } else {
+          return res.json({
+            ...cachedData,
+            fromCache: true
+          });
+        }
       }
       
-      console.log(`Tree cache miss for user: ${username}`);
+      console.log(`Tree cache miss for space: ${spaceName}`);
       
-      // Store original end method to intercept response
-      const originalSend = res.json;
-      res.json = function(data) {
-        // Cache the tree data (async, don't wait)
-        if (Array.isArray(data)) {
-          const cacheKey = generateCacheKeys(username, '', 'tree');
-          const cacheData = {
-            tree: data,
-            cachedAt: new Date().toISOString()
-          };
-          setCacheValue(cacheKey, cacheData).catch(console.warn);
-        }
-        
-        // Call original method
-        originalSend.call(this, data);
-      };
+      // Store original send method to intercept response (for Personal space)
+      if (spaceName === 'Personal') {
+        const originalSend = res.json;
+        res.json = function(data) {
+          // Cache the tree data (async, don't wait)
+          if (Array.isArray(data)) {
+            const cacheData = {
+              tree: data,
+              cachedAt: new Date().toISOString()
+            };
+            setCacheValue(cacheKey, cacheData).catch(console.warn);
+          }
+          
+          // Call original method
+          originalSend.call(this, data);
+        };
+      }
       
       next();
     } catch (error) {

@@ -21,8 +21,8 @@ class FilingGitProvider {
     // Initialize git instance after ensuring the repo exists
     this._initializeRepo().catch(console.error);
 
-    // Temporarily disabled to reduce error noise
-    // this.fetchIntervalId = setInterval(() => this._periodicFetch(), this.options.fetchInterval);
+    // Enable periodic fetch for git sync
+    this.fetchIntervalId = setInterval(() => this._periodicFetch(), this.options.fetchInterval);
     if (this.eventEmitter_) {
       this.eventEmitter_.emit('FilingGitProvider:Initialized', { localPath: this.options.localPath });
     }
@@ -182,7 +182,15 @@ class FilingGitProvider {
           // Pull changes if we're behind
           await this._handleDivergentBranches('origin');
           this.lastRemoteSync = new Date().toISOString(); // Record sync time
+          
+          // Emit git sync event to update caches and search services
           if (this.eventEmitter_) {
+            this.eventEmitter_.emit('filing:git-sync', {
+              changesPulled: behind,
+              syncTime: this.lastRemoteSync,
+              localPath: this.options.localPath
+            });
+            
             this.eventEmitter_.emit('FilingGitProvider:PulledChanges', { 
               changesPulled: behind,
               message: this.options.isReadonly 
@@ -307,6 +315,16 @@ class FilingGitProvider {
       
       // Clear draft files that were committed
       this.draftFiles.clear();
+      
+      // Emit filing:publish event
+      if (this.eventEmitter_) {
+        this.eventEmitter_.emit('filing:publish', { 
+          message: comment, 
+          provider: 'git',
+          commit: commitSummary,
+          branch: this.options.branch
+        });
+      }
       
       return { commit: commitSummary };
     } catch (error) {
