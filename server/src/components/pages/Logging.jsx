@@ -48,6 +48,54 @@ const Logging = () => {
         </div>
       </div>
 
+      <div className="logging-section error-logging-section">
+        <div className="logging-form">
+          <h2>Log Error Message</h2>
+          <form id="errorLoggingForm">
+            <div className="form-group">
+              <label htmlFor="errorLogName">Error Log Name (optional):</label>
+              <input type="text" id="errorLogName" name="errorName" className="form-control" placeholder="Enter error log name..." />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="errorLogMessage">Error Message (JSON format required):</label>
+              <textarea 
+                id="errorLogMessage" 
+                name="errorMessage" 
+                className="form-control" 
+                placeholder="Enter your error JSON message...&#10;{&#10;  &quot;level&quot;: &quot;error&quot;,&#10;  &quot;message&quot;: &quot;Database connection failed&quot;,&#10;  &quot;timestamp&quot;: &quot;2024-01-01T00:00:00Z&quot;,&#10;  &quot;error&quot;: &quot;Connection timeout&quot;,&#10;  &quot;service&quot;: &quot;user-service&quot;&#10;}" 
+                required
+              ></textarea>
+              <div className="json-validation-feedback" id="errorJsonValidation"></div>
+            </div>
+
+            <div className="form-group template-buttons">
+              <label>Error Templates:</label>
+              <div className="template-button-group">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onclick="fillErrorTemplate('database')">
+                  <i className="bi bi-database me-1"></i>Database Error
+                </button>
+                <button type="button" className="btn btn-outline-secondary btn-sm" onclick="fillErrorTemplate('api')">
+                  <i className="bi bi-globe me-1"></i>API Error
+                </button>
+                <button type="button" className="btn btn-outline-secondary btn-sm" onclick="fillErrorTemplate('validation')">
+                  <i className="bi bi-check-circle me-1"></i>Validation Error
+                </button>
+              </div>
+            </div>
+            
+            <div className="form-group" id="errorJsonPreviewGroup" style={{display: 'none'}}>
+              <label>Formatted JSON Preview:</label>
+              <pre className="json-preview" id="errorJsonPreview"></pre>
+            </div>
+            
+            <button type="submit" className="btn btn-danger" id="errorLogButton" disabled>
+              <i className="bi bi-exclamation-triangle me-2"></i>Log Error
+            </button>
+          </form>
+        </div>
+      </div>
+
       <div className="recent-logs" id="recentLogs" style={{display: 'none'}}>
         <h3>Recent Logs</h3>
         <table className="logs-table">
@@ -247,11 +295,50 @@ const Logging = () => {
           opacity: 0.6;
           cursor: not-allowed;
         }
+        .error-logging-section {
+          border-left: 4px solid #de350b;
+          background: #fff8f7;
+        }
+        .error-logging-section .logging-form h2 {
+          color: #de350b;
+        }
+        .template-buttons {
+          margin-bottom: 1.5rem;
+        }
+        .template-button-group {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
+        .template-button-group .btn {
+          display: flex;
+          align-items: center;
+        }
+        .btn-danger {
+          background-color: #de350b;
+          border-color: #de350b;
+          color: white;
+        }
+        .btn-danger:hover {
+          background-color: #c42707;
+          border-color: #b32306;
+        }
+        .btn-outline-secondary {
+          border-color: #dfe1e6;
+          color: #172b4d;
+        }
+        .btn-outline-secondary:hover {
+          background-color: #f8f9fa;
+          border-color: #dfe1e6;
+          color: #172b4d;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
         let recentLogs = [];
         let isValidJson = false;
+        let isValidErrorJson = false;
 
         // JSON validation and formatting function
         function validateAndFormatJson(jsonString) {
@@ -301,6 +388,103 @@ const Logging = () => {
             isValidJson = false;
             logButton.disabled = true;
           }
+        }
+
+        // Error JSON validation and formatting function
+        function validateAndFormatErrorJson(jsonString) {
+          const messageField = document.getElementById('errorLogMessage');
+          const validationFeedback = document.getElementById('errorJsonValidation');
+          const previewGroup = document.getElementById('errorJsonPreviewGroup');
+          const previewElement = document.getElementById('errorJsonPreview');
+          const errorLogButton = document.getElementById('errorLogButton');
+          
+          try {
+            if (!jsonString.trim()) {
+              // Empty input
+              messageField.classList.remove('valid', 'invalid');
+              validationFeedback.textContent = '';
+              validationFeedback.className = 'json-validation-feedback';
+              previewGroup.style.display = 'none';
+              isValidErrorJson = false;
+              errorLogButton.disabled = true;
+              return;
+            }
+            
+            // Try to parse JSON
+            const parsed = JSON.parse(jsonString);
+            
+            // Valid JSON
+            messageField.classList.remove('invalid');
+            messageField.classList.add('valid');
+            validationFeedback.textContent = '✓ Valid Error JSON';
+            validationFeedback.className = 'json-validation-feedback valid';
+            
+            // Show formatted preview
+            const formatted = JSON.stringify(parsed, null, 2);
+            previewElement.textContent = formatted;
+            previewGroup.style.display = 'block';
+            
+            isValidErrorJson = true;
+            errorLogButton.disabled = false;
+            
+          } catch (error) {
+            // Invalid JSON
+            messageField.classList.remove('valid');
+            messageField.classList.add('invalid');
+            validationFeedback.textContent = '✗ Invalid JSON: ' + error.message;
+            validationFeedback.className = 'json-validation-feedback invalid';
+            previewGroup.style.display = 'none';
+            
+            isValidErrorJson = false;
+            errorLogButton.disabled = true;
+          }
+        }
+
+        // Fill error message templates
+        function fillErrorTemplate(type) {
+          const errorMessageArea = document.getElementById('errorLogMessage');
+          const timestamp = new Date().toISOString();
+          
+          let template = {};
+          
+          switch(type) {
+            case 'database':
+              template = {
+                "level": "error",
+                "message": "Database connection failed",
+                "timestamp": timestamp,
+                "error": "Connection timeout after 30 seconds",
+                "service": "user-service",
+                "stackTrace": "Error: Connection timeout\\n    at Database.connect..."
+              };
+              break;
+            case 'api':
+              template = {
+                "level": "error",
+                "message": "API endpoint failed",
+                "timestamp": timestamp,
+                "endpoint": "/api/users/123",
+                "method": "GET",
+                "statusCode": 500,
+                "error": "Internal server error"
+              };
+              break;
+            case 'validation':
+              template = {
+                "level": "error",
+                "message": "Request validation failed",
+                "timestamp": timestamp,
+                "requestId": "req-abc123",
+                "validationErrors": [
+                  "Email is required",
+                  "Password must be at least 8 characters"
+                ]
+              };
+              break;
+          }
+          
+          errorMessageArea.value = JSON.stringify(template, null, 2);
+          validateAndFormatErrorJson(errorMessageArea.value);
         }
 
         // Check service status on page load
@@ -388,6 +572,70 @@ const Logging = () => {
           }
         });
 
+        // Handle error form submission
+        document.getElementById('errorLoggingForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(this);
+          const errorLogButton = document.getElementById('errorLogButton');
+          
+          // Get form values
+          const errorName = formData.get('errorName') || 'application-error';
+          const errorMessage = formData.get('errorMessage');
+          
+          if (!errorMessage.trim()) {
+            showToast('Please enter an error message to log.', 'error');
+            return;
+          }
+          
+          if (!isValidErrorJson) {
+            showToast('Please enter a valid JSON error message.', 'error');
+            return;
+          }
+          
+          // Disable button and show loading
+          errorLogButton.disabled = true;
+          errorLogButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Logging Error...';
+          
+          try {
+            const response = await fetch('/api/logging/error/' + errorName, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: errorMessage
+            });
+            
+            if (response.ok) {
+              showToast('Error message logged successfully!', 'success');
+              
+              // Add to recent logs
+              const logEntry = {
+                name: errorName + ' (ERROR)',
+                message: errorMessage,
+                time: new Date().toISOString()
+              };
+              recentLogs.unshift(logEntry);
+              recentLogs = recentLogs.slice(0, 10); // Keep only last 10 logs
+              updateRecentLogs();
+              
+              // Clear form
+              document.getElementById('errorLogMessage').value = '';
+              document.getElementById('errorLogName').value = '';
+              validateAndFormatErrorJson(''); // Reset validation state
+            } else {
+              throw new Error('Failed to log error message');
+            }
+          } catch (error) {
+            showToast('Failed to log error message. Please try again.', 'error');
+            console.error('Error logging error:', error);
+          } finally {
+            // Re-enable button
+            errorLogButton.disabled = false;
+            errorLogButton.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Log Error';
+          }
+        });
+
         function showToast(message, type) {
           const toast = document.getElementById('logToast');
           const toastBody = document.getElementById('toastMessage');
@@ -447,6 +695,18 @@ const Logging = () => {
           }, 10);
         });
 
+        // Add event listener for error JSON validation
+        document.getElementById('errorLogMessage').addEventListener('input', function(e) {
+          validateAndFormatErrorJson(e.target.value);
+        });
+        
+        // Add event listener for paste events to handle error JSON formatting
+        document.getElementById('errorLogMessage').addEventListener('paste', function(e) {
+          // Use setTimeout to allow paste to complete before validation
+          setTimeout(() => {
+            validateAndFormatErrorJson(e.target.value);
+          }, 10);
+        });
 
         // Check status periodically
         checkServiceStatus();
