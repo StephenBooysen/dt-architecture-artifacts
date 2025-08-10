@@ -1694,19 +1694,66 @@ app.get('/server-landing', (req, res) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Architecture Artifacts Server</title>
   ${getSharedStyles()}
+  <style>
+    .landing-container {
+      height: 100vh;
+      background: var(--confluence-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .landing-content {
+      display: flex;
+      align-items: center;
+      max-width: 800px;
+      width: 100%;
+      gap: 3rem;
+    }
+    .landing-image {
+      flex: 0 0 300px;
+      max-width: 300px;
+    }
+    .landing-image img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .landing-text {
+      flex: 1;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .landing-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+      }
+      .landing-image {
+        flex: none;
+        max-width: 250px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="app">
-    <div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: var(--confluence-bg);">
-      <div class="text-center" style="max-width: 400px; padding: 2rem;">
-        <div class="mb-4">
-          <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" class="mb-4" />
+    <div class="landing-container">
+      <div class="landing-content">
+        <div class="landing-image">
+          <img src="/architecture-repository.webp" alt="Architecture Repository" />
         </div>
-        <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
-        <p class="text-muted">Server administration and monitoring interface</p>
-        <div class="mt-4">
-          <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
-            <span class="visually-hidden">Loading...</span>
+        <div class="landing-text">
+          <div class="mb-4">
+            <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" class="mb-4" />
+          </div>
+          <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
+          <p class="text-muted">Server administration and monitoring interface</p>
+          <div class="mt-4">
+            <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
+              <span class="visually-hidden">Loading...</span>
+            </div>
           </div>
         </div>
       </div>

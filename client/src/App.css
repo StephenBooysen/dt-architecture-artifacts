@@ -1,3 +1,42 @@
+/* Landing Page Styles */
+.landing-layout {
+  display: flex;
+  align-items: center;
+  max-width: 800px;
+  width: 100%;
+  gap: 3rem;
+}
+
+.landing-image-container {
+  flex: 0 0 300px;
+  max-width: 300px;
+}
+
+.landing-image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.landing-content {
+  flex: 1;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .landing-layout {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .landing-image-container {
+    flex: none;
+    max-width: 250px;
+  }
+}
+
 /* Bootstrap 5 Custom Confluence Theme */
 :root {
   --confluence-primary: #0052cc;

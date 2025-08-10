@@ -1387,13 +1387,22 @@ function AppContent() {
     if (showLandingPage) {
       return (
         <div className="app">
-          <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
-            <div className="text-center" style={{maxWidth: '400px', padding: '2rem'}}>
-              <div className="mb-4">
-                <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" className="mb-4" />
+          <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)', padding: '2rem'}}>
+            <div className="landing-layout">
+              <div className="landing-image-container">
+                <img 
+                  src="/architecture-repository.webp" 
+                  alt="Architecture Repository" 
+                  className="landing-image"
+                />
               </div>
-              <h1 className="text-confluence-text mb-3">Architecture Artifacts</h1>
-              <p className="text-muted">Modern documentation workspace for architecture teams</p>
+              <div className="landing-content">
+                <div className="mb-4">
+                  <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" className="mb-4" />
+                </div>
+                <h1 className="text-confluence-text mb-3">Architecture Artifacts</h1>
+                <p className="text-muted">Modern documentation workspace for architecture teams</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1403,26 +1412,35 @@ function AppContent() {
     // Show authentication options after landing page
     return (
       <div className="app">
-        <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)'}}>
-          <div className="text-center" style={{maxWidth: '400px', padding: '2rem'}}>
-            <div className="mb-4">
-              <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-3" />
+        <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', background: 'var(--confluence-bg)', padding: '2rem'}}>
+          <div className="landing-layout">
+            <div className="landing-image-container">
+              <img 
+                src="/architecture-repository.webp" 
+                alt="Architecture Repository" 
+                className="landing-image"
+              />
             </div>
-            <h2 className="text-confluence-text mb-3">Welcome to Architecture Artifacts</h2>
-            <p className="text-muted mb-4">Please sign in to access your documentation workspace.</p>
-            <div className="d-flex gap-2 justify-content-center">
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowLoginModal(true)}
-              >
-                Sign In
-              </button>
-              <button
-                className="btn btn-outline-primary"
-                onClick={() => setShowRegisterModal(true)}
-              >
-                Create Account
-              </button>
+            <div className="landing-content">
+              <div className="mb-4">
+                <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-3" />
+              </div>
+              <h2 className="text-confluence-text mb-3">Welcome to Architecture Artifacts</h2>
+              <p className="text-muted mb-4">Please sign in to access your documentation workspace.</p>
+              <div className="d-flex gap-2 justify-content-center">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowLoginModal(true)}
+                >
+                  Sign In
+                </button>
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() => setShowRegisterModal(true)}
+                >
+                  Create Account
+                </button>
+              </div>
             </div>
           </div>
         </div>
