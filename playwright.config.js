@@ -22,8 +22,8 @@ module.exports = defineConfig({
   
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'playwright-report/results.json' }],
+    ['html', { outputFolder: 'tests-playwright-report' }],
+    ['json', { outputFile: 'tests-playwright-report/results.json' }],
     ['line']
   ],
   
