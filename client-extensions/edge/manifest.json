@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Architecture Artifacts Search for Edge",
+  "name": "Design Artifacts Search for Edge",
   "version": "1.0.0",
-  "description": "Search and preview architecture documentation from your Design Artifacts server. - Microsoft Edge version",
+  "description": "Search and preview design documentation from your Design Artifacts server. - Microsoft Edge version",
   "permissions": [
     "activeTab",
     "storage"
@@ -14,7 +14,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Architecture Artifacts Search",
+    "default_title": "Design Artifacts Search",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",

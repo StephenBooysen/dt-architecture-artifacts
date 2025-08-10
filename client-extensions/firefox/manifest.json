@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "Design Artifacts Search for Firefox",
+  "version": "1.0",
+
+  "description": "Search and preview design documentation from your Design Artifacts server. - Firefox version",
+
+  "icons": {
+    "48": "icons/icon-48.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.mozilla.org/*"],
+      "js": ["popup.js"]
+    }
+  ]
+}
