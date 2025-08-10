@@ -1,8 +1,8 @@
 /**
- * @fileoverview API service module for Architecture Artifacts application.
+ * @fileoverview API service module for Design Artifacts application.
  * 
  * This module provides a comprehensive API client for communicating with the
- * Architecture Artifacts backend. It includes functions for file management,
+ * Design Artifacts backend. It includes functions for file management,
  * authentication, templates, search, and content manipulation with proper error handling.
  * 
  * Key features:
@@ -71,7 +71,7 @@
  * - updateApiKey(keyId, updateData): Updates API key metadata
  * - revokeApiKey(keyId): Revokes API key
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

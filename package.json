@@ -1,7 +1,7 @@
 {
-  "name": "dt-architecture-artifacts",
+  "name": "dt-design-artifacts",
   "version": "1.0.0",
-  "description": "Architecture artifacts markdown editor with glassmorphism theme",
+  "description": "Design artifacts markdown editor with glassmorphism theme",
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\" --ignore 'content/*' --ignore 'content-templates/*'",

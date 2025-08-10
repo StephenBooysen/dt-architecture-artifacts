@@ -1,5 +1,5 @@
 /**
- * @fileoverview Express server for Architecture Artifacts application.
+ * @fileoverview Express server for Design Artifacts application.
  * 
  * This server provides a REST API for managing markdown files, folders, and Git operations
  * in a content management system. It includes features for file upload, download, editing,
@@ -26,7 +26,7 @@
  * - getMonitoringScript(): Returns JavaScript for API monitoring dashboard
  * - requireServerAuth(req, res, next): Authentication middleware for server pages
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */
@@ -1065,8 +1065,8 @@ function getHeader() {
         <div class="container-fluid">
           <div class="d-flex align-items-center w-100">
             <a class="navbar-brand fw-medium me-3 d-flex align-items-center" href="/">
-              <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" class="me-2" />
-              Architecture Artifacts Server
+              <img src="/stech-black.png" alt="Design Artifacts" width="20" height="20" class="me-2" />
+              Design Artifacts Server
             </a>
             
             <div class="ms-auto d-flex align-items-center gap-3">
@@ -1190,7 +1190,7 @@ function getFooter() {
 
     <footer class="app-footer">
       <div class="container-fluid">
-        <p class="mb-0 text-center small">© 2025 Architecture Artifacts Server - All rights reserved.</p>
+        <p class="mb-0 text-center small">© 2025 Design Artifacts Server - All rights reserved.</p>
       </div>
     </footer>
   `;
@@ -1539,7 +1539,7 @@ function getMonitoringScript() {
 app.get('/settings', requireServerAuth, (req, res) => {
   const html = renderComponent('settings', {
     activeSection: 'settings',
-    title: 'Settings - Architecture Artifacts'
+    title: 'Settings - Design Artifacts'
   });
   res.send(html);
 });
@@ -1548,7 +1548,7 @@ app.get('/settings', requireServerAuth, (req, res) => {
 app.get('/monitoring/api', requireServerAuth, (req, res) => {
   const html = renderComponent('apimonitor', {
     activeSection: 'monitoring',
-    title: 'API Monitor - Architecture Artifacts'
+    title: 'API Monitor - Design Artifacts'
   });
   res.send(html);
 });
@@ -1557,7 +1557,7 @@ app.get('/monitoring/api', requireServerAuth, (req, res) => {
 app.get('/test-apis', requireServerAuth, (req, res) => {
   const html = renderComponent('swaggerui', {
     activeSection: 'test-apis',
-    title: 'Test APIs - Architecture Artifacts'
+    title: 'Test APIs - Design Artifacts'
   });
   res.send(html);
 });
@@ -1582,7 +1582,7 @@ app.get('/api-spec/swagger.json', (req, res) => {
 app.get('/services/logging', requireServerAuth, (req, res) => {
   const html = renderComponent('logging', {
     activeSection: 'logging',
-    title: 'Logging Service - Architecture Artifacts'
+    title: 'Logging Service - Design Artifacts'
   });
   res.send(html);
 });
@@ -1692,7 +1692,7 @@ app.get('/server-landing', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Architecture Artifacts Server</title>
+  <title>Design Artifacts Server</title>
   ${getSharedStyles()}
   <style>
     .landing-container {
@@ -1742,13 +1742,13 @@ app.get('/server-landing', (req, res) => {
     <div class="landing-container">
       <div class="landing-content">
         <div class="landing-image">
-          <img src="/architecture-repository.webp" alt="Architecture Repository" />
+          <img src="/knowledge-repository.webp" alt="Design Repository" />
         </div>
         <div class="landing-text">
           <div class="mb-4">
-            <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" class="mb-4" />
+            <img src="/stech-black.png" alt="Design Artifacts" width="80" height="80" class="mb-4" />
           </div>
-          <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
+          <h1 class="text-confluence-text mb-3">Design Artifacts Server</h1>
           <p class="text-muted">Server administration and monitoring interface</p>
           <div class="mt-4">
             <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
@@ -1790,7 +1790,7 @@ app.get('/server-login', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Server Login - Architecture Artifacts</title>
+  <title>Server Login - Design Artifacts</title>
   ${getSharedStyles()}
   <style>
     /* Server Auth Modal Styles - Match client login appearance */
@@ -1946,7 +1946,7 @@ app.get('/server-login', (req, res) => {
     <div class="server-auth-modal">
       <div class="server-auth-content">
         <div class="text-center mb-4">
-          <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" class="mb-3" />
+          <img src="/stech-black.png" alt="Design Artifacts" width="60" height="60" class="mb-3" />
           <h2 class="server-auth-title">Server Administration</h2>
           <p class="server-auth-subtitle">Please sign in to access the server interface.</p>
         </div>
@@ -2071,7 +2071,7 @@ app.get('/server-login', (req, res) => {
 app.get('/server-dashboard', requireServerAuth, (req, res) => {
   const html = renderComponent('dashboard', {
     activeSection: 'overview',
-    title: 'Server Dashboard - Architecture Artifacts',
+    title: 'Server Dashboard - Design Artifacts',
     user: req.user
   });
   res.send(html);
@@ -2373,7 +2373,7 @@ app.delete('/api/plugins/:name', requireServerAuth, (req, res) => {
 });
 
 app.listen(PORT, async () => {
-  console.log('🚀 Architecture Artifacts Server Started');
+  console.log('🚀 Design Artifacts Server Started');
   console.log('=====================================');
   console.log(`📡 Server running on port: ${PORT}`);
   console.log(`🌍 Environment: ${NODE_ENV}`);

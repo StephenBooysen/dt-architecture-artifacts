@@ -1,5 +1,5 @@
 /**
- * @fileoverview Sample API Interceptor Plugin for Architecture Artifacts.
+ * @fileoverview Sample API Interceptor Plugin for Design Artifacts.
  * 
  * This plugin provides request and response interception capabilities for API calls.
  * It can log requests, add timestamps, filter sensitive data, and modify request/response
@@ -13,7 +13,7 @@
  * - getInfo(): Returns plugin information and configuration
  * - create(options): Factory function for creating plugin instance
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  */
 

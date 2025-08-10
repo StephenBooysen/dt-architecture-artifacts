@@ -1,5 +1,5 @@
 /**
- * @fileoverview File type detection utilities for Architecture Artifacts.
+ * @fileoverview File type detection utilities for Design Artifacts.
  * 
  * This module provides comprehensive file type detection and classification
  * functionality based on file extensions. It supports various file types
@@ -28,7 +28,7 @@
  * - PDF_EXTENSIONS: Supported PDF file extensions
  * - MARKDOWN_EXTENSIONS: Supported markdown file extensions
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

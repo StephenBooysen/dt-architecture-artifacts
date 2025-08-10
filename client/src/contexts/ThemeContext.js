@@ -8,7 +8,7 @@
  * - Theme-aware component hooks
  * - Automatic theme detection and application
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */
@@ -28,7 +28,7 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     // Check localStorage first, then fallback to light
-    const savedTheme = localStorage.getItem('architecture-artifacts-theme');
+    const savedTheme = localStorage.getItem('design-artifacts-theme');
     if (savedTheme) {
       return savedTheme;
     }
@@ -42,7 +42,7 @@ export const ThemeProvider = ({ children }) => {
     document.documentElement.setAttribute('data-theme', theme);
     
     // Save to localStorage
-    localStorage.setItem('architecture-artifacts-theme', theme);
+    localStorage.setItem('design-artifacts-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

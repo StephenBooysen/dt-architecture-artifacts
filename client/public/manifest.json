@@ -1,7 +1,7 @@
 {
-  "short_name": "Architecture Editor",
-  "name": "Architecture Artifacts Editor",
-  "description": "A modern markdown editor with glassmorphism theme built for managing architecture documentation",
+  "short_name": "Design Editor",
+  "name": "Design Artifacts Editor",
+  "description": "A modern markdown editor with glassmorphism theme built for managing design documentation",
   "icons": [
     {
       "src": "favicon-192x192.png",

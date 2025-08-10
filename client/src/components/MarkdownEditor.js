@@ -62,7 +62,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
   const [isStarring, setIsStarring] = useState(false);
   const [viewMode, setViewMode] = useState('preview'); // default to preview mode
   const [commentsHeight, setCommentsHeight] = useState(() => {
-    const saved = localStorage.getItem('architecture-artifacts-comments-height');
+    const saved = localStorage.getItem('design-artifacts-comments-height');
     return saved ? parseInt(saved, 10) : 200;
   });
   const [isResizingComments, setIsResizingComments] = useState(false);
@@ -90,7 +90,7 @@ const MarkdownEditor = ({content, onChange, fileName, isLoading, onRename, fileD
     
     if (newHeight >= minHeight && newHeight <= maxHeight) {
       setCommentsHeight(newHeight);
-      localStorage.setItem('architecture-artifacts-comments-height', newHeight.toString());
+      localStorage.setItem('design-artifacts-comments-height', newHeight.toString());
     }
   }, [isResizingComments, containerRect]);
 

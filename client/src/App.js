@@ -1,7 +1,7 @@
 /**
- * @fileoverview Main application component for Architecture Artifacts Editor.
+ * @fileoverview Main application component for Design Artifacts Editor.
  * 
- * This is the root component that orchestrates the entire Architecture Artifacts
+ * This is the root component that orchestrates the entire Design Artifacts
  * editing application. It manages the overall application state including file
  * selection, content editing, and user interface layout. The
  * component provides a complete content management system with file tree navigation,
@@ -39,7 +39,7 @@
  * - handleAuthSuccess(): Handles successful authentication
  * - handleSpaceChange(): Handles space switching
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */
@@ -101,7 +101,7 @@ function AppContent() {
   const [providerInfo] = useState({ provider: 'local', supportsDrafts: false });
   const [lastSyncCheck, setLastSyncCheck] = useState(null);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem('architecture-artifacts-sidebar-width');
+    const saved = localStorage.getItem('design-artifacts-sidebar-width');
     return saved ? parseInt(saved, 10) : 300;
   });
   const [isResizing, setIsResizing] = useState(false);
@@ -120,7 +120,7 @@ function AppContent() {
   const [currentView, setCurrentView] = useState('home');
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
-    return localStorage.getItem('architecture-artifacts-current-space') || null;
+    return localStorage.getItem('design-artifacts-current-space') || null;
   });
   const [isCurrentSpaceReadonly, setIsCurrentSpaceReadonly] = useState(false);
   
@@ -142,7 +142,7 @@ function AppContent() {
           // Only set if it's different from current space to avoid unnecessary re-renders
           if (currentSpace !== defaultSpace) {
             setCurrentSpace(defaultSpace);
-            localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+            localStorage.setItem('design-artifacts-current-space', defaultSpace);
           }
         }
       }).catch(error => {
@@ -988,7 +988,7 @@ function AppContent() {
     
     if (newWidth >= minWidth && newWidth <= maxWidth) {
       setSidebarWidth(newWidth);
-      localStorage.setItem('architecture-artifacts-sidebar-width', newWidth.toString());
+      localStorage.setItem('design-artifacts-sidebar-width', newWidth.toString());
     }
   }, [isResizing]);
 
@@ -1338,7 +1338,7 @@ function AppContent() {
 
   const handleSpaceChange = (newSpace) => {
     setCurrentSpace(newSpace);
-    localStorage.setItem('architecture-artifacts-current-space', newSpace);
+    localStorage.setItem('design-artifacts-current-space', newSpace);
     
     // Clear current file selection and content when switching spaces
     setSelectedFile(null);
@@ -1372,8 +1372,8 @@ function AppContent() {
       <div className="app">
         <div className="d-flex justify-content-center align-items-center" style={{height: '100vh'}}>
           <div className="text-center">
-            <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-4" />
-            <h4 className="text-confluence-text mb-2">Architecture Artifacts Editor</h4>
+            <img src="/stech-black.png" alt="Design Artifacts" width="60" height="60" className="mb-4" />
+            <h4 className="text-confluence-text mb-2">Design Artifacts Editor</h4>
             <p className="text-muted">Loading application...</p>
           </div>
         </div>
@@ -1391,17 +1391,17 @@ function AppContent() {
             <div className="landing-layout">
               <div className="landing-image-container">
                 <img 
-                  src="/architecture-repository.webp" 
-                  alt="Architecture Repository" 
+                  src="/knowledge-repository.webp" 
+                  alt="Design Repository" 
                   className="landing-image"
                 />
               </div>
               <div className="landing-content">
                 <div className="mb-4">
-                  <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" className="mb-4" />
+                  <img src="/stech-black.png" alt="Design Artifacts" width="80" height="80" className="mb-4" />
                 </div>
-                <h1 className="text-confluence-text mb-3">Architecture Artifacts</h1>
-                <p className="text-muted">Modern documentation workspace for architecture teams</p>
+                <h1 className="text-confluence-text mb-3">Design Artifacts</h1>
+                <p className="text-muted">Modern documentation workspace for design teams</p>
               </div>
             </div>
           </div>
@@ -1416,16 +1416,16 @@ function AppContent() {
           <div className="landing-layout">
             <div className="landing-image-container">
               <img 
-                src="/architecture-repository.webp" 
-                alt="Architecture Repository" 
+                src="/knowledge-repository.webp" 
+                alt="Design Repository" 
                 className="landing-image"
               />
             </div>
             <div className="landing-content">
               <div className="mb-4">
-                <img src="/stech-black.png" alt="Architecture Artifacts" width="60" height="60" className="mb-3" />
+                <img src="/stech-black.png" alt="Design Artifacts" width="60" height="60" className="mb-3" />
               </div>
-              <h2 className="text-confluence-text mb-3">Welcome to Architecture Artifacts</h2>
+              <h2 className="text-confluence-text mb-3">Welcome to Design Artifacts</h2>
               <p className="text-muted mb-4">Please sign in to access your documentation workspace.</p>
               <div className="d-flex gap-2 justify-content-center">
                 <button
@@ -1481,8 +1481,8 @@ function AppContent() {
                 onClick={() => setCurrentView('home')}
                 style={{ cursor: 'pointer' }}
               >
-                <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" className="me-2" />
-                Architecture Artifacts Editor
+                <img src="/stech-black.png" alt="Design Artifacts" width="20" height="20" className="me-2" />
+                Design Artifacts Editor
               </button>
               
               

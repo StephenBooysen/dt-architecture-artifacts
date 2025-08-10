@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an **Architecture Artifacts Editor** - a comprehensive enterprise architecture documentation platform with glassmorphism theme, featuring a modern markdown editor, microservices management platform, multi-client ecosystem, and knowledge view functionality. It's a full-stack application with React frontend, Express.js backend, Electron desktop app, browser extensions, and file watcher service that provides file management, Git integration, collaborative editing capabilities, enterprise-grade microservices management, and intelligent knowledge discovery.
+This is a **Design Artifacts Editor** - a comprehensive enterprise design documentation platform with glassmorphism theme, featuring a modern markdown editor, microservices management platform, multi-client ecosystem, and knowledge view functionality. It's a full-stack application with React frontend, Express.js backend, Electron desktop app, browser extensions, and file watcher service that provides file management, Git integration, collaborative editing capabilities, enterprise-grade microservices management, and intelligent knowledge discovery.
 
 ## Development Commands
 
@@ -80,10 +80,10 @@ npm run build
 - **Template System**: JSON-based content templates for meeting notes and daily feedback
 - **Load Testing**: Comprehensive performance testing framework for all services
 - **Multi-Provider Support**: Caching (Redis, Memcached), Filing (Local, FTP, S3)
-- **UI Prototyping**: Static HTML mockups for architecture viewpoints
+- **UI Prototyping**: Static HTML mockups for design viewpoints
 - **E2E Testing**: Playwright-based end-to-end testing for complete workflows
 
-## Architecture Overview
+## System Architecture Overview
 
 ### Backend Structure (server/)
 - **server/index.js**: Main Express server with comprehensive API endpoints
@@ -220,7 +220,7 @@ npm run build
 - File upload size limit (10MB)
 - Path traversal protection on all file operations
 
-### Microservices Architecture
+### Microservices System Architecture
 - **Service Discovery**: Each service registers with the main server
 - **Health Monitoring**: Real-time status checking for all services
 - **Event-Driven**: Services use EventEmitter for communication

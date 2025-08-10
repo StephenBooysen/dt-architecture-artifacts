@@ -1,6 +1,6 @@
-# Architecture Artifacts Editor
+# Design Artifacts Editor
 
-A comprehensive enterprise architecture documentation platform with glassmorphism theme, featuring a modern markdown editor, microservices management platform, multi-client ecosystem, and knowledge view functionality. Built for architects, product owners, and business analysts to capture, manage, and analyze architecture documentation with Git integration, collaborative editing, comprehensive service monitoring, and intelligent knowledge discovery across web, desktop, and browser extension clients.
+A comprehensive enterprise design documentation platform with glassmorphism theme, featuring a modern markdown editor, microservices management platform, multi-client ecosystem, and knowledge view functionality. Built for designers, product owners, and business analysts to capture, manage, and analyze design documentation with Git integration, collaborative editing, comprehensive service monitoring, and intelligent knowledge discovery across web, desktop, and browser extension clients.
 
 ## Features
 
@@ -97,7 +97,7 @@ A comprehensive enterprise architecture documentation platform with glassmorphis
 1. Clone the repository
 ```bash
 git clone <repository-url>
-cd dt-architecture-artifacts
+cd dt-design-artifacts
 ```
 
 2. Install dependencies
@@ -124,7 +124,7 @@ This will start:
 ## Project Structure
 
 ```
-dt-architecture-artifacts/
+dt-design-artifacts/
 ├── server/                     # Backend Express server
 │   ├── index.js               # Main server file
 │   ├── src/
@@ -170,7 +170,7 @@ dt-architecture-artifacts/
 ├── tests-load/               # Load testing framework
 ├── tests-playwright/         # Playwright E2E tests
 ├── ui/                      # Static UI mockups and prototypes
-│   ├── public/              # Architecture viewpoint HTML pages
+│   ├── public/              # Design viewpoint HTML pages
 │   └── styles/              # UI styling and themes
 └── package.json             # Root dependencies
 ```
@@ -298,7 +298,7 @@ Quick access to documentation search from any webpage:
 
 ## Enterprise Features
 
-### Microservices Architecture
+### Microservices System Architecture
 The platform includes 11 integrated microservices for enterprise-grade functionality:
 1. **Searching**: JSON data storage and text search
 2. **Caching**: Multi-provider caching (Redis, Memcached, In-memory)
