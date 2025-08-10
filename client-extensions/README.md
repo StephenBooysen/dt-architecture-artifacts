@@ -1,6 +1,6 @@
 # Architecture Artifacts Browser Extensions
 
-Browser extensions for Chrome and Edge that provide quick search access to your Architecture Artifacts server documentation.
+Browser extensions for Chrome and Edge that provide quick search access to your Design Artifacts server. documentation.
 
 ## Features
 
@@ -8,7 +8,7 @@ Browser extensions for Chrome and Edge that provide quick search access to your 
 - **Real-time Results**: Get instant search results as you type
 - **Content & File Search**: Search both file names and content
 - **Markdown Preview**: View full markdown files with formatted preview
-- **Configurable Server**: Connect to your local or remote Architecture Artifacts server
+- **Configurable Server**: Connect to your local or remote Design Artifacts server.
 
 ## Installation
 
@@ -30,5 +30,5 @@ Browser extensions for Chrome and Edge that provide quick search access to your 
 
 ## Requirements
 
-- Architecture Artifacts server running with search API endpoints
+- Design Artifacts server. running with search API endpoints
 - CORS configured to allow browser extension requests

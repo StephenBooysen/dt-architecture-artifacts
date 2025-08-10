@@ -5,7 +5,7 @@
  * It shows both file name matches and content matches with previews, allowing users
  * to quickly find and access the content they're looking for.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-01-01
  */

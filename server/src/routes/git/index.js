@@ -8,7 +8,7 @@
  * - File status and diff tracking
  * - Integration with filing service providers
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

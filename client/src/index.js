@@ -9,7 +9,7 @@
  * - "/" - Main application interface with file tree and editor
  * - "/preview" - Standalone preview window for markdown content
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

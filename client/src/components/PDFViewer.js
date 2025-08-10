@@ -5,7 +5,7 @@
  * application interface. It handles base64-encoded PDF content and provides
  * controls for downloading and viewing PDF documents in embedded format.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

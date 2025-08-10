@@ -17,7 +17,7 @@
     "architecture-artifacts",
     "cli"
   ],
-  "author": "Architecture Artifacts Team",
+  "author": "Design Artifacts Team",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.2",

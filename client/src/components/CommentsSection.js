@@ -13,7 +13,7 @@
  * - Responsive design matching glassmorphism theme
  * - Real-time comment updates
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-01-01
  */

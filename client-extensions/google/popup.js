@@ -1,14 +1,14 @@
 /**
  * @fileoverview Google Chrome extension popup interface
  * 
- * Provides Chrome extension functionality for Architecture Artifacts including:
+ * Provides Chrome extension functionality for Design Artifacts including:
  * - Search interface and file preview
  * - User authentication and session management
  * - Space selection and workspace integration
- * - Direct integration with Architecture Artifacts server
+ * - Direct integration with Design Artifacts server
  * - Chrome-specific API utilization
- * 
- * @author Architecture Artifacts Team
+ * s
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */
@@ -215,7 +215,7 @@ class ArchitectureArtifactsExtension {
       });
       
       if (response.status === 401) {
-        this.showError('Authentication required. Please log in to your Architecture Artifacts server.');
+        this.showError('Authentication required. Please log in to your Design Artifacts server.');
         return;
       }
       
@@ -379,7 +379,7 @@ class ArchitectureArtifactsExtension {
         this.previewContent.innerHTML = `
           <div style="color: #de350b; padding: 20px; text-align: center;">
             <p>Authentication required</p>
-            <small>Please log in to your Architecture Artifacts server</small>
+            <small>Please log in to your Design Artifacts server</small>
           </div>
         `;
         return;

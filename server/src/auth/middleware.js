@@ -4,7 +4,7 @@
  * Provides consistent authentication middleware across all routes
  * Supports session-based, token-based, and API key authentication
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-06
  */

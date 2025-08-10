@@ -4,7 +4,7 @@
  * This component provides a simple interface to view templates via the View button.
  * All template creation and editing is now handled via the TemplatesList component.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

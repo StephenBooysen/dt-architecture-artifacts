@@ -13,7 +13,7 @@
  * - Security middleware (helmet, rate limiting)
  * - Path traversal protection
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */
@@ -857,7 +857,7 @@ function getHeader() {
                 <path d="M12 22V12" stroke="#0052cc" stroke-width="2"/>
                 <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
               </svg>
-              Architecture Artifacts Server
+              Design Artifacts server.
             </a>
             
             <div class="ms-auto d-flex align-items-center gap-3">
@@ -960,7 +960,7 @@ function getFooter() {
 
     <footer class="app-footer">
       <div class="container-fluid">
-        <p class="mb-0 text-center small">© 2025 Architecture Artifacts Server - All rights reserved.</p>
+        <p class="mb-0 text-center small">© 2025 Design Artifacts server. - All rights reserved.</p>
       </div>
     </footer>
   `;
@@ -5600,7 +5600,7 @@ app.get('/server-landing', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Architecture Artifacts Server</title>
+  <title>Design Artifacts server.</title>
   ${getSharedStyles()}
 </head>
 <body>
@@ -5614,7 +5614,7 @@ app.get('/server-landing', (req, res) => {
             <path d="M2 7L12 12L22 7" stroke="#0052cc" stroke-width="2"/>
           </svg>
         </div>
-        <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
+        <h1 class="text-confluence-text mb-3">Design Artifacts server.</h1>
         <p class="text-muted">Server administration and monitoring interface</p>
         <div class="mt-4">
           <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">

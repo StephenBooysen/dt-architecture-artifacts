@@ -7,7 +7,7 @@
  * - Preview the selected template content
  * - Create the file or cancel the operation
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

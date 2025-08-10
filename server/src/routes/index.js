@@ -4,7 +4,7 @@
  * This module serves as the main router that delegates to specialized route modules.
  * All API endpoints are organized into logical groups for better maintainability.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

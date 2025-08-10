@@ -5,7 +5,7 @@
  * creating, editing, deleting, and organizing templates. Templates can be used
  * when creating new markdown files to provide pre-defined content structures.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

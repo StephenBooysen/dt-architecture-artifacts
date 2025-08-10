@@ -6,7 +6,7 @@ This is the desktop version of the Architecture Artifacts Editor built with Elec
 
 - Native desktop application experience
 - Full functionality of the web client
-- Integrated with the Architecture Artifacts server
+- Integrated with the Design Artifacts server.
 - Cross-platform support (Windows, macOS, Linux)
 
 ## Development
@@ -14,7 +14,7 @@ This is the desktop version of the Architecture Artifacts Editor built with Elec
 ### Prerequisites
 
 - Node.js and npm installed
-- Architecture Artifacts server running
+- Design Artifacts server. running
 
 ### Running in Development Mode
 
@@ -29,7 +29,7 @@ npm run electron
 ```
 
 This will:
-1. Start the Architecture Artifacts server on port 5000
+1. Start the Design Artifacts server. on port 5000
 2. Start the React development server on port 3000  
 3. Launch the Electron app that connects to the React dev server
 
@@ -88,4 +88,4 @@ The app can be built for:
 
 ## Configuration
 
-The app connects to the Architecture Artifacts server at `http://localhost:5000` by default. This can be configured through environment variables if needed.
+The app connects to the Design Artifacts server. at `http://localhost:5000` by default. This can be configured through environment variables if needed.

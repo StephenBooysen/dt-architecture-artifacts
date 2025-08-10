@@ -8,7 +8,7 @@
  * - Clean, focused reading experience
  * - Welcome message when no content is selected
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

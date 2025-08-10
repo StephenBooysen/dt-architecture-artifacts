@@ -6,9 +6,9 @@
  * - File search and preview functionality
  * - Space and workspace management
  * - Markdown rendering and file operations
- * - Real-time sync with Architecture Artifacts server
+ * - Real-time sync with Design Artifacts server
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */
@@ -1535,7 +1535,7 @@ class SettingsManager {
     }
 
     show() {
-        const config = vscode.workspace.getConfiguration('architectureArtifacts');
+        const config = vscode.workspace.getConfiguration('designArtifacts');
         const currentServerUrl = config.get('serverUrl', 'http://localhost:5000');
         const currentAutoLogin = config.get('autoLogin', false);
 
@@ -1543,7 +1543,7 @@ class SettingsManager {
             {
                 label: 'Server URL',
                 description: currentServerUrl,
-                detail: 'Configure the Architecture Artifacts server URL'
+                detail: 'Configure the Design Artifacts server URL'
             },
             {
                 label: 'Auto Login',
@@ -1584,11 +1584,11 @@ class SettingsManager {
     }
 
     async configureServerUrl() {
-        const config = vscode.workspace.getConfiguration('architectureArtifacts');
+        const config = vscode.workspace.getConfiguration('designArtifacts');
         const currentUrl = config.get('serverUrl', 'http://localhost:5000');
 
         const newUrl = await vscode.window.showInputBox({
-            title: 'Architecture Artifacts Server URL',
+            title: 'Design Artifacts Server URL',
             prompt: 'Enter the server URL (e.g., http://localhost:5000)',
             value: currentUrl,
             validateInput: (value) => {
@@ -1723,7 +1723,7 @@ class SettingsManager {
         const aboutMessage = `Architecture Artifacts VS Code Extension
 
 Version: 1.0.0
-Description: Search and preview architecture documentation from your Architecture Artifacts server directly in VS Code
+Description: Search and preview architecture documentation from your Design Artifacts server directly in VS Code
 
 Features:
 - Search documentation content and file names

@@ -9,7 +9,7 @@
  * - Integration with filing service providers
  * - Advanced search filtering and result ranking
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

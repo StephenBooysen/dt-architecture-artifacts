@@ -8,7 +8,7 @@
  * - Space-specific file and folder operations
  * - Provider caching and lifecycle management
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

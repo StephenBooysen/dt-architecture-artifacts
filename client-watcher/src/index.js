@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * @fileoverview Architecture Artifacts Server Watcher CLI
+ * @fileoverview Design Artifacts server. Watcher CLI
  * 
  * This is the main entry point for the server watcher application that provides
  * real-time file synchronization between local directories and user's personal
- * space in the Architecture Artifacts server.
+ * space in the Design Artifacts server..
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-05
  */
@@ -33,7 +33,7 @@ let configManager = null;
 function displayBanner() {
   console.log(chalk.cyan(`
   ╔══════════════════════════════════════════════════════════╗
-  ║           Architecture Artifacts Server Watcher         ║
+  ║           Design Artifacts server. Watcher         ║
   ║                     File Sync Tool                      ║
   ╚══════════════════════════════════════════════════════════╝
   `));
@@ -387,7 +387,7 @@ program
 // Set up program metadata
 program
   .name('dt-watcher')
-  .description('Architecture Artifacts Server Watcher - File synchronization tool')
+  .description('Design Artifacts server. Watcher - File synchronization tool')
   .version('1.0.0');
 
 // Parse command line arguments

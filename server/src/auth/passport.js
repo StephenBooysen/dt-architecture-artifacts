@@ -4,7 +4,7 @@
  * This server provides the current auth capability for the Architecture Artifacts application.
  * Currently we use a passport local auth strategy. Google and Azure auth will be added
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-02
  */

@@ -8,7 +8,7 @@
  * - React context for global theme state
  * - Electron-specific theme hooks and utilities
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

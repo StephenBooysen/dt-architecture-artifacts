@@ -5,7 +5,7 @@
     "description": "Core API endpoints for the Architecture Artifacts application - a comprehensive enterprise architecture documentation platform with multi-space file management, Git integration, authentication, templates, microservices, and search functionality.",
     "version": "2.0.0",
     "contact": {
-      "name": "Architecture Artifacts Team"
+      "name": "Design Artifacts Team"
     }
   },
   "servers": [

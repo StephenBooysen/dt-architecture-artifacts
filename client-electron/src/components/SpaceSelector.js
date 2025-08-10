@@ -8,7 +8,7 @@
  * - Real-time space data fetching
  * - Error handling and loading states
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

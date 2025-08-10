@@ -1,6 +1,6 @@
-# Architecture Artifacts VS Code Extension
+# Design Artifacts VS Code Extension
 
-Search and preview architecture documentation from your Architecture Artifacts server directly in VS Code.
+Search and preview Design documentation from your Design Artifacts server directly in VS Code.
 
 ## Features
 
@@ -8,7 +8,7 @@ Search and preview architecture documentation from your Architecture Artifacts s
 
 📖 **Markdown Preview** - Preview markdown files with proper syntax highlighting and VS Code theme integration
 
-🔐 **Secure Authentication** - Login securely to your Architecture Artifacts server with session management
+🔐 **Secure Authentication** - Login securely to your Design Artifacts server with session management
 
 ⚙️ **Configurable Settings** - Customize server URL and authentication preferences
 
@@ -18,15 +18,15 @@ Search and preview architecture documentation from your Architecture Artifacts s
 
 1. Open VS Code
 2. Go to Extensions (Ctrl+Shift+X / Cmd+Shift+X)
-3. Search for "Architecture Artifacts"
+3. Search for "Design Artifacts"
 4. Click Install
 
 ## Setup
 
 1. Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-2. Run "Architecture Artifacts: Settings"
+2. Run "Design Artifacts: Settings"
 3. Configure your server URL (default: http://localhost:5000)
-4. Sign in using "Architecture Artifacts: Sign In"
+4. Sign in using "Design Artifacts: Sign In"
 
 ## Usage
 
@@ -34,10 +34,10 @@ Search and preview architecture documentation from your Architecture Artifacts s
 
 1. **Via Command Palette**: 
    - Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-   - Run "Architecture Artifacts: Search Documentation"
+   - Run "Design Artifacts: Search Documentation"
 
 2. **Via Activity Bar**:
-   - Click the Architecture Artifacts icon in the Activity Bar
+   - Click the Design Artifacts icon in the Activity Bar
    - Click the search icon in the panel
 
 3. **Search Types**:
@@ -59,11 +59,11 @@ Search and preview architecture documentation from your Architecture Artifacts s
 ### Settings
 
 Access settings through:
-- Command Palette: "Architecture Artifacts: Settings"
+- Command Palette: "Design Artifacts: Settings"
 - Activity Bar: Click the settings icon
 
 Available settings:
-- **Server URL**: Your Architecture Artifacts server endpoint
+- **Server URL**: Your Design Artifacts server endpoint
 - **Auto Login**: Automatically check authentication on startup
 - **Test Connection**: Verify server connectivity
 
@@ -71,14 +71,14 @@ Available settings:
 
 All commands are available through the Command Palette (Ctrl+Shift+P / Cmd+Shift+P):
 
-- `Architecture Artifacts: Search Documentation` - Open search interface
-- `Architecture Artifacts: Sign In` - Authenticate with server
-- `Architecture Artifacts: Sign Out` - Sign out and clear session
-- `Architecture Artifacts: Settings` - Configure extension settings
+- `Design Artifacts: Search Documentation` - Open search interface
+- `Design Artifacts: Sign In` - Authenticate with server
+- `Design Artifacts: Sign Out` - Sign out and clear session
+- `Design Artifacts: Settings` - Configure extension settings
 
 ## Activity Bar Integration
 
-The extension adds an Architecture Artifacts panel to the Activity Bar with:
+The extension adds an Design Artifacts panel to the Activity Bar with:
 
 - **Authentication Status** - Shows current login state
 - **Quick Search Access** - One-click search functionality
@@ -87,15 +87,15 @@ The extension adds an Architecture Artifacts panel to the Activity Bar with:
 ## Requirements
 
 - VS Code version 1.74.0 or higher
-- Architecture Artifacts server running and accessible
-- Valid user account on the Architecture Artifacts server
+- Design Artifacts server running and accessible
+- Valid user account on the Design Artifacts server
 
 ## Extension Settings
 
 This extension contributes the following settings:
 
-- `architectureArtifacts.serverUrl`: Architecture Artifacts server URL (default: "http://localhost:5000")
-- `architectureArtifacts.autoLogin`: Automatically check authentication status on startup (default: false)
+- `DesignArtifacts.serverUrl`: Design Artifacts server URL (default: "http://localhost:5000")
+- `DesignArtifacts.autoLogin`: Automatically check authentication status on startup (default: false)
 
 ## Security
 
@@ -109,14 +109,14 @@ This extension contributes the following settings:
 ### Connection Issues
 
 1. **Verify Server URL**: Check that your server URL is correct in settings
-2. **Server Status**: Ensure your Architecture Artifacts server is running
+2. **Server Status**: Ensure your Design Artifacts server is running
 3. **Network Access**: Verify network connectivity to the server
 4. **Test Connection**: Use the "Test Connection" option in settings
 
 ### Authentication Issues
 
 1. **Clear Session**: Sign out and sign in again
-2. **Server Logs**: Check Architecture Artifacts server logs for authentication errors
+2. **Server Logs**: Check Design Artifacts server logs for authentication errors
 3. **Credentials**: Verify your username and password are correct
 
 ### Search Issues
@@ -130,14 +130,14 @@ This extension contributes the following settings:
 For issues and questions:
 
 1. Check the troubleshooting section above
-2. Review Architecture Artifacts server logs
-3. Create an issue in the Architecture Artifacts repository
+2. Review Design Artifacts server logs
+3. Create an issue in the Design Artifacts repository
 
 ## Release Notes
 
 ### 1.0.0
 
-Initial release of Architecture Artifacts VS Code Extension
+Initial release of Design Artifacts VS Code Extension
 
 - Full-featured search functionality
 - Secure authentication system
@@ -170,4 +170,4 @@ vsce package
 
 ## License
 
-This extension is part of the Architecture Artifacts project and follows the same license terms.
+This extension is part of the Design Artifacts project and follows the same license terms.

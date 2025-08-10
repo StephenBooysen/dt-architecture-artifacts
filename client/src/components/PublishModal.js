@@ -4,7 +4,7 @@
  * This component provides a publishing interface that saves changes.
  * Git operations are handled on the server side.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

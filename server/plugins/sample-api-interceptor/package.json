@@ -19,7 +19,7 @@
     "interceptor",
     "middleware"
   ],
-  "author": "Architecture Artifacts Team",
+  "author": "Design Artifacts Team",
   "license": "MIT",
   "peerDependencies": {
     "express": "^4.0.0"

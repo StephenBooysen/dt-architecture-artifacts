@@ -74,7 +74,7 @@ class SampleApiInterceptorPlugin {
     }
 
     if (this.options.logRequests) {
-      console.log(`[${this.name}] Intercepted request: ${req.method} ${req.url}`);
+      //console.log(`[${this.name}] Intercepted request: ${req.method} ${req.url}`);
     }
 
     if (this.options.addTimestamp) {
@@ -113,7 +113,7 @@ class SampleApiInterceptorPlugin {
     }
 
     if (this.options.logRequests) {
-      console.log(`[${this.name}] Response processed for: ${req.method} ${req.url}`);
+      //console.log(`[${this.name}] Response processed for: ${req.method} ${req.url}`);
     }
 
     return data;

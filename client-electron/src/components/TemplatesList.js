@@ -4,7 +4,7 @@
  * This component displays all templates in a card-based layout similar to the UI mockup.
  * Users can view, edit, create, and delete templates from this interface.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

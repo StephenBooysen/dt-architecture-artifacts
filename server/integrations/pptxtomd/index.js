@@ -8,7 +8,7 @@
  * - File validation and error handling
  * - Lightweight conversion processing
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

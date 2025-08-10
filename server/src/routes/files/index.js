@@ -9,7 +9,7 @@
  * - Support for both session and token-based authentication
  * - Integration with filing service providers (local, S3, Git)
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

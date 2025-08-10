@@ -5,7 +5,7 @@
  * embedded within markdown files using HTML comment blocks. Comments are
  * stored as JSON data within HTML comments at the end of markdown files.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-01-01
  */

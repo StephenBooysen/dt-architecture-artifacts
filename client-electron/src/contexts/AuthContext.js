@@ -8,7 +8,7 @@
  * - Electron-specific auth hooks and utilities
  * - Integration with main process authentication
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

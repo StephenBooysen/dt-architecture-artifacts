@@ -1,6 +1,6 @@
-# Architecture Artifacts Server Watcher
+# Design Artifacts Server Watcher
 
-A file synchronization tool that watches local directories and automatically syncs changes to your personal space in the Architecture Artifacts server.
+A file synchronization tool that watches local directories and automatically syncs changes to your personal space in the Design Artifacts server.
 
 ## Features
 

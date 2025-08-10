@@ -9,7 +9,7 @@
  * - Role-based access control and space management
  * - Session cleanup and security management
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

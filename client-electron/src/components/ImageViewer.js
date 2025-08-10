@@ -5,7 +5,7 @@
  * like fullscreen mode, zoom controls, and image download functionality. It
  * handles various image formats and provides error handling for failed loads.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

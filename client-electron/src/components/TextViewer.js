@@ -5,7 +5,7 @@
  * for line numbers, text wrapping, and syntax highlighting. It supports
  * various text file formats and provides download functionality.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

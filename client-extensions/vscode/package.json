@@ -1,9 +1,9 @@
 {
-  "name": "architecture-artifacts-vscode",
-  "displayName": "Architecture Artifacts",
-  "description": "Search and preview architecture documentation from your Architecture Artifacts server directly in VS Code",
+  "name": "design-artifacts-vscode",
+  "displayName": "Design Artifacts",
+  "description": "Search and preview design documentation from your Design Artifacts server directly in VS Code",
   "version": "1.0.0",
-  "publisher": "architecture-artifacts",
+  "publisher": "design-artifacts",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -64,9 +64,9 @@
         "architectureArtifacts.serverUrl": {
           "type": "string",
           "default": "http://localhost:5000",
-          "description": "Architecture Artifacts server URL"
+          "description": "Design Artifacts server URL"
         },
-        "architectureArtifacts.autoLogin": {
+        "DesignArtifacts.autoLogin": {
           "type": "boolean",
           "default": false,
           "description": "Automatically check authentication status on startup"

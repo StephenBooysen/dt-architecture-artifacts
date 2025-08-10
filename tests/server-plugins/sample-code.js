@@ -13,7 +13,7 @@
  * - Security middleware (helmet, rate limiting)
  * - Path traversal protection
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */
@@ -911,7 +911,7 @@ function getHeader() {
           <div class="d-flex align-items-center w-100">
             <a class="navbar-brand fw-medium me-3 d-flex align-items-center" href="/">
               <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" class="me-2" />
-              Architecture Artifacts Server
+              Design Artifacts server.
             </a>
             
             <div class="ms-auto d-flex align-items-center gap-3">
@@ -1017,7 +1017,7 @@ function getFooter() {
 
     <footer class="app-footer">
       <div class="container-fluid">
-        <p class="mb-0 text-center small">© 2025 Architecture Artifacts Server - All rights reserved.</p>
+        <p class="mb-0 text-center small">© 2025 Design Artifacts server. - All rights reserved.</p>
       </div>
     </footer>
   `;
@@ -1480,7 +1480,7 @@ app.get('/server-landing', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Architecture Artifacts Server</title>
+  <title>Design Artifacts server.</title>
   ${getSharedStyles()}
 </head>
 <body>
@@ -1490,7 +1490,7 @@ app.get('/server-landing', (req, res) => {
         <div class="mb-4">
           <img src="/stech-black.png" alt="Architecture Artifacts" width="80" height="80" class="mb-4" />
         </div>
-        <h1 class="text-confluence-text mb-3">Architecture Artifacts Server</h1>
+        <h1 class="text-confluence-text mb-3">Design Artifacts server.</h1>
         <p class="text-muted">Server administration and monitoring interface</p>
         <div class="mt-4">
           <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
@@ -2034,7 +2034,7 @@ app.delete('/api/spaces/:index', requireServerAuth, (req, res) => {
 });
 
 app.listen(PORT,  () => {
-  console.log('🚀 Architecture Artifacts Server Started');
+  console.log('🚀 Design Artifacts server. Started');
   console.log('=====================================');
   console.log(`📡 Server running on port: ${PORT}`);
   console.log(`🌍 Environment: ${NODE_ENV}`);

@@ -13,7 +13,7 @@
  * - File name and extension extraction
  * - Support for markdown, PDF, image, and text files
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

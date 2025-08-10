@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="app-footer">
       <div className="container-fluid">
         <p className="mb-0 text-center small">
-          © 2025 Architecture Artifacts Server - All rights reserved.
+          © 2025 Design Artifacts server. - All rights reserved.
         </p>
       </div>
     </footer>

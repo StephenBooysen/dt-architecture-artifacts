@@ -8,7 +8,7 @@
  * - Image extraction and linking
  * - Structured Markdown output generation
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

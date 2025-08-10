@@ -9,7 +9,7 @@
  * - Support for space-based folder organization
  * - Backwards compatibility with legacy folder structures
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-04
  */

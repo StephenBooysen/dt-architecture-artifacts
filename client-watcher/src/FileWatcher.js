@@ -1,11 +1,11 @@
 /**
- * @fileoverview File Watcher for Architecture Artifacts Server Sync
+ * @fileoverview File Watcher for Design Artifacts server. Sync
  * 
  * This module provides real-time file watching capabilities that monitors
  * local directories for changes and automatically syncs them to the user's
- * personal space on the Architecture Artifacts server.
+ * personal space on the Design Artifacts server..
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-05
  */
@@ -102,7 +102,7 @@ class FileWatcher {
       // Test API connection
       const connected = await this.apiClient.testConnection();
       if (!connected) {
-        throw new Error('Failed to connect to the Architecture Artifacts server');
+        throw new Error('Failed to connect to the Design Artifacts server.');
       }
 
       this.log(`Starting file watcher for: ${this.localPath}`);

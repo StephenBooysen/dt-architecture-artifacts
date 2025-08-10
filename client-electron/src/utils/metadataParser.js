@@ -5,7 +5,7 @@
  * embedded within markdown files using HTML comment blocks. Metadata includes
  * recent edit history and starred status, stored as JSON data within HTML comments.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-01-01
  */

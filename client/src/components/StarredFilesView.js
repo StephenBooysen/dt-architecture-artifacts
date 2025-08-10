@@ -5,7 +5,7 @@
  * It shows information about when files were starred and allows users to quickly access
  * their favorite content.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-01-01
  */

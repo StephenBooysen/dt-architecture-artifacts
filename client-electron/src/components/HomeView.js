@@ -9,7 +9,7 @@
  * Each section shows files/templates in a grid layout with proper navigation
  * and actions when clicked.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-01-01
  */

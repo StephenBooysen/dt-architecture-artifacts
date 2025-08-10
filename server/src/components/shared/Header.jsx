@@ -9,7 +9,7 @@ const Header = () => {
             
             <a className="navbar-brand fw-medium me-3 d-flex align-items-center" href="/">
               <img src="/stech-black.png" alt="Architecture Artifacts" width="20" height="20" className="me-2" />
-              Architecture Artifacts Server
+              Design Artifacts server.
             </a>
             
             <div className="ms-auto d-flex align-items-center gap-3">

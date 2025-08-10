@@ -5,7 +5,7 @@
  * be displayed directly in the browser. It includes file size formatting,
  * download progress indication, and error handling for file downloads.
  * 
- * @author Architecture Artifacts Team
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
  */

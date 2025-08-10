@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Architecture Artifacts Search for Edge",
   "version": "1.0.0",
-  "description": "Search and preview architecture documentation from your Architecture Artifacts server - Microsoft Edge version",
+  "description": "Search and preview architecture documentation from your Design Artifacts server. - Microsoft Edge version",
   "permissions": [
     "activeTab",
     "storage"

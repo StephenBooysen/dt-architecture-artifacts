@@ -1,11 +1,11 @@
 /**
- * @fileoverview API Client for Architecture Artifacts Server Communication
+ * @fileoverview API Client for Design Artifacts Server Communication
  * 
  * This module provides a comprehensive API client for communicating with the
- * Architecture Artifacts server. It handles authentication via API keys and
+ * Design Artifacts server. It handles authentication via API keys and
  * provides methods for file operations in the user's personal space.
- * 
- * @author Architecture Artifacts Team
+ *
+ * @author Design Artifacts Team
  * @version 1.0.0
  * @since 2025-08-05
  */
@@ -19,7 +19,7 @@ class ApiClient {
   /**
    * Create an API client instance
    * @param {Object} config - Configuration object
-   * @param {string} config.serverUrl - Base URL of the Architecture Artifacts server
+   * @param {string} config.serverUrl - Base URL of the Design Artifacts server
    * @param {string} config.apiKey - API key for authentication
    * @param {string} config.username - Username for the personal space
    * @param {boolean} [config.verbose=false] - Enable verbose logging
