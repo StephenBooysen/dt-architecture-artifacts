@@ -1,12 +1,12 @@
 /**
- * @fileoverview Electron theme management context provider
+ * @fileoverview Theme management context provider
  * 
- * Provides Electron-specific theme management functionality including:
- * - Light and dark theme switching for Electron app
+ * Provides application-wide theme management functionality including:
+ * - Light and dark theme switching
  * - Theme persistence in localStorage
- * - System theme detection and integration
  * - React context for global theme state
- * - Electron-specific theme hooks and utilities
+ * - Theme-aware component hooks
+ * - Automatic theme detection and application
  * 
  * @author Design Artifacts Team
  * @version 1.0.0
@@ -27,17 +27,13 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    // Check localStorage first, then system preference, fallback to light
-    const savedTheme = localStorage.getItem('architecture-artifacts-theme');
+    // Check localStorage first, then fallback to light
+    const savedTheme = localStorage.getItem('design-artifacts-theme');
     if (savedTheme) {
       return savedTheme;
     }
     
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
+    // Default to light theme regardless of system preference
     return 'light';
   });
 
@@ -46,7 +42,7 @@ export const ThemeProvider = ({ children }) => {
     document.documentElement.setAttribute('data-theme', theme);
     
     // Save to localStorage
-    localStorage.setItem('architecture-artifacts-theme', theme);
+    localStorage.setItem('design-artifacts-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

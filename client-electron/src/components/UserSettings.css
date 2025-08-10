@@ -1,0 +1,4 @@
+.user-settings-scrollable {
+  max-height: calc(100vh - 200px); /* Adjust the 200px value as needed */
+  overflow-y: auto;
+}

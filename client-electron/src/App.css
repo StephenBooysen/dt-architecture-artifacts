@@ -1,3 +1,42 @@
+/* Landing Page Styles */
+.landing-layout {
+  display: flex;
+  align-items: center;
+  max-width: 800px;
+  width: 100%;
+  gap: 3rem;
+}
+
+.landing-image-container {
+  flex: 0 0 300px;
+  max-width: 300px;
+}
+
+.landing-image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.landing-content {
+  flex: 1;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .landing-layout {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .landing-image-container {
+    flex: none;
+    max-width: 250px;
+  }
+}
+
 /* Bootstrap 5 Custom Confluence Theme */
 :root {
   --confluence-primary: #0052cc;
@@ -59,6 +98,49 @@
   border-radius: 4px;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
+}
+
+/* Dark theme button overrides */
+[data-theme="dark"] .btn-primary {
+  --bs-btn-bg: var(--confluence-bg-card);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .btn-secondary {
+  --bs-btn-bg: var(--confluence-bg-card);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .btn-outline-secondary {
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: var(--confluence-text);
+  --bs-btn-border-color: var(--confluence-border);
+  --bs-btn-hover-bg: var(--confluence-border-subtle);
+  --bs-btn-hover-border-color: var(--confluence-border);
+  --bs-btn-hover-color: var(--confluence-text);
+  --bs-btn-active-bg: var(--confluence-border-subtle);
+  --bs-btn-active-border-color: var(--confluence-border);
 }
 
 .btn-sm {
@@ -178,10 +260,22 @@ body {
   transition: background-color 0.15s ease;
   margin-bottom: 2px;
   position: relative;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .file-tree-item:hover {
   background-color: var(--confluence-border-subtle);
+}
+
+.file-tree-item:focus {
+  outline: 2px solid var(--confluence-primary);
+  outline-offset: -2px;
+  background-color: var(--confluence-border-subtle);
+}
+
+.file-tree-item:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .file-tree-item.selected {
@@ -197,6 +291,29 @@ body {
 .file-tree-item .icon {
   margin-right: 0.5rem;
   font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.file-tree-item .file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.folder-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.folder-content .icon {
+  margin-right: 0.5rem;
+  font-size: 0.875rem;
+  flex-shrink: 0;
 }
 
 /* Template file specific styling */
@@ -581,26 +698,61 @@ textarea.form-control {
   font-size: 0.875rem;
 }
 
-/* Toast overrides */
+/* Toast overrides with softer Bootstrap 5 colors */
 .Toastify__toast {
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--confluence-border);
 }
 
 .Toastify__toast--success {
-  background: var(--confluence-success);
+  background: #d1e7dd;
+  color: #0f5132;
+  border-color: #badbcc;
 }
 
 .Toastify__toast--error {
-  background: var(--confluence-danger);
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c2c7;
 }
 
 .Toastify__toast--warning {
-  background: var(--confluence-warning);
+  background: #fff3cd;
+  color: #664d03;
+  border-color: #ffecb5;
 }
 
 .Toastify__toast--info {
-  background: var(--confluence-info);
+  background: #cff4fc;
+  color: #055160;
+  border-color: #b6effb;
+}
+
+/* Dark theme toast overrides */
+[data-theme="dark"] .Toastify__toast--success {
+  background: #0f5132;
+  color: #d1e7dd;
+  border-color: #2d5a41;
+}
+
+[data-theme="dark"] .Toastify__toast--error {
+  background: #721c24;
+  color: #f8d7da;
+  border-color: #a52834;
+}
+
+[data-theme="dark"] .Toastify__toast--warning {
+  background: #664d03;
+  color: #fff3cd;
+  border-color: #997404;
+}
+
+[data-theme="dark"] .Toastify__toast--info {
+  background: #055160;
+  color: #cff4fc;
+  border-color: #0a6e7f;
 }
 
 /* Responsive styles */
@@ -632,6 +784,16 @@ textarea.form-control {
 }
 
 /* Search functionality */
+.search-dropdown {
+  background-color: var(--confluence-bg-card);
+  border-color: var(--confluence-border) !important;
+}
+
+.search-section-header {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text-subtle);
+}
+
 .search-suggestion:hover,
 .search-result:hover {
   background-color: var(--confluence-border-subtle);
@@ -639,7 +801,13 @@ textarea.form-control {
 
 .search-suggestion.highlighted,
 .search-result.highlighted {
-  background-color: #e6f3ff;
+  background-color: var(--confluence-primary);
+  color: white;
+}
+
+.search-suggestion,
+.search-result {
+  color: var(--confluence-text);
 }
 
 .cursor-pointer {
@@ -678,6 +846,53 @@ mark {
   background: var(--confluence-text-subtle);
 }
 
+/* Preview pane theme-aware styles */
+.preview-pane {
+  background-color: var(--confluence-bg-card);
+  color: var(--confluence-text);
+  border: 1px solid var(--confluence-border) !important;
+}
+
+.preview-content {
+  color: var(--confluence-text);
+}
+
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+  color: var(--confluence-text);
+}
+
+.preview-content p,
+.preview-content li,
+.preview-content td,
+.preview-content th {
+  color: var(--confluence-text);
+}
+
+.preview-content blockquote {
+  border-left-color: var(--confluence-border);
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text);
+}
+
+.preview-content table {
+  border-color: var(--confluence-border);
+}
+
+.preview-content th,
+.preview-content td {
+  border-color: var(--confluence-border);
+}
+
+.preview-content code {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text);
+}
+
 /* User authentication styles */
 .user-avatar {
   display: flex;
@@ -712,6 +927,85 @@ mark {
   border-color: rgba(0, 82, 204, 0.2);
 }
 
+/* WYSIWYG Editor (MDEditor) Theme Integration */
+.w-md-editor {
+  background-color: var(--confluence-bg-card) !important;
+  border: 1px solid var(--confluence-border) !important;
+  height: 100% !important;
+}
+
+.editor-pane .w-md-editor {
+  height: 100% !important;
+}
+
+.editor-pane {
+  height: 100%;
+}
+
+.w-md-editor.w-md-editor-dark {
+  background-color: var(--confluence-bg-card) !important;
+  border: 1px solid var(--confluence-border) !important;
+}
+
+.w-md-editor-text-container,
+.w-md-editor-text-container > .w-md-editor-text,
+.w-md-editor-text {
+  background-color: var(--confluence-bg-card) !important;
+  color: var(--confluence-text) !important;
+  border: none !important;
+}
+
+.w-md-editor-bar {
+  background-color: var(--confluence-bg-card) !important;
+  border-bottom: 1px solid var(--confluence-border) !important;
+}
+
+.w-md-editor-bar button {
+  color: var(--confluence-text) !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+.w-md-editor-bar button:hover {
+  background-color: var(--confluence-border-subtle) !important;
+  border-color: var(--confluence-border) !important;
+}
+
+.w-md-editor-bar button.active {
+  background-color: var(--confluence-primary) !important;
+  color: white !important;
+}
+
+.w-md-editor-bar .w-md-editor-bar-divider {
+  background-color: var(--confluence-border) !important;
+}
+
+/* Dark theme specific overrides for MDEditor */
+[data-theme="dark"] .w-md-editor {
+  background-color: var(--confluence-bg-card) !important;
+  border-color: var(--confluence-border) !important;
+}
+
+[data-theme="dark"] .w-md-editor-text-container,
+[data-theme="dark"] .w-md-editor-text-container > .w-md-editor-text,
+[data-theme="dark"] .w-md-editor-text {
+  background-color: var(--confluence-bg-card) !important;
+  color: var(--confluence-text) !important;
+}
+
+[data-theme="dark"] .w-md-editor-bar {
+  background-color: var(--confluence-bg-card) !important;
+  border-bottom-color: var(--confluence-border) !important;
+}
+
+[data-theme="dark"] .w-md-editor-bar button {
+  color: var(--confluence-text) !important;
+}
+
+[data-theme="dark"] .w-md-editor-bar button:hover {
+  background-color: var(--confluence-border-subtle) !important;
+}
+
 /* Utility classes following Bootstrap naming */
 .text-confluence-primary { color: var(--confluence-primary) !important; }
 .text-confluence-secondary { color: var(--confluence-secondary) !important; }
@@ -724,120 +1018,97 @@ mark {
 .border-confluence { border-color: var(--confluence-border) !important; }
 .border-confluence-subtle { border-color: var(--confluence-border-subtle) !important; }
 
-/* File Viewer Styles */
-.pdf-viewer,
-.image-viewer,
-.text-viewer,
-.file-downloader {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--confluence-bg-card);
+/* Templates List Styles */
+.templates-list-container {
+  padding: 2rem;
+  background-color: var(--confluence-bg);
+  min-height: 100vh;
+  color: var(--confluence-text);
+}
+
+.templates-header h2 {
+  color: var(--confluence-text);
+  font-weight: 600;
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.templates-header p {
+  color: var(--confluence-text-subtle);
+  font-size: 0.95rem;
+}
+
+.template-card {
+  border: 1px solid var(--confluence-border);
   border-radius: 8px;
-  overflow: hidden;
+  background-color: var(--confluence-bg-card);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.template-card:hover {
+  border-color: var(--confluence-primary);
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.15);
+  transform: translateY(-2px);
+}
+
+.template-card .card-body {
   padding: 1.5rem;
 }
 
-.pdf-viewer-header,
-.image-viewer-header,
-.text-viewer-header,
-.file-downloader-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--confluence-border);
+.template-card .card-title {
+  color: var(--confluence-text);
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+.template-card .card-text {
+  color: var(--confluence-text-subtle);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.template-icon {
   flex-shrink: 0;
 }
 
-.pdf-viewer-header h3,
-.image-viewer-header h3,
-.text-viewer-header h3,
-.file-downloader-header h3 {
-  margin: 0;
-  color: var(--confluence-text);
-  font-size: 1.25rem;
-  font-weight: 600;
-  flex-grow: 1;
+.template-card .badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
 }
 
-.pdf-viewer-controls,
-.image-viewer-controls,
-.text-viewer-controls,
-.file-downloader-controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.pdf-viewer-content,
-.image-viewer-content,
-.text-viewer-content,
-.file-downloader-content {
-  flex: 1;
-  position: relative;
-  background-color: var(--confluence-bg);
-  border: 1px solid var(--confluence-border);
+.template-card .btn-primary {
+  font-weight: 500;
   border-radius: 6px;
-  overflow: hidden;
+  font-size: 0.9rem;
 }
 
-/* File downloader specific styles */
-.download-placeholder {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
+.template-card .dropdown-toggle::after {
+  display: none;
 }
 
-.file-icon-large {
-  opacity: 0.6;
+.template-card .dropdown-item {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
 }
 
-/* Dark theme adjustments for viewers */
-[data-theme="dark"] .pdf-viewer,
-[data-theme="dark"] .image-viewer,
-[data-theme="dark"] .text-viewer,
-[data-theme="dark"] .file-downloader {
-  background-color: var(--confluence-bg-card);
+.template-card .dropdown-item:hover {
+  background-color: var(--confluence-border-subtle);
 }
 
-[data-theme="dark"] .pdf-viewer-content,
-[data-theme="dark"] .image-viewer-content,
-[data-theme="dark"] .text-viewer-content,
-[data-theme="dark"] .file-downloader-content {
-  background-color: var(--confluence-bg);
-  border-color: var(--confluence-border);
+.template-card .dropdown-item.text-danger:hover {
+  background-color: rgba(222, 53, 11, 0.1);
+  color: var(--confluence-danger);
 }
 
-/* Responsive adjustments for viewers */
-@media (max-width: 768px) {
-  .pdf-viewer,
-  .image-viewer,
-  .text-viewer,
-  .file-downloader {
-    padding: 1rem;
-  }
-  
-  .pdf-viewer-header,
-  .image-viewer-header,
-  .text-viewer-header,
-  .file-downloader-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .pdf-viewer-controls,
-  .image-viewer-controls,
-  .text-viewer-controls,
-  .file-downloader-controls {
-    width: 100%;
-    justify-content: flex-start;
-  }
+/* Empty state styling */
+.templates-list-container .display-1 {
+  font-size: 4rem;
+  opacity: 0.3;
 }
 
 /* Home page section cards */
@@ -902,4 +1173,389 @@ mark {
 [data-theme="dark"] .home-dashboard-block:hover {
   background-color: var(--confluence-border-subtle);
   border-color: var(--confluence-primary);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .template-card {
+  background-color: var(--confluence-bg-card);
+  border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .template-card:hover {
+  border-color: var(--confluence-primary);
+  box-shadow: 0 4px 12px rgba(76, 154, 255, 0.2);
+}
+
+[data-theme="dark"] .template-card .dropdown-item:hover {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text);
+}
+
+[data-theme="dark"] .template-card .dropdown-item.text-danger:hover {
+  background-color: rgba(248, 81, 73, 0.15);
+  color: var(--confluence-danger);
+}
+
+/* Template Modal Overrides */
+.templates-list-container .modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1060 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgba(9, 30, 66, 0.54) !important;
+}
+
+.templates-list-container .modal-dialog {
+  margin: 0 !important;
+  max-width: 90% !important;
+  width: 800px !important;
+  position: relative !important;
+}
+
+.templates-list-container .modal-content {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: var(--confluence-bg-card) !important;
+}
+
+.templates-list-container .modal-header {
+  border-bottom: 1px solid var(--confluence-border) !important;
+  background: var(--confluence-bg-card) !important;
+}
+
+.templates-list-container .modal-footer {
+  border-top: 1px solid var(--confluence-border) !important;
+  background: var(--confluence-bg-card) !important;
+}
+
+.templates-list-container .modal-title {
+  color: var(--confluence-text) !important;
+}
+
+.templates-list-container .form-label {
+  color: var(--confluence-text) !important;
+}
+
+.templates-list-container .form-control {
+  background: var(--confluence-bg-card) !important;
+  color: var(--confluence-text) !important;
+  border: 1px solid var(--confluence-border) !important;
+}
+
+.templates-list-container .form-control:focus {
+  border-color: var(--confluence-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 82, 204, 0.25) !important;
+}
+
+.templates-list-container .form-text {
+  color: var(--confluence-text-subtle) !important;
+}
+
+/* Responsive modal improvements */
+@media (max-width: 768px) {
+  .templates-list-container .modal-dialog {
+    width: 95% !important;
+    max-width: 95% !important;
+  }
+  
+  .templates-list-container .modal-body .row {
+    margin: 0 !important;
+  }
+  
+  .templates-list-container .modal-body .row .col-md-6 {
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* File Viewer Styles */
+.pdf-viewer,
+.image-viewer,
+.text-viewer,
+.file-downloader {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--confluence-bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 1.5rem;
+}
+
+.pdf-viewer-header,
+.image-viewer-header,
+.text-viewer-header,
+.file-downloader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--confluence-border);
+  flex-shrink: 0;
+}
+
+.pdf-viewer-header h3,
+.image-viewer-header h3,
+.text-viewer-header h3,
+.file-downloader-header h3 {
+  margin: 0;
+  color: var(--confluence-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.pdf-viewer-controls,
+.image-viewer-controls,
+.text-viewer-controls,
+.file-downloader-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pdf-viewer-content,
+.image-viewer-content,
+.file-downloader-content {
+  flex: 1;
+  position: relative;
+  background-color: var(--confluence-bg);
+  border: 1px solid var(--confluence-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pdf-viewer-content iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.text-viewer-content {
+  flex: 1;
+  background-color: var(--confluence-bg);
+  border: 1px solid var(--confluence-border);
+  border-radius: 6px;
+  overflow: auto;
+}
+
+/* Text viewer line numbers styling */
+.text-content {
+  margin: 0;
+  padding: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--confluence-bg-card);
+  color: var(--confluence-text);
+  overflow: auto;
+}
+
+.text-with-line-numbers {
+  display: flex;
+  height: 100%;
+  min-height: 400px;
+}
+
+.line-numbers {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text-subtle);
+  padding: 1rem 0.75rem 1rem 1rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: right;
+  user-select: none;
+  border-right: 1px solid var(--confluence-border);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.line-number {
+  display: block;
+  white-space: nowrap;
+}
+
+.text-lines {
+  flex: 1;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.text-lines code {
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.text-content.wrap .text-lines code {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.text-content.no-wrap .text-lines code {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+/* File downloader specific styles */
+.download-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.file-icon-large {
+  opacity: 0.6;
+}
+
+/* Text viewer controls styling */
+.text-viewer-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--confluence-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.text-viewer-controls input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Image viewer styling */
+.image-viewer-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  margin: auto;
+}
+
+.image-loading,
+.image-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--confluence-text-subtle);
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+/* File viewer error states */
+.file-viewer-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  padding: 2rem;
+  background-color: var(--confluence-bg-card);
+  border: 1px solid var(--confluence-border);
+  border-radius: 8px;
+  margin: 1.5rem;
+}
+
+.file-viewer-error p {
+  color: var(--confluence-text-subtle);
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Dark theme adjustments for viewers */
+[data-theme="dark"] .pdf-viewer,
+[data-theme="dark"] .image-viewer,
+[data-theme="dark"] .text-viewer,
+[data-theme="dark"] .file-downloader {
+  background-color: var(--confluence-bg-card);
+}
+
+[data-theme="dark"] .pdf-viewer-content,
+[data-theme="dark"] .image-viewer-content,
+[data-theme="dark"] .text-viewer-content,
+[data-theme="dark"] .file-downloader-content {
+  background-color: var(--confluence-bg);
+  border-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .line-numbers {
+  background-color: var(--confluence-border-subtle);
+  color: var(--confluence-text-subtle);
+  border-right-color: var(--confluence-border);
+}
+
+[data-theme="dark"] .text-content {
+  background-color: var(--confluence-bg-card);
+  color: var(--confluence-text);
+}
+
+[data-theme="dark"] .file-viewer-error {
+  background-color: var(--confluence-bg-card);
+  border-color: var(--confluence-border);
+}
+
+/* Responsive adjustments for viewers */
+@media (max-width: 768px) {
+  .pdf-viewer,
+  .image-viewer,
+  .text-viewer,
+  .file-downloader {
+    padding: 1rem;
+  }
+  
+  .pdf-viewer-header,
+  .image-viewer-header,
+  .text-viewer-header,
+  .file-downloader-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .pdf-viewer-controls,
+  .image-viewer-controls,
+  .text-viewer-controls,
+  .file-downloader-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .line-numbers {
+    min-width: 45px;
+    padding: 1rem 0.5rem 1rem 0.75rem;
+  }
+  
+  .text-lines {
+    padding: 1rem 0.75rem;
+  }
 }

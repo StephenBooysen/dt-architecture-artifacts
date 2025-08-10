@@ -1,15 +1,75 @@
 /**
- * @fileoverview API service module for Architecture Artifacts application.
+ * @fileoverview API service module for Design Artifacts application.
  * 
  * This module provides a comprehensive API client for communicating with the
- * Architecture Artifacts backend. It includes functions for file management,
- * and content manipulation with proper error handling.
+ * Design Artifacts backend. It includes functions for file management,
+ * authentication, templates, search, and content manipulation with proper error handling.
  * 
  * Key features:
  * - File CRUD operations (create, read, update, delete)
  * - File upload and download functionality
  * - Folder management operations
- * - Centralized axios configuration
+ * - Authentication and user management
+ * - Template management system
+ * - Content and file search functionality
+ * - Comments system
+ * - Space-aware operations
+ * - API key management
+ * - Metadata and starred files
+ * - Centralized axios configuration with auth interceptors
+ * 
+ * Methods:
+ * File Operations:
+ * - fetchFiles(space): Fetches file tree structure
+ * - fetchFile(filePath, space): Fetches specific file content
+ * - downloadFile(filePath, space): Downloads file from server
+ * - saveFile(filePath, content, space): Saves file content
+ * - createFolder(folderPath, space): Creates new folder
+ * - createFile(filePath, content, space): Creates new file
+ * - deleteItem(itemPath, space): Deletes file or folder
+ * - renameItem(itemPath, newName, space): Renames file or folder
+ * 
+ * Template Operations:
+ * - fetchTemplates(space): Fetches all templates
+ * - fetchTemplate(templateName): Fetches specific template
+ * - createTemplate(templateData, space): Creates new template
+ * - updateTemplate(templateName, templateData, space): Updates template
+ * - deleteTemplate(templateName, space): Deletes template
+ * - createFileFromTemplate(templateName, filePath, variables): Creates file from template
+ * 
+ * Search Operations:
+ * - searchFiles(query): Searches for files by name
+ * - searchContent(query): Searches content within files
+ * 
+ * Authentication:
+ * - registerUser(userData): Registers new user
+ * - loginUser(credentials): Logs in user
+ * - logoutUser(): Logs out current user
+ * - getCurrentUser(): Gets current user information
+ * - getAllUsers(): Gets all users (admin only)
+ * 
+ * Comments:
+ * - getComments(filePath, space): Gets comments for file
+ * - addComment(filePath, content, space): Adds comment to file
+ * - updateComment(filePath, commentId, content, space): Updates comment
+ * - deleteComment(filePath, commentId, space): Deletes comment
+ * 
+ * Metadata & Files:
+ * - getRecentFiles(days): Gets recently edited files
+ * - getStarredFiles(): Gets starred files
+ * - toggleStarredFile(filePath, starred): Toggles file starred status
+ * - getFileMetadata(filePath): Gets file metadata
+ * 
+ * Space Management:
+ * - fetchUserSpaces(): Gets user's allowed spaces
+ * - fetchAllSpaces(): Gets all available spaces
+ * - updateUserSettings(settingsData): Updates user settings
+ * 
+ * API Keys:
+ * - getApiKeys(): Gets user's API keys
+ * - generateApiKey(keyData): Generates new API key
+ * - updateApiKey(keyId, updateData): Updates API key metadata
+ * - revokeApiKey(keyId): Revokes API key
  * 
  * @author Design Artifacts Team
  * @version 1.0.0
@@ -227,9 +287,10 @@ export const fetchTemplate = async (templateName) => {
  * @param {string} templateData.description - The template description.
  * @return {Promise<Object>} The create response.
  */
-export const createTemplate = async (templateData) => {
+export const createTemplate = async (templateData, space = null) => {
   try {
-    const response = await api.post('/templates', templateData);
+    const url = space ? `/${space}/templates` : '/templates';
+    const response = await api.post(url, templateData);
     return response.data;
   } catch (error) {
     console.error('Error creating template:', error);
@@ -243,9 +304,10 @@ export const createTemplate = async (templateData) => {
  * @param {Object} templateData - The updated template data.
  * @return {Promise<Object>} The update response.
  */
-export const updateTemplate = async (templateName, templateData) => {
+export const updateTemplate = async (templateName, templateData, space = null) => {
   try {
-    const response = await api.put(`/templates/${templateName}`, templateData);
+    const url = space ? `/${space}/templates/${templateName}` : `/templates/${templateName}`;
+    const response = await api.put(url, templateData);
     return response.data;
   } catch (error) {
     console.error('Error updating template:', error);
@@ -258,9 +320,10 @@ export const updateTemplate = async (templateName, templateData) => {
  * @param {string} templateName - The name of the template to delete.
  * @return {Promise<Object>} The delete response.
  */
-export const deleteTemplate = async (templateName) => {
+export const deleteTemplate = async (templateName, space = null) => {
   try {
-    const response = await api.delete(`/templates/${templateName}`);
+    const url = space ? `/${space}/templates/${templateName}` : `/templates/${templateName}`;
+    const response = await api.delete(url);
     return response.data;
   } catch (error) {
     console.error('Error deleting template:', error);
@@ -541,10 +604,110 @@ export const getFileMetadata = async (filePath) => {
  */
 export const fetchUserSpaces = async () => {
   try {
-    const response = await api.get('/auth/user-spaces');
+    const response = await api.get('/user/spaces');
     return response.data;
   } catch (error) {
     console.error('Error fetching user spaces:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches all available spaces (for settings page).
+ * @return {Promise<Array>} All available spaces data.
+ */
+export const fetchAllSpaces = async () => {
+  try {
+    const response = await api.get('/spaces/all');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all spaces:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates user settings including password and space access.
+ * @param {Object} settingsData - The settings data to update.
+ * @param {string} [settingsData.currentPassword] - Current password for verification.
+ * @param {string} [settingsData.newPassword] - New password to set.
+ * @param {string} settingsData.spaces - Comma-separated list of spaces.
+ * @return {Promise<Object>} The update response.
+ */
+export const updateUserSettings = async (settingsData) => {
+  try {
+    const response = await api.put('/users/settings', settingsData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user settings:', error);
+    throw error;
+  }
+};
+
+/**
+ * API Key management functions
+ */
+
+/**
+ * Gets all API keys for the current user.
+ * @return {Promise<Object>} The API keys data.
+ */
+export const getApiKeys = async () => {
+  try {
+    const response = await api.get('/api-keys');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting API keys:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generates a new API key.
+ * @param {Object} keyData - The API key data.
+ * @param {string} keyData.name - Name for the API key.
+ * @param {string} [keyData.description] - Optional description.
+ * @return {Promise<Object>} The new API key data.
+ */
+export const generateApiKey = async (keyData) => {
+  try {
+    const response = await api.post('/api-keys/generate', keyData);
+    return response.data;
+  } catch (error) {
+    console.error('Error generating API key:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an API key's metadata.
+ * @param {string} keyId - The API key ID.
+ * @param {Object} updateData - Data to update.
+ * @param {string} updateData.name - Name for the API key.
+ * @param {string} [updateData.description] - Optional description.
+ * @return {Promise<Object>} The updated API key data.
+ */
+export const updateApiKey = async (keyId, updateData) => {
+  try {
+    const response = await api.put(`/api-keys/${keyId}`, updateData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating API key:', error);
+    throw error;
+  }
+};
+
+/**
+ * Revokes an API key.
+ * @param {string} keyId - The API key ID to revoke.
+ * @return {Promise<Object>} The revocation response.
+ */
+export const revokeApiKey = async (keyId) => {
+  try {
+    const response = await api.delete(`/api-keys/${keyId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error revoking API key:', error);
     throw error;
   }
 };

@@ -1,12 +1,12 @@
 /**
- * @fileoverview Electron authentication context provider
+ * @fileoverview Authentication context provider
  * 
- * Provides Electron-specific authentication management including:
- * - User authentication state for Electron app
+ * Provides application-wide authentication management including:
+ * - User authentication state management
  * - Login and logout functionality
  * - Session persistence and validation
- * - Electron-specific auth hooks and utilities
- * - Integration with main process authentication
+ * - React context for global auth state
+ * - Authentication hooks for components
  * 
  * @author Design Artifacts Team
  * @version 1.0.0

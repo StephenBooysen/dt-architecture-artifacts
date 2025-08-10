@@ -1,4 +1,4 @@
-# Architecture Artifacts Browser Extensions
+# Design Artifacts Browser Extensions
 
 Browser extensions for Chrome and Edge that provide quick search access to your Design Artifacts server. documentation.
 

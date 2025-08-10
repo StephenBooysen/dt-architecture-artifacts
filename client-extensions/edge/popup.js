@@ -1,7 +1,7 @@
 /**
  * @fileoverview Edge browser extension popup interface
  * 
- * Provides browser extension functionality for Architecture Artifacts including:
+ * Provides browser extension functionality for Design Artifacts including:
  * - Search interface and file preview
  * - User authentication and session management
  * - Space selection and workspace integration
