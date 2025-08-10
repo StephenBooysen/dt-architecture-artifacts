@@ -3,13 +3,73 @@
  * 
  * This module provides a comprehensive API client for communicating with the
  * Architecture Artifacts backend. It includes functions for file management,
- * and content manipulation with proper error handling.
+ * authentication, templates, search, and content manipulation with proper error handling.
  * 
  * Key features:
  * - File CRUD operations (create, read, update, delete)
  * - File upload and download functionality
  * - Folder management operations
- * - Centralized axios configuration
+ * - Authentication and user management
+ * - Template management system
+ * - Content and file search functionality
+ * - Comments system
+ * - Space-aware operations
+ * - API key management
+ * - Metadata and starred files
+ * - Centralized axios configuration with auth interceptors
+ * 
+ * Methods:
+ * File Operations:
+ * - fetchFiles(space): Fetches file tree structure
+ * - fetchFile(filePath, space): Fetches specific file content
+ * - downloadFile(filePath, space): Downloads file from server
+ * - saveFile(filePath, content, space): Saves file content
+ * - createFolder(folderPath, space): Creates new folder
+ * - createFile(filePath, content, space): Creates new file
+ * - deleteItem(itemPath, space): Deletes file or folder
+ * - renameItem(itemPath, newName, space): Renames file or folder
+ * 
+ * Template Operations:
+ * - fetchTemplates(space): Fetches all templates
+ * - fetchTemplate(templateName): Fetches specific template
+ * - createTemplate(templateData, space): Creates new template
+ * - updateTemplate(templateName, templateData, space): Updates template
+ * - deleteTemplate(templateName, space): Deletes template
+ * - createFileFromTemplate(templateName, filePath, variables): Creates file from template
+ * 
+ * Search Operations:
+ * - searchFiles(query): Searches for files by name
+ * - searchContent(query): Searches content within files
+ * 
+ * Authentication:
+ * - registerUser(userData): Registers new user
+ * - loginUser(credentials): Logs in user
+ * - logoutUser(): Logs out current user
+ * - getCurrentUser(): Gets current user information
+ * - getAllUsers(): Gets all users (admin only)
+ * 
+ * Comments:
+ * - getComments(filePath, space): Gets comments for file
+ * - addComment(filePath, content, space): Adds comment to file
+ * - updateComment(filePath, commentId, content, space): Updates comment
+ * - deleteComment(filePath, commentId, space): Deletes comment
+ * 
+ * Metadata & Files:
+ * - getRecentFiles(days): Gets recently edited files
+ * - getStarredFiles(): Gets starred files
+ * - toggleStarredFile(filePath, starred): Toggles file starred status
+ * - getFileMetadata(filePath): Gets file metadata
+ * 
+ * Space Management:
+ * - fetchUserSpaces(): Gets user's allowed spaces
+ * - fetchAllSpaces(): Gets all available spaces
+ * - updateUserSettings(settingsData): Updates user settings
+ * 
+ * API Keys:
+ * - getApiKeys(): Gets user's API keys
+ * - generateApiKey(keyData): Generates new API key
+ * - updateApiKey(keyId, updateData): Updates API key metadata
+ * - revokeApiKey(keyId): Revokes API key
  * 
  * @author Architecture Artifacts Team
  * @version 1.0.0

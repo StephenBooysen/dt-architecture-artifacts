@@ -16,6 +16,29 @@
  * - Responsive design with mobile support
  * - File upload and download capabilities
  * 
+ * Key Methods:
+ * - AppContent(): Main authenticated application component
+ * - App(): Root component with context providers
+ * - syncFiles(): Syncs file tree with server
+ * - checkForDrafts(): Checks for draft files from server
+ * - checkSyncStatus(): Checks remote sync status
+ * - loadFiles(): Loads file tree from server
+ * - diffAndUpdateTree(): Incremental tree update algorithm
+ * - mergeTreeChanges(): Merges changes between old and new trees
+ * - handleFileSelect(): Handles file selection and loading
+ * - handleContentChange(): Handles content changes in editor
+ * - handleSave(): Saves file content to server
+ * - handlePublish(): Handles publish workflow
+ * - handleCreateFolder(): Creates new folders
+ * - handleCreateFile(): Creates new files
+ * - handleDeleteItem(): Deletes files and folders
+ * - handleRenameItem(): Renames files and folders
+ * - handleFileUpload(): Handles file uploads
+ * - handleSearchChange(): Handles search input changes
+ * - handleSearchSubmit(): Handles search submission
+ * - handleAuthSuccess(): Handles successful authentication
+ * - handleSpaceChange(): Handles space switching
+ * 
  * @author Architecture Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
@@ -207,7 +230,17 @@ function AppContent() {
 
   // Provider info is set to default values - no API call needed
 
-    // Periodic sync with server to catch external changes
+    /**
+   * Syncs the local file tree with the server to catch external changes.
+   * 
+   * This function performs a silent background sync by fetching the latest
+   * file tree from the server and updating the local state only if changes
+   * are detected. It uses the diffAndUpdateTree algorithm to minimize
+   * unnecessary re-renders and preserve UI state.
+   * 
+   * @async
+   * @returns {Promise<void>}
+   */
   const syncFiles = async () => {
     try {
       const fileTree = await fetchFiles(currentSpace);
@@ -223,7 +256,16 @@ function AppContent() {
     }
   };
 
-  // Function to check for draft files from server
+  /**
+   * Checks for draft files from the server if the provider supports drafts.
+   * 
+   * This function queries the server for any draft files that haven't been
+   * published yet. It updates the draft files state and changes indicator
+   * based on the response. Only executes if the provider supports drafts.
+   * 
+   * @async
+   * @returns {Promise<void>}
+   */
   const checkForDrafts = useCallback(async () => {
     // Only check for drafts if provider supports them
     if (!providerInfo.supportsDrafts) {
@@ -247,7 +289,16 @@ function AppContent() {
     }
   }, [providerInfo.supportsDrafts]);
 
-  // Function to check for remote sync status
+  /**
+   * Checks the remote Git sync status for changes.
+   * 
+   * This function polls the server to detect when remote changes have been
+   * pulled from the Git repository. When changes are detected, it triggers
+   * an immediate file tree sync to update the local state with the new content.
+   * 
+   * @async
+   * @returns {Promise<void>}
+   */
   const checkSyncStatus = useCallback(async () => {
     try {
       const response = await fetch('/api/git/sync-status', {
@@ -299,7 +350,17 @@ function AppContent() {
     }
   }, [isAuthenticated, providerInfo, checkForDrafts]);
 
-  // Tree manipulation utilities for local updates
+  /**
+   * Finds a node in the file tree by its path.
+   * 
+   * This utility function recursively searches through the file tree structure
+   * to locate a node with the specified path. It traverses both files and
+   * directories, searching through children of directory nodes.
+   * 
+   * @param {Array} tree - The file tree array to search
+   * @param {string} path - The path of the node to find
+   * @returns {Object|null} The found node object or null if not found
+   */
   const findNodeInTree = (tree, path) => {
     for (const node of tree) {
       if (node.path === path) {
@@ -313,6 +374,17 @@ function AppContent() {
     return null;
   };
 
+  /**
+   * Finds the parent node of a given child path in the file tree.
+   * 
+   * This utility function extracts the parent path from a child path and
+   * locates the parent node in the file tree structure. Returns null
+   * for root-level items that have no parent.
+   * 
+   * @param {Array} tree - The file tree array to search
+   * @param {string} childPath - The path of the child node
+   * @returns {Object|null} The parent node object or null if no parent
+   */
   const findParentInTree = (tree, childPath) => {
     const pathParts = childPath.split('/');
     if (pathParts.length === 1) return null; // Root level
@@ -321,6 +393,18 @@ function AppContent() {
     return findNodeInTree(tree, parentPath);
   };
 
+  /**
+   * Adds a new node to the file tree at the specified parent location.
+   * 
+   * This function creates a deep copy of the tree and inserts the new node
+   * either at the root level or under the specified parent directory.
+   * The tree is automatically sorted after insertion to maintain order.
+   * 
+   * @param {Array} tree - The file tree array to modify
+   * @param {Object} newNode - The new node object to add
+   * @param {string|null} parentPath - The path of the parent directory
+   * @returns {Array} A new tree array with the node added
+   */
   const addNodeToTree = (tree, newNode, parentPath = null) => {
     const newTree = JSON.parse(JSON.stringify(tree)); // Deep clone
     
@@ -399,6 +483,19 @@ function AppContent() {
     });
   };
 
+  /**
+   * Loads the file tree from the server for the current or specified space.
+   * 
+   * This function fetches the complete file tree structure from the server
+   * and updates the local state. It uses the diff algorithm to minimize
+   * unnecessary updates unless force is true. Shows loading indicators
+   * during the fetch operation.
+   * 
+   * @async
+   * @param {boolean} force - Whether to force update regardless of changes
+   * @param {string|null} spaceOverride - Optional space to load instead of current
+   * @returns {Promise<void>}
+   */
   const loadFiles = async (force = false, spaceOverride = null) => {
     try {
       setIsLoading(true);
@@ -418,7 +515,17 @@ function AppContent() {
     }
   };
 
-  // Incremental tree update algorithm to preserve UI state
+  /**
+   * Incremental tree update algorithm to preserve UI state during updates.
+   * 
+   * This algorithm compares the old and new file trees to detect changes
+   * and perform minimal updates. It preserves expanded folder states and
+   * other UI state by only updating nodes that have actually changed.
+   * 
+   * @param {Array} oldTree - The current file tree state
+   * @param {Array} newTree - The new file tree from server
+   * @returns {Array} Updated tree with minimal changes applied
+   */
   const diffAndUpdateTree = (oldTree, newTree) => {
     // If first load, return new tree
     if (oldTree.length === 0) {
@@ -438,7 +545,19 @@ function AppContent() {
     return mergeTreeChanges(oldTree, newTree, oldMap, newMap);
   };
 
-  // Merge only the changes between old and new trees
+  /**
+   * Merges changes between old and new file trees efficiently.
+   * 
+   * This function performs the actual merging of tree changes by identifying
+   * added, removed, and modified items. It preserves the structure of the
+   * old tree while applying only the necessary updates from the new tree.
+   * 
+   * @param {Array} oldTree - The current file tree state
+   * @param {Array} newTree - The new file tree from server
+   * @param {Object} oldMap - Map representation of old tree for fast lookup
+   * @param {Object} newMap - Map representation of new tree for fast lookup
+   * @returns {Array} Merged tree with changes applied
+   */
   const mergeTreeChanges = (oldTree, newTree, oldMap, newMap) => {
     const updatedTree = JSON.parse(JSON.stringify(oldTree)); // Deep clone old tree
     
@@ -581,6 +700,18 @@ function AppContent() {
     return map;
   };
 
+  /**
+   * Handles file selection and loading of file content.
+   * 
+   * This function loads the selected file's content from the server and
+   * updates the editor state. It prevents unnecessary reloads of the same
+   * file and handles different file types including templates and downloadable
+   * files. Switches to the files view to display the loaded content.
+   * 
+   * @async
+   * @param {string} filePath - The path of the file to select and load
+   * @returns {Promise<void>}
+   */
   const handleFileSelect = useCallback(async (filePath) => {
     // Don't reload if the same file is already selected
     if (selectedFile === filePath) {
@@ -619,11 +750,32 @@ function AppContent() {
     }
   }, [selectedFile, currentSpace]);
 
+  /**
+   * Handles content changes in the editor.
+   * 
+   * This callback function updates the file content state when the user
+   * makes changes in the editor and marks the file as having unsaved changes.
+   * It's optimized with useCallback to prevent unnecessary re-renders.
+   * 
+   * @param {string} newContent - The updated content from the editor
+   * @returns {void}
+   */
   const handleContentChange = useCallback((newContent) => {
     setFileContent(newContent);
     setHasChanges(true);
   }, []);
 
+  /**
+   * Saves the current file content to the server.
+   * 
+   * This function handles saving of both regular files and templates.
+   * It determines the file type and calls the appropriate save method,
+   * updates the UI state, and checks for drafts after saving. Shows
+   * appropriate success/error messages to the user.
+   * 
+   * @async
+   * @returns {Promise<void>}
+   */
   const handleSave = async () => {
     if (!selectedFile) return;
 

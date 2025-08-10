@@ -13,6 +13,19 @@
  * - Security middleware (helmet, rate limiting)
  * - Path traversal protection
  * 
+ * Methods:
+ * - logApiCall(req, res, next): Middleware to log API calls for monitoring
+ * - patchEmitter(emitter): Patches event emitter to capture all events
+ * - initializePlugins(): Loads and initializes all plugins
+ * - getSharedStyles(): Returns shared CSS styles for server pages
+ * - getHeader(): Returns header HTML for server pages
+ * - getNavigation(activeSection): Returns navigation sidebar HTML
+ * - getFooter(): Returns footer HTML for server pages
+ * - getSidebarToggleScript(): Returns JavaScript for sidebar toggle functionality
+ * - getThemeToggleScript(): Returns JavaScript for theme toggle functionality
+ * - getMonitoringScript(): Returns JavaScript for API monitoring dashboard
+ * - requireServerAuth(req, res, next): Authentication middleware for server pages
+ * 
  * @author Architecture Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
@@ -217,8 +230,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 /**
- * Patch our emitter to capture all events
- * @param {} emitter
+ * Patches an EventEmitter instance to intercept and log all emitted events.
+ * 
+ * This function overrides the emit method of an EventEmitter to capture
+ * event names and arguments for debugging and monitoring purposes. It maintains
+ * the original event handling behavior while adding logging capabilities.
+ * 
+ * @param {EventEmitter} emitter - The EventEmitter instance to patch
+ * @returns {void}
  */
 function patchEmitter(emitter) {
   const originalEmit = emitter.emit;
@@ -271,7 +290,17 @@ const workflow = workflowService.initialize('', { 'express-app': app }, eventEmi
 const workingService = require('./src/services/working/singleton');
 const working = workingService.initialize('', { 'express-app': app }, eventEmitter);
 
-// Load plugins
+/**
+ * Initializes and loads all available plugins for the server.
+ * 
+ * This function scans the plugins directory, loads each plugin module,
+ * and creates the plugin middleware for request/response interception.
+ * Handles errors gracefully and logs the initialization process.
+ * 
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} When plugin loading fails
+ */
 async function initializePlugins() {
   try {
     console.log('🔌 Loading plugins...');
@@ -315,7 +344,15 @@ const limiter = rateLimit({
 app.use('/api', apiRoutes);
 
 
-// Helper functions for server pages
+/**
+ * Generates shared CSS styles and dependencies for all server pages.
+ * 
+ * This function returns a complete CSS stylesheet including Bootstrap,
+ * Bootstrap Icons, custom theme variables, and responsive design rules.
+ * Includes both light and dark theme support with Confluence-inspired styling.
+ * 
+ * @returns {string} HTML string containing CSS styles and external dependencies
+ */
 function getSharedStyles() {
   return `
     <link rel="icon" href="/favicon.png" type="image/png" />
@@ -1012,6 +1049,15 @@ function getSharedStyles() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>`;
 }
 
+/**
+ * Generates the header HTML section for server pages.
+ * 
+ * Creates a responsive navigation header with branding, server status indicator,
+ * theme toggle button, and logout functionality. Includes the Architecture
+ * Artifacts logo and navigation elements.
+ * 
+ * @returns {string} HTML string for the page header
+ */
 function getHeader() {
   return `
     <header class="app-header">
@@ -1048,6 +1094,16 @@ function getHeader() {
   `;
 }
 
+/**
+ * Generates the sidebar navigation HTML for server pages.
+ * 
+ * Creates a collapsible sidebar with navigation sections for Overview,
+ * Settings, Monitoring, and Services. Highlights the currently active
+ * section and provides links to all server management pages.
+ * 
+ * @param {string} activeSection - The currently active navigation section
+ * @returns {string} HTML string for the sidebar navigation
+ */
 function getNavigation(activeSection) {
   return `
     <main class="app-main">
@@ -1119,6 +1175,14 @@ function getNavigation(activeSection) {
   `;
 }
 
+/**
+ * Generates the footer HTML section for server pages.
+ * 
+ * Creates a simple footer with copyright information and consistent
+ * styling across all server administration pages.
+ * 
+ * @returns {string} HTML string for the page footer
+ */
 function getFooter() {
   return `
       </section>
@@ -1132,6 +1196,15 @@ function getFooter() {
   `;
 }
 
+/**
+ * Generates JavaScript code for sidebar toggle and server status functionality.
+ * 
+ * Provides client-side JavaScript for collapsing/expanding the sidebar,
+ * handling logout functionality, checking server status, and updating
+ * the status indicator in real-time.
+ * 
+ * @returns {string} JavaScript code as a string
+ */
 function getSidebarToggleScript() {
   return `
   <script>
@@ -1240,6 +1313,15 @@ function getSidebarToggleScript() {
   `;
 }
 
+/**
+ * Generates JavaScript code for theme switching functionality.
+ * 
+ * Provides client-side JavaScript for toggling between light and dark themes,
+ * persisting theme preference in localStorage, and updating theme icons
+ * dynamically. Supports both manual theme switching and preference storage.
+ * 
+ * @returns {string} JavaScript code as a string
+ */
 function getThemeToggleScript() {
   return `
   <script>
@@ -1284,6 +1366,16 @@ function getThemeToggleScript() {
   `;
 }
 
+/**
+ * Generates JavaScript code for the API monitoring dashboard.
+ * 
+ * Provides comprehensive client-side functionality for the API monitoring
+ * interface including data fetching, statistics calculation, table filtering,
+ * auto-refresh capabilities, and test API calls. Handles real-time updates
+ * and interactive controls for monitoring server API usage.
+ * 
+ * @returns {string} JavaScript code as a string
+ */
 function getMonitoringScript() {
   return `<script>
     let allCalls = [];
@@ -1561,7 +1653,18 @@ app.get('/services/searching', requireServerAuth, (req, res) => {
   });
   res.send(html);
 });
-// Authentication middleware for server pages
+/**
+ * Authentication middleware for server administration pages.
+ * 
+ * Verifies that the user is authenticated and has admin role privileges.
+ * Redirects unauthenticated users to the landing page and blocks access
+ * for non-admin users. Allows access to landing and login pages without auth.
+ * 
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @param {express.NextFunction} next - Express next middleware function
+ * @returns {void}
+ */
 function requireServerAuth(req, res, next) {
   if (req.isAuthenticated()) {
     // Check if user has admin role

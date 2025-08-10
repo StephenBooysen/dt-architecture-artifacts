@@ -13,6 +13,21 @@
  * - File name and extension extraction
  * - Support for markdown, PDF, image, and text files
  * 
+ * Methods:
+ * - detectFileType(filePath): Detects file type based on extension
+ * - getFileExtension(filePath): Extracts file extension from path
+ * - getFileName(filePath): Extracts file name from path
+ * - isViewableFileType(fileType): Checks if file type can be viewed
+ * - shouldDownloadFile(fileType): Checks if file should be downloaded
+ * - getMimeType(extension): Gets MIME type for file extension
+ * 
+ * Constants:
+ * - FILE_TYPES: Supported file type constants
+ * - IMAGE_EXTENSIONS: Supported image file extensions
+ * - TEXT_EXTENSIONS: Supported text file extensions
+ * - PDF_EXTENSIONS: Supported PDF file extensions
+ * - MARKDOWN_EXTENSIONS: Supported markdown file extensions
+ * 
  * @author Architecture Artifacts Team
  * @version 1.0.0
  * @since 2024-01-01
