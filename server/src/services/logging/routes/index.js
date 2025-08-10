@@ -36,6 +36,46 @@ module.exports = (options, eventEmitter, logger) => {
       }
     });
 
+    app.post('/api/logging/error/:logname', (req, res) => {
+      const logname = req.params.logname;
+      const message = req.body;
+      if (logname && message) {
+        logger
+          .logError(logname, message)
+          .then(() => res.status(200).send('OK'))
+          .catch((err) => res.status(500).send(err.message));
+      } else {
+        res.status(400).send('Bad Request: Missing error message');
+      }
+    });
+
+    app.get('/api/logging/logs', (req, res) => {
+      try {
+        const limit = req.query.limit ? parseInt(req.query.limit) : null;
+        if (logger && typeof logger.getLogs === 'function') {
+          const logs = logger.getLogs(limit);
+          res.status(200).json(logs);
+        } else {
+          res.status(200).json([]); // Return empty array if no getLogs method
+        }
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve logs' });
+      }
+    });
+
+    app.delete('/api/logging/logs', (req, res) => {
+      try {
+        if (logger && typeof logger.clearLogs === 'function') {
+          logger.clearLogs();
+          res.status(200).json({ message: 'Logs cleared successfully' });
+        } else {
+          res.status(404).json({ error: 'Clear logs method not available' });
+        }
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to clear logs' });
+      }
+    });
+
     app.get('/api/logging/status', (req, res) => {
       eventEmitter.emit('api-logging-status', 'logging api running');
       res.status(200).json('logging api running');

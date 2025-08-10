@@ -28,6 +28,18 @@ class FileLogger {
     if (this.eventEmitter_)
       this.eventEmitter_.emit('log:log', { filename: this.filename_, logname, message });
   }
+
+  /**
+   * Logs an error message to a file.
+   * @param {string} logname The name of the log.
+   * @param {string} message The error message to log.
+   */
+  async logError(logname, message) {
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(this.filename_, `${timestamp} - ${logname}: ERROR: ${message}\n`);
+    if (this.eventEmitter_)
+      this.eventEmitter_.emit('log:error', { filename: this.filename_, logname, message });
+  }
 }
 
 module.exports = FileLogger;

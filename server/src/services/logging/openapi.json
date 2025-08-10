@@ -140,6 +140,121 @@
         }
       }
     },
+    "/error/{logname}": {
+      "post": {
+        "tags": ["logging"],
+        "summary": "Log an error message",
+        "description": "Logs an error message with the specified log name. The message should be in JSON format and will be processed by the configured logging provider using console.error for console logger or timestamped error format for file logger.",
+        "operationId": "logError",
+        "parameters": [
+          {
+            "name": "logname",
+            "in": "path",
+            "required": true,
+            "description": "The name of the log category or identifier for the error",
+            "schema": {
+              "type": "string",
+              "example": "application-error"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The error message to log in JSON format",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Error log message payload - can be any valid JSON object",
+                "additionalProperties": true,
+                "examples": [
+                  {
+                    "level": "error",
+                    "message": "Database connection failed",
+                    "timestamp": "2024-01-01T12:00:00Z",
+                    "error": "Connection timeout",
+                    "service": "user-service"
+                  }
+                ]
+              },
+              "examples": {
+                "database-error": {
+                  "summary": "Database error example",
+                  "value": {
+                    "level": "error",
+                    "message": "Database connection failed",
+                    "timestamp": "2024-01-01T12:00:00Z",
+                    "error": "Connection timeout after 30 seconds",
+                    "service": "user-service",
+                    "stackTrace": "Error: Connection timeout\n    at Database.connect..."
+                  }
+                },
+                "api-error": {
+                  "summary": "API error example",
+                  "value": {
+                    "level": "error",
+                    "message": "API endpoint failed",
+                    "timestamp": "2024-01-01T12:05:00Z",
+                    "endpoint": "/api/users/123",
+                    "method": "GET",
+                    "statusCode": 500,
+                    "error": "Internal server error"
+                  }
+                },
+                "validation-error": {
+                  "summary": "Validation error example",
+                  "value": {
+                    "level": "error",
+                    "message": "Request validation failed",
+                    "timestamp": "2024-01-01T12:03:00Z",
+                    "requestId": "req-abc123",
+                    "validationErrors": [
+                      "Email is required",
+                      "Password must be at least 8 characters"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Error message logged successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing or invalid error message",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bad Request: Missing error message"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Error logging operation failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Internal server error occurred while logging error message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/status": {
       "get": {
         "tags": ["status"],
@@ -200,6 +315,46 @@
             "format": "date-time",
             "description": "When the log event occurred",
             "example": "2024-01-01T12:00:00Z"
+          }
+        },
+        "additionalProperties": true,
+        "required": ["message"]
+      },
+      "ErrorLogMessage": {
+        "type": "object",
+        "description": "An error log message object with flexible structure",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Log level for errors",
+            "enum": ["error", "fatal", "critical"],
+            "example": "error"
+          },
+          "message": {
+            "type": "string",
+            "description": "The main error message",
+            "example": "Database connection failed"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the error occurred",
+            "example": "2024-01-01T12:00:00Z"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detailed error description",
+            "example": "Connection timeout after 30 seconds"
+          },
+          "stackTrace": {
+            "type": "string",
+            "description": "Stack trace of the error",
+            "example": "Error: Connection timeout\n    at Database.connect..."
+          },
+          "service": {
+            "type": "string",
+            "description": "Name of the service that generated the error",
+            "example": "user-service"
           }
         },
         "additionalProperties": true,
