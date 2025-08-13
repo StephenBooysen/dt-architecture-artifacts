@@ -214,6 +214,26 @@ function AppContent() {
       setKnowledgeViewContent(''); // Clear previous content
       setKnowledgeViewSelectedFile(null);
       setKnowledgeSearchResults([]);
+      
+      // Try to load home.md from the root if it exists
+      const tryLoadHome = async () => {
+        try {
+          const data = await fetchFile('home.md', currentSpace);
+          if (data && data.content) {
+            setKnowledgeViewContent(data.content);
+            setKnowledgeViewSelectedFile({
+              path: 'home.md',
+              title: 'Home',
+              type: 'file'
+            });
+          }
+        } catch (error) {
+          // home.md doesn't exist or can't be loaded, which is fine
+          console.log('No home.md found in readonly space root, that\'s okay');
+        }
+      };
+      
+      tryLoadHome();
     } else {
       // Switch back to normal view for writable spaces
       if (isKnowledgeView) {
@@ -224,7 +244,7 @@ function AppContent() {
         setKnowledgeSearchResults([]);
       }
     }
-  }, [isCurrentSpaceReadonly, isKnowledgeView]);
+  }, [isCurrentSpaceReadonly, isKnowledgeView, currentSpace, fetchFile]);
 
   // Provider info is set to default values - no API call needed
 

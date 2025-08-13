@@ -67,7 +67,6 @@ class GitSpaceScheduler {
       console.log('GitSpaceScheduler: Found space configs:', Object.keys(spaceConfigs));
       
       for (const [spaceName, config] of Object.entries(spaceConfigs)) {
-        console.log(`GitSpaceScheduler: Checking space ${spaceName}:`, config.filing);
         // Sync all spaces that have filing providers
         if (config.filing && (config.filing.type === 'git' || config.filing.type === 'local')) {
           console.log(`Syncing ${config.filing.type} space: ${spaceName}`);

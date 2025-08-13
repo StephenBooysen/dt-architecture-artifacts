@@ -18,18 +18,6 @@
     }
   },
   {
-    "space": "Shared",
-    "access": "write",
-    "visibility": "public",
-    "filing": {
-      "type": "git",
-      "localFolder": "./content-shared",
-      "git": "https://github.com/StephenBooysen/dt-architecture-artifacts-shared.git",
-      "git-branch": "main",
-      "git-fetch-interval": "5000"
-    }
-  },
-  {
     "space": "Knowledge",
     "access": "readonly",
     "visibility": "public",
@@ -38,7 +26,7 @@
       "localFolder": "./content-readonly",
       "git": "https://github.com/StephenBooysen/dt-architecture-artifacts-readonly.git",
       "git-branch": "main",
-      "git-fetch-interval": "5000"
+      "git-fetch-interval": "1000"
     }
   }
 ]

@@ -20,7 +20,7 @@
       "write",
       "admin"
     ],
-    "spaces": "Personal, local-shared, Knowledge, Shared"
+    "spaces": "Personal, local-shared, Knowledge"
   },
   {
     "id": "1754282733591",
@@ -47,6 +47,6 @@
       "write",
       "admin"
     ],
-    "spaces": "Personal, local-shared, Knowledge, Shared"
+    "spaces": "Personal, local-shared, Knowledge"
   }
 ]

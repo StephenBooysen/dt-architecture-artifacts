@@ -11,7 +11,6 @@
 
 const express = require('express');
 const path = require('path');
-const simpleGit = require('simple-git');
 const EventEmitter = require('events');
 const createFilingService = require('../services/filing/index.js');
 const userStorage = require('../auth/userStorage');
@@ -34,7 +33,6 @@ const downloadRoutes = require('./downloads');
 const renameRoutes = require('./rename');
 
 const router = express.Router();
-const git = simpleGit();
 
 /**
  * Helper function to get the correct file path based on space type
@@ -164,7 +162,6 @@ router.get('/:space/files/*', loadFilingProvider, checkSpaceAccess('read'), asyn
           fileType,
           hasComments: comments.length > 0
         };
-        console.log(`[Server] Sending markdown response with keys:`, Object.keys(response));
         res.json(response);
       } else {
         console.log(`[Server] Sending text file response`);
