@@ -42,6 +42,15 @@ class SearchingSingleton extends ServiceSingleton {
     console.log(`[SEARCH] Index document:`, document);
   }
 
+  async add(key, document, options = {}) {
+    const searching = this.getInstance();
+    if (searching.add) {
+      return searching.add(key, document, options);
+    }
+    console.log(`[SEARCH] Add document with key: ${key}`, document);
+    return false;
+  }
+
   async remove(documentId, options = {}) {
     const searching = this.getInstance();
     if (searching.remove) {
