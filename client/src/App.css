@@ -1559,3 +1559,119 @@ mark {
     padding: 1rem 0.75rem;
   }
 }
+
+/* Folder Content View Styles */
+.folder-content-view {
+  padding: 1.5rem;
+  background: var(--confluence-bg);
+  min-height: 100vh;
+}
+
+.folder-header {
+  background: var(--confluence-bg-card);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--confluence-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.folder-header .breadcrumb {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.folder-header .breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  color: var(--confluence-text-subtle);
+  font-weight: 500;
+}
+
+.folder-header .breadcrumb-item.active {
+  color: var(--confluence-text);
+}
+
+.folder-stats .badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.5rem;
+}
+
+.folder-contents {
+  margin-top: 1.5rem;
+}
+
+.folder-item-card {
+  border: 1px solid var(--confluence-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: var(--confluence-bg-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.folder-item-card:hover {
+  border-color: var(--confluence-primary);
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.15);
+  transform: translateY(-2px);
+}
+
+.folder-item-card .card-body {
+  padding: 1.25rem;
+}
+
+.folder-item-card .card-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--confluence-text);
+  line-height: 1.4;
+}
+
+.folder-item-card .card-text {
+  font-size: 0.875rem;
+  color: var(--confluence-text-subtle);
+  margin: 0;
+}
+
+.folder-item-card:hover .card-title {
+  color: var(--confluence-primary);
+}
+
+.folder-item-card:hover .bi-chevron-right {
+  color: var(--confluence-primary) !important;
+}
+
+/* Empty folder state */
+.folder-contents .text-center {
+  background: var(--confluence-bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--confluence-border);
+  margin: 2rem 0;
+}
+
+/* Responsive adjustments for folder content */
+@media (max-width: 768px) {
+  .folder-content-view {
+    padding: 1rem;
+  }
+  
+  .folder-header {
+    padding: 1rem;
+  }
+  
+  .folder-contents .col-md-6 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Breadcrumb button styling */
+.folder-header .breadcrumb .btn-link {
+  font-size: inherit;
+  color: var(--confluence-primary);
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.folder-header .breadcrumb .btn-link:hover {
+  color: var(--confluence-primary-hover);
+  text-decoration: underline;
+}

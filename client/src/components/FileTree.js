@@ -21,7 +21,9 @@
  */
 
 import React, {useState, useEffect, useRef} from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchTemplates, fetchUserSpaces } from '../services/api';
+import { constructFileURL, constructFolderURL } from '../utils/urlUtils';
 
 /**
  * FileTree component for displaying and managing file/folder structure.
@@ -63,6 +65,7 @@ const FileTree = ({
   isAuthenticated,
   isReadonly = false,
 }) => {
+  const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createType, setCreateType] = useState('file');
   const [createPath, setCreatePath] = useState('');
@@ -400,6 +403,31 @@ const FileTree = ({
       onFolderToggle(folderPath, !newCollapsed.has(folderPath));
     }
   };
+  
+  const handleFileClick = (filePath) => {
+    // Navigate to file URL
+    const fileURL = constructFileURL(currentSpace, filePath);
+    navigate(fileURL);
+    
+    // Also call the original callback for backward compatibility
+    if (onFileSelect) {
+      onFileSelect(filePath);
+    }
+  };
+  
+  const handleFolderClick = (folderPath, event) => {
+    // Check if it's a right-click (context menu) - don't navigate
+    if (event && event.button === 2) {
+      return;
+    }
+    
+    // Toggle folder expansion first
+    toggleFolder(folderPath);
+    
+    // Navigate to folder URL
+    const folderURL = constructFolderURL(currentSpace, folderPath);
+    navigate(folderURL);
+  };
 
   const renderFileItem = (item, depth = 0) => {
     const isSelected = selectedFile === item.path;
@@ -414,7 +442,7 @@ const FileTree = ({
             className="file-tree-item directory"
             style={{paddingLeft: `${paddingLeft}rem`}}
             tabIndex={0}
-            onClick={() => toggleFolder(item.path)}
+            onClick={(e) => handleFolderClick(item.path, e)}
             onFocus={() => setFocusedItem({path: item.path, type: 'directory', name: item.name})}
             onContextMenu={(e) => handleContextMenu(e, item.path, 'directory')}>
             <div className="folder-content">
@@ -478,7 +506,7 @@ const FileTree = ({
         className={`file-tree-item file ${isSelected ? 'selected' : ''}`}
         style={{paddingLeft: `${paddingLeft}rem`}}
         tabIndex={0}
-        onClick={() => onFileSelect(item.path)}
+        onClick={() => handleFileClick(item.path)}
         onFocus={() => setFocusedItem({path: item.path, type: 'file', name: item.name})}
         onContextMenu={(e) => handleContextMenu(e, item.path, 'file')}>
         <span className="icon">

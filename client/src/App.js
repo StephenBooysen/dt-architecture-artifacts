@@ -45,10 +45,13 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import FolderContentView from './components/FolderContentView';
+import { parseURL, constructFileURL, constructSpaceURL } from './utils/urlUtils';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
@@ -89,6 +92,8 @@ import './App.css';
 function AppContent() {
   const { user, login, logout, isAuthenticated, loading } = useAuth();
   const {toggleTheme, isDark } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
@@ -116,6 +121,7 @@ function AppContent() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [currentView, setCurrentView] = useState('home');
+  const [urlInfo, setUrlInfo] = useState({ space: null, type: 'space', folderPath: '', fileName: null });
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('design-artifacts-current-space') || null;
@@ -128,6 +134,31 @@ function AppContent() {
   const [knowledgeViewSelectedFile, setKnowledgeViewSelectedFile] = useState(null);
   const [knowledgeSearchResults, setKnowledgeSearchResults] = useState([]);
 
+  // Parse URL and update state when location changes
+  useEffect(() => {
+    const parsed = parseURL(location.pathname);
+    setUrlInfo(parsed);
+    
+    // Update current space if it's different from URL
+    if (parsed.space && parsed.space !== currentSpace) {
+      setCurrentSpace(parsed.space);
+      localStorage.setItem('design-artifacts-current-space', parsed.space);
+    }
+    
+    // Update current view based on URL type
+    if (parsed.type === 'file') {
+      setCurrentView('files');
+      // Auto-load the file if it's different from currently selected
+      if (parsed.path !== selectedFile) {
+        handleFileSelect(parsed.path);
+      }
+    } else if (parsed.type === 'folder') {
+      setCurrentView('folder');
+    } else if (parsed.type === 'space') {
+      setCurrentView('home');
+    }
+  }, [location.pathname]);
+
   // Initialize default space when authenticated - always start with Personal space
   useEffect(() => {
     if (isAuthenticated) {
@@ -137,17 +168,21 @@ function AppContent() {
           const personalSpace = spaces.find(space => space.space === 'Personal');
           const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
           
-          // Only set if it's different from current space to avoid unnecessary re-renders
-          if (currentSpace !== defaultSpace) {
+          // Only set if it's different from current space and no URL space is set
+          if (!urlInfo.space && currentSpace !== defaultSpace) {
             setCurrentSpace(defaultSpace);
             localStorage.setItem('design-artifacts-current-space', defaultSpace);
+            // Navigate to default space if we're at root
+            if (location.pathname === '/') {
+              navigate(constructSpaceURL(defaultSpace), { replace: true });
+            }
           }
         }
       }).catch(error => {
         console.error('Failed to load user spaces:', error);
       });
     }
-  }, [isAuthenticated]); // Removed currentSpace dependency to ensure this runs on every login
+  }, [isAuthenticated, urlInfo.space, navigate]);
 
   useEffect(() => {
     // Only load data if user is authenticated and has a space selected
@@ -693,7 +728,7 @@ function AppContent() {
    * @param {string} filePath - The path of the file to select and load
    * @returns {Promise<void>}
    */
-  const handleFileSelect = useCallback(async (filePath) => {
+  const handleFileSelect = useCallback(async (filePath, updateURL = true) => {
     // Don't reload if the same file is already selected
     if (selectedFile === filePath) {
       return;
@@ -710,9 +745,10 @@ function AppContent() {
       // Check if this is a template file and set editing state
       setIsEditingTemplate(filePath.startsWith('templates/'));
       
-      // Switch to files view to show the editor (from any view)
-      if (currentView !== 'files') {
-        setCurrentView('files');
+      // Update URL if requested (default behavior)
+      if (updateURL && currentSpace) {
+        const fileURL = constructFileURL(currentSpace, filePath);
+        navigate(fileURL);
       }
       
       // Handle downloadable files
@@ -729,7 +765,7 @@ function AppContent() {
     } finally {
       setIsFileLoading(false);
     }
-  }, [selectedFile, currentSpace]);
+  }, [selectedFile, currentSpace, navigate]);
 
   /**
    * Handles content changes in the editor.
@@ -1258,7 +1294,10 @@ function AppContent() {
       // Use knowledge view result handler for autocomplete selections
       await handleKnowledgeSearchResultClick(result);
     } else {
-      await handleFileSelect(result.filePath);
+      // Navigate to the file URL
+      const fileURL = constructFileURL(currentSpace, result.filePath);
+      navigate(fileURL);
+      
       setShowSearchResults(false);
       setSearchQuery('');
       setSearchSuggestions([]);
@@ -1273,7 +1312,7 @@ function AppContent() {
       }
       setExpandedFolders(newExpanded);
     }
-  }, [handleFileSelect, expandedFolders, isKnowledgeView, handleKnowledgeSearchResultClick]);
+  }, [navigate, currentSpace, expandedFolders, isKnowledgeView, handleKnowledgeSearchResultClick]);
 
   // Auth handlers
   const handleAuthSuccess = (userData) => {
@@ -1299,6 +1338,11 @@ function AppContent() {
       setFileData(null);
       setHasChanges(false);
     }
+    
+    // Navigate to appropriate URL for certain views
+    if (view === 'home' && currentSpace) {
+      navigate(constructSpaceURL(currentSpace));
+    }
   };
 
   const handleClearSearch = () => {
@@ -1322,6 +1366,9 @@ function AppContent() {
     // Reload files and templates for the new space
     loadFiles(false, newSpace);
     loadTemplates(newSpace);
+    
+    // Navigate to new space
+    navigate(constructSpaceURL(newSpace));
     
     // Show success message
     toast.success(`Switched to ${newSpace} space`);
@@ -1451,7 +1498,7 @@ function AppContent() {
               
               <button 
                 className="btn btn-link navbar-brand fw-medium me-3 d-flex align-items-center text-decoration-none border-0 bg-transparent p-0"
-                onClick={() => setCurrentView('home')}
+                onClick={() => handleViewChange('home')}
                 style={{ cursor: 'pointer' }}
               >
                 <img src="/stech-black.png" alt="Design Artifacts" width="20" height="20" className="me-2" />
@@ -1487,7 +1534,12 @@ function AppContent() {
                             <div
                               key={index}
                               className={`px-3 py-2 cursor-pointer border-bottom search-suggestion ${highlightedIndex === index ? 'highlighted' : ''}`}
-                              onClick={() => handleFileSelect(file.path)}
+                              onClick={() => {
+                                const fileURL = constructFileURL(currentSpace, file.path);
+                                navigate(fileURL);
+                                setShowSearchResults(false);
+                                setSearchQuery('');
+                              }}
                               onMouseEnter={() => setHighlightedIndex(index)}
                             >
                               <div className="d-flex align-items-center">
@@ -1627,80 +1679,102 @@ function AppContent() {
         )}
 
         <section className="editor-section">
-          {isKnowledgeView ? (
-            <KnowledgeContentPane
-              content={knowledgeViewContent}
-              selectedFile={knowledgeViewSelectedFile}
-              isLoading={isLoading}
-            />
-          ) : currentView === 'home' ? (
-            <HomeView
-              onFileSelect={handleFileSelect}
-              onTemplateSelect={handleTemplateSelect}
-              onNewMarkdown={() => setCurrentView('new-markdown')}
-              isVisible={currentView === 'home'}
-              isReadonly={isCurrentSpaceReadonly}
-              currentSpace={currentSpace}
-            />
-          ) : currentView === 'templates' ? (
-            <TemplatesList
-              templates={templates}
-              onTemplateEdit={handleTemplateEdit}
-              onTemplateCreate={handleTemplateCreate}
-              onTemplateDelete={handleTemplateDelete}
-              onTemplateSelect={handleTemplateSelect}
-              isLoading={isTemplatesLoading}
-            />
-          ) : currentView === 'recent' ? (
-            <RecentFilesView
-              onFileSelect={handleFileSelect}
-              isVisible={currentView === 'recent'}
-            />
-          ) : currentView === 'starred' ? (
-            <StarredFilesView
-              onFileSelect={handleFileSelect}
-              isVisible={currentView === 'starred'}
-            />
-          ) : currentView === 'search' ? (
-            <SearchResultsView
-              onFileSelect={handleFileSelect}
-              searchResults={searchResults}
-              fileSuggestions={searchSuggestions}
-              searchQuery={searchQuery}
-              isLoading={isLoading}
-              onClearSearch={handleClearSearch}
-            />
-          ) : currentView === 'settings' ? (
-            <UserSettings
-              user={user}
-              onSettingsUpdate={(updatedUser) => {
-                // Update the auth context with the new user data
-                login(updatedUser);
-                toast.success('Settings updated successfully');
-              }}
-              onCancel={() => setCurrentView('home')}
-            />
-          ) : currentView === 'new-markdown' ? (
-            <NewMarkdownForm
-              currentSpace={currentSpace}
-              onCreateFile={handleCreateFile}
-              onCancel={() => setCurrentView('home')}
-            />
-          ) : (
-            <MarkdownEditor
-              content={fileContent}
-              onChange={handleContentChange}
-              fileName={selectedFile}
-              isLoading={isFileLoading}
-              onRename={handleRenameItem}
-              fileData={fileData}
-              onSave={handleSave}
-              hasChanges={hasChanges}
-              currentSpace={currentSpace}
-              isEditingTemplate={isEditingTemplate}
-              onCancelTemplateEdit={handleCancelTemplateEdit}
-            />
-          )}
+          <Routes>
+            <Route path="/" element={
+              isAuthenticated ? 
+                currentSpace ? <Navigate to={constructSpaceURL(currentSpace)} replace /> : <div>Loading...</div>
+                : null
+            } />
+            
+            <Route path="/:space" element={
+              isKnowledgeView ? (
+                <KnowledgeContentPane
+                  content={knowledgeViewContent}
+                  selectedFile={knowledgeViewSelectedFile}
+                  isLoading={isLoading}
+                />
+              ) : currentView === 'home' ? (
+                <HomeView
+                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  onTemplateSelect={handleTemplateSelect}
+                  onNewMarkdown={() => setCurrentView('new-markdown')}
+                  isVisible={currentView === 'home'}
+                  isReadonly={isCurrentSpaceReadonly}
+                  currentSpace={currentSpace}
+                />
+              ) : currentView === 'templates' ? (
+                <TemplatesList
+                  templates={templates}
+                  onTemplateEdit={handleTemplateEdit}
+                  onTemplateCreate={handleTemplateCreate}
+                  onTemplateDelete={handleTemplateDelete}
+                  onTemplateSelect={handleTemplateSelect}
+                  isLoading={isTemplatesLoading}
+                />
+              ) : currentView === 'recent' ? (
+                <RecentFilesView
+                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  isVisible={currentView === 'recent'}
+                />
+              ) : currentView === 'starred' ? (
+                <StarredFilesView
+                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  isVisible={currentView === 'starred'}
+                />
+              ) : currentView === 'search' ? (
+                <SearchResultsView
+                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  searchResults={searchResults}
+                  fileSuggestions={searchSuggestions}
+                  searchQuery={searchQuery}
+                  isLoading={isLoading}
+                  onClearSearch={handleClearSearch}
+                />
+              ) : currentView === 'settings' ? (
+                <UserSettings
+                  user={user}
+                  onSettingsUpdate={(updatedUser) => {
+                    // Update the auth context with the new user data
+                    login(updatedUser);
+                    toast.success('Settings updated successfully');
+                  }}
+                  onCancel={() => setCurrentView('home')}
+                />
+              ) : currentView === 'new-markdown' ? (
+                <NewMarkdownForm
+                  currentSpace={currentSpace}
+                  onCreateFile={handleCreateFile}
+                  onCancel={() => setCurrentView('home')}
+                />
+              ) : null
+            } />
+            
+            <Route path="/:space/*" element={
+              urlInfo.type === 'folder' ? (
+                <FolderContentView
+                  files={files}
+                  folderPath={urlInfo.folderPath}
+                  currentSpace={currentSpace}
+                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  isLoading={isLoading}
+                />
+              ) : urlInfo.type === 'file' ? (
+                <MarkdownEditor
+                  content={fileContent}
+                  onChange={handleContentChange}
+                  fileName={selectedFile}
+                  isLoading={isFileLoading}
+                  onRename={handleRenameItem}
+                  fileData={fileData}
+                  onSave={handleSave}
+                  hasChanges={hasChanges}
+                  currentSpace={currentSpace}
+                  isEditingTemplate={isEditingTemplate}
+                  onCancelTemplateEdit={handleCancelTemplateEdit}
+                />
+              ) : null
+            } />
+          </Routes>
         </section>
       </main>
 
