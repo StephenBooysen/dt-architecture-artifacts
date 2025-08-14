@@ -145,13 +145,9 @@ function AppContent() {
       localStorage.setItem('design-artifacts-current-space', parsed.space);
     }
     
-    // Update current view based on URL type
+    // Update current view based on URL type, but don't load files yet
     if (parsed.type === 'file') {
       setCurrentView('files');
-      // Auto-load the file if it's different from currently selected
-      if (parsed.path !== selectedFile) {
-        handleFileSelect(parsed.path);
-      }
     } else if (parsed.type === 'folder') {
       setCurrentView('folder');
     } else if (parsed.type === 'space') {
@@ -159,17 +155,42 @@ function AppContent() {
     }
   }, [location.pathname]);
 
-  // Initialize default space when authenticated - always start with Personal space
+  // Handle file loading from URL after authentication and space are ready
+  useEffect(() => {
+    if (isAuthenticated && currentSpace && urlInfo.type === 'file' && urlInfo.path) {
+      // Only auto-load if it's different from currently selected file
+      if (urlInfo.path !== selectedFile) {
+        handleFileSelect(urlInfo.path, false); // false = don't update URL since we're already there
+      }
+    }
+  }, [isAuthenticated, currentSpace, urlInfo.type, urlInfo.path, selectedFile]);
+
+  // Initialize space when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserSpaces().then(spaces => {
         if (spaces && spaces.length > 0) {
-          // Always prioritize Personal space on login
-          const personalSpace = spaces.find(space => space.space === 'Personal');
-          const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
-          
-          // Only set if it's different from current space and no URL space is set
-          if (!urlInfo.space && currentSpace !== defaultSpace) {
+          // Check if URL space is valid
+          if (urlInfo.space) {
+            const urlSpaceExists = spaces.find(space => space.space === urlInfo.space);
+            if (urlSpaceExists) {
+              // URL space is valid, use it
+              if (currentSpace !== urlInfo.space) {
+                setCurrentSpace(urlInfo.space);
+                localStorage.setItem('design-artifacts-current-space', urlInfo.space);
+              }
+            } else {
+              // URL space is invalid, redirect to default space
+              const personalSpace = spaces.find(space => space.space === 'Personal');
+              const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
+              setCurrentSpace(defaultSpace);
+              localStorage.setItem('design-artifacts-current-space', defaultSpace);
+              navigate(constructSpaceURL(defaultSpace), { replace: true });
+            }
+          } else if (!currentSpace) {
+            // No URL space and no current space, use default
+            const personalSpace = spaces.find(space => space.space === 'Personal');
+            const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
             setCurrentSpace(defaultSpace);
             localStorage.setItem('design-artifacts-current-space', defaultSpace);
             // Navigate to default space if we're at root
@@ -182,7 +203,7 @@ function AppContent() {
         console.error('Failed to load user spaces:', error);
       });
     }
-  }, [isAuthenticated, urlInfo.space, navigate]);
+  }, [isAuthenticated, urlInfo.space, navigate, currentSpace, location.pathname]);
 
   useEffect(() => {
     // Only load data if user is authenticated and has a space selected
@@ -734,6 +755,12 @@ function AppContent() {
       return;
     }
     
+    // Don't attempt to load if not authenticated or no current space
+    if (!isAuthenticated || !currentSpace) {
+      console.warn('Cannot load file: not authenticated or no current space');
+      return;
+    }
+    
     try {
       setIsFileLoading(true);
       const data = await fetchFile(filePath, currentSpace);
@@ -765,7 +792,7 @@ function AppContent() {
     } finally {
       setIsFileLoading(false);
     }
-  }, [selectedFile, currentSpace, navigate]);
+  }, [selectedFile, currentSpace, navigate, isAuthenticated]);
 
   /**
    * Handles content changes in the editor.
