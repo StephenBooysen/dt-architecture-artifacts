@@ -306,6 +306,8 @@ const KnowledgeSearchPane = ({
                   <div className="result-icon">
                     {result.type === 'content' ? (
                       <i className="bi bi-file-text text-primary"></i>
+                    ) : result.type === 'both' ? (
+                      <i className="bi bi-file-richtext text-success"></i>
                     ) : (
                       <i className="bi bi-file-earmark text-secondary"></i>
                     )}

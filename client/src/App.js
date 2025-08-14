@@ -146,12 +146,17 @@ function AppContent() {
     }
     
     // Update current view based on URL type, but don't load files yet
+    // Don't override special views (search, recent, starred, templates) when navigating to space URL
     if (parsed.type === 'file') {
       setCurrentView('files');
     } else if (parsed.type === 'folder') {
       setCurrentView('folder');
     } else if (parsed.type === 'space') {
-      setCurrentView('home');
+      // Only set to home if we're not in a special view
+      setCurrentView(prevView => {
+        const specialViews = ['search', 'recent', 'starred', 'templates', 'settings', 'new-markdown'];
+        return specialViews.includes(prevView) ? prevView : 'home';
+      });
     }
   }, [location.pathname]);
 
@@ -1225,21 +1230,43 @@ function AppContent() {
         searchContent(searchQuery)
       ]);
       
-      // Combine and format results for knowledge view
-      const combinedResults = [
-        ...fileSuggestions.map(file => ({
+      // Create a Map to deduplicate by file path
+      const resultsMap = new Map();
+      
+      // Add file suggestions first (these get priority for type: 'file')
+      fileSuggestions.forEach(file => {
+        resultsMap.set(file.filePath, {
           ...file,
           type: 'file',
           title: file.fileName,
           path: file.filePath
-        })),
-        ...contentResults.map(content => ({
-          ...content,
-          type: 'content',
-          title: content.fileName,
-          path: content.filePath
-        }))
-      ];
+        });
+      });
+      
+      // Add content results, but merge with existing entries if path already exists
+      contentResults.forEach(content => {
+        const existing = resultsMap.get(content.filePath);
+        if (existing) {
+          // Merge content info with existing file entry
+          resultsMap.set(content.filePath, {
+            ...existing,
+            type: 'both', // Indicates it has both file match and content match
+            preview: content.preview, // Add preview from content search
+            ...content // Merge any additional content fields
+          });
+        } else {
+          // New content-only result
+          resultsMap.set(content.filePath, {
+            ...content,
+            type: 'content',
+            title: content.fileName,
+            path: content.filePath
+          });
+        }
+      });
+      
+      // Convert Map back to array
+      const combinedResults = Array.from(resultsMap.values());
       
       setKnowledgeSearchResults(combinedResults);
     } catch (error) {
@@ -1288,7 +1315,7 @@ function AppContent() {
         setSearchSuggestions(fileSuggestions.slice(0, 10)); // More file results on submit
         setSearchResults(contentResults.slice(0, 20)); // More content results on submit
         setShowSearchResults(false); // Hide dropdown
-        setCurrentView('search'); // Switch to search results view
+        handleViewChange('search'); // Switch to search results view
       }
     } catch (error) {
       console.error('Error searching:', error);
@@ -1367,7 +1394,7 @@ function AppContent() {
     }
     
     // Navigate to appropriate URL for certain views
-    if (view === 'home' && currentSpace) {
+    if ((view === 'home' || view === 'search' || view === 'recent' || view === 'starred' || view === 'templates') && currentSpace) {
       navigate(constructSpaceURL(currentSpace));
     }
   };
@@ -1740,17 +1767,17 @@ function AppContent() {
                 />
               ) : currentView === 'recent' ? (
                 <RecentFilesView
-                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  onFileSelect={(filePath) => handleFileSelect(filePath, true)}
                   isVisible={currentView === 'recent'}
                 />
               ) : currentView === 'starred' ? (
                 <StarredFilesView
-                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  onFileSelect={(filePath) => handleFileSelect(filePath, true)}
                   isVisible={currentView === 'starred'}
                 />
               ) : currentView === 'search' ? (
                 <SearchResultsView
-                  onFileSelect={(filePath) => handleFileSelect(filePath, false)}
+                  onFileSelect={(filePath) => handleFileSelect(filePath, true)}
                   searchResults={searchResults}
                   fileSuggestions={searchSuggestions}
                   searchQuery={searchQuery}
