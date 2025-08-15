@@ -73,6 +73,36 @@ const Working = () => {
         </div>
       </div>
 
+      <div className="worker-stats-section">
+        <div className="stats-header">
+          <h2>
+            <i className="bi bi-speedometer2 me-2"></i>
+            Worker Execution Statistics
+          </h2>
+          <button type="button" className="btn btn-outline-primary btn-sm" id="refreshWorkerStatsButton">
+            <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+          </button>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-hover" id="workerStatsTable">
+            <thead>
+              <tr>
+                <th>Worker Name</th>
+                <th>Executions</th>
+                <th>Start Run</th>
+                <th>End Run</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody id="workerStatsTableBody">
+              <tr id="noWorkerStatsRow">
+                <td colspan="5" className="text-center text-muted">No worker statistics available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <style dangerouslySetInnerHTML={{__html: `
         .working-section {
           background: #ffffff;
@@ -275,6 +305,95 @@ const Working = () => {
           opacity: 0.6;
           cursor: not-allowed;
         }
+        .worker-stats-section {
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+          margin-bottom: 2rem;
+        }
+        .stats-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem;
+          background: #f8f9fa;
+          border-bottom: 1px solid #dfe1e6;
+        }
+        .stats-header h2 {
+          color: #172b4d;
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin: 0;
+          display: flex;
+          align-items: center;
+        }
+        .table-responsive {
+          padding: 0;
+        }
+        .table {
+          margin-bottom: 0;
+        }
+        .table th {
+          background: #f8f9fa;
+          border-top: none;
+          border-bottom: 2px solid #dfe1e6;
+          color: #5e6c84;
+          font-weight: 600;
+          font-size: 0.875rem;
+          padding: 1rem;
+        }
+        .table td {
+          padding: 1rem;
+          color: #172b4d;
+          font-size: 0.875rem;
+          border-bottom: 1px solid #f4f5f7;
+        }
+        .table-hover tbody tr:hover {
+          background-color: #f8f9fa;
+        }
+        .text-muted {
+          color: #5e6c84 !important;
+        }
+        .worker-name {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          background: #f4f5f7;
+          padding: 0.25rem 0.5rem;
+          border-radius: 3px;
+          font-size: 0.8125rem;
+        }
+        .executions-badge {
+          background: #e3fcef;
+          color: #006644;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .time-text {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 0.8125rem;
+        }
+        .duration-badge {
+          background: #fff4e6;
+          color: #974f0c;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .btn-outline-primary {
+          background: transparent;
+          color: #0052cc;
+          border: 1px solid #0052cc;
+          padding: 0.5rem 1rem;
+          font-size: 0.875rem;
+        }
+        .btn-outline-primary:hover {
+          background: #0052cc;
+          color: white;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
@@ -371,6 +490,76 @@ const Working = () => {
           }, 3000);
         }
 
+        // Calculate duration between start and end times
+        function calculateDuration(startTime, endTime) {
+          if (!startTime || !endTime) return 'N/A';
+          
+          try {
+            const start = new Date(startTime).getTime();
+            const end = new Date(endTime).getTime();
+            const durationMs = end - start;
+            
+            if (durationMs < 1000) {
+              return durationMs + 'ms';
+            } else if (durationMs < 60000) {
+              return (durationMs / 1000).toFixed(1) + 's';
+            } else {
+              const minutes = Math.floor(durationMs / 60000);
+              const seconds = Math.floor((durationMs % 60000) / 1000);
+              return minutes + 'm ' + seconds + 's';
+            }
+          } catch (error) {
+            return 'Error';
+          }
+        }
+
+        // Load and display worker statistics
+        async function loadWorkerStats() {
+          try {
+            const response = await fetch('/api/working/stats');
+            if (response.ok) {
+              const stats = await response.json();
+              displayWorkerStats(stats);
+            } else {
+              console.error('Failed to load worker stats:', await response.text());
+              displayWorkerStats([]);
+            }
+          } catch (error) {
+            console.error('Error loading worker stats:', error);
+            displayWorkerStats([]);
+          }
+        }
+
+        // Display worker statistics in table
+        function displayWorkerStats(stats) {
+          const tableBody = document.getElementById('workerStatsTableBody');
+          const noStatsRow = document.getElementById('noWorkerStatsRow');
+          
+          // Clear existing rows except the no-data row
+          const existingRows = tableBody.querySelectorAll('tr:not(#noWorkerStatsRow)');
+          existingRows.forEach(row => row.remove());
+          
+          if (!stats || stats.length === 0) {
+            noStatsRow.style.display = 'table-row';
+            return;
+          }
+          
+          noStatsRow.style.display = 'none';
+          
+          stats.forEach(stat => {
+            const duration = calculateDuration(stat["start run"], stat["end run"]);
+            const row = document.createElement('tr');
+            row.innerHTML = \`
+              <td><span class="worker-name">\${stat.workername}</span></td>
+              <td><span class="executions-badge">\${stat.executions}</span></td>
+              <td><span class="time-text">\${stat["start run"] || 'Never'}</span></td>
+              <td><span class="time-text">\${stat["end run"] || 'Running...'}</span></td>
+              <td><span class="duration-badge">\${duration}</span></td>
+            \`;
+            tableBody.appendChild(row);
+          });
+        }
+
         // Run worker task
         document.getElementById('run-worker-form').addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -418,6 +607,7 @@ const Working = () => {
               resultDisplay.className = 'result-display success';
               resultContent.textContent = result || 'Worker task started successfully';
               showToast('Worker task started successfully', 'success');
+              loadWorkerStats(); // Refresh stats after worker starts
             } else {
               resultDisplay.className = 'result-display error';
               resultContent.textContent = result || 'Failed to start worker task';
@@ -441,6 +631,7 @@ const Working = () => {
             
             if (response.ok) {
               showToast('Worker stopped successfully', 'success');
+              loadWorkerStats(); // Refresh stats after worker stops
               
               const resultDisplay = document.getElementById('result-display');
               const resultContent = document.getElementById('result-content');
@@ -468,11 +659,28 @@ const Working = () => {
           }, 10);
         });
 
+        // Refresh worker stats button
+        document.getElementById('refreshWorkerStatsButton').addEventListener('click', async function() {
+          const originalHtml = this.innerHTML;
+          this.disabled = true;
+          this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Refreshing...';
+          
+          await loadWorkerStats();
+          
+          this.disabled = false;
+          this.innerHTML = originalHtml;
+        });
 
         // Initialize status checking
         document.addEventListener('DOMContentLoaded', () => {
           checkWorkingStatus();
           statusCheckInterval = setInterval(checkWorkingStatus, 5000);
+          
+          // Load worker stats initially
+          loadWorkerStats();
+          
+          // Refresh stats periodically
+          setInterval(loadWorkerStats, 30000); // Refresh every 30 seconds
           
           // Initialize validation state
           validateAndFormatJson(''); // Initialize as valid (optional)

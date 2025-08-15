@@ -98,6 +98,36 @@ const Scheduling = () => {
         <pre id="resultContent"></pre>
       </div>
 
+      <div className="schedule-stats-section">
+        <div className="stats-header">
+          <h2>
+            <i className="bi bi-graph-up me-2"></i>
+            Schedule Statistics
+          </h2>
+          <button type="button" className="btn btn-outline-primary btn-sm" id="refreshScheduleStatsButton">
+            <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+          </button>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-hover" id="scheduleStatsTable">
+            <thead>
+              <tr>
+                <th>Schedule Name</th>
+                <th>Executions</th>
+                <th>Last Run</th>
+                <th>Next Run</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleStatsTableBody">
+              <tr id="noScheduleStatsRow">
+                <td colspan="5" className="text-center text-muted">No schedule statistics available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Toast container for Bootstrap notifications */}
       <div className="toast-container position-fixed top-0 end-0 p-3" style={{zIndex: 1100}}>
         <div id="schedulingToast" className="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -352,6 +382,98 @@ const Scheduling = () => {
             gap: 0.25rem;
           }
         }
+        .schedule-stats-section {
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+          margin-bottom: 2rem;
+        }
+        .stats-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem;
+          background: #f8f9fa;
+          border-bottom: 1px solid #dfe1e6;
+        }
+        .stats-header h2 {
+          color: #172b4d;
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin: 0;
+          display: flex;
+          align-items: center;
+        }
+        .table-responsive {
+          padding: 0;
+        }
+        .table {
+          margin-bottom: 0;
+        }
+        .table th {
+          background: #f8f9fa;
+          border-top: none;
+          border-bottom: 2px solid #dfe1e6;
+          color: #5e6c84;
+          font-weight: 600;
+          font-size: 0.875rem;
+          padding: 1rem;
+        }
+        .table td {
+          padding: 1rem;
+          color: #172b4d;
+          font-size: 0.875rem;
+          border-bottom: 1px solid #f4f5f7;
+        }
+        .table-hover tbody tr:hover {
+          background-color: #f8f9fa;
+        }
+        .schedule-name {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          background: #f4f5f7;
+          padding: 0.25rem 0.5rem;
+          border-radius: 3px;
+          font-size: 0.8125rem;
+        }
+        .executions-badge {
+          background: #e3fcef;
+          color: #006644;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .status-badge {
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .status-active {
+          background: #e3fcef;
+          color: #006644;
+        }
+        .status-inactive {
+          background: #ffebe6;
+          color: #974f0c;
+        }
+        .time-text {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 0.8125rem;
+        }
+        .btn-outline-primary {
+          background: transparent;
+          color: #0052cc;
+          border: 1px solid #0052cc;
+          padding: 0.5rem 1rem;
+          font-size: 0.875rem;
+        }
+        .btn-outline-primary:hover {
+          background: #0052cc;
+          color: white;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
@@ -436,6 +558,53 @@ const Scheduling = () => {
           container.innerHTML = html;
         }
 
+        // Load and display schedule statistics
+        async function loadScheduleStats() {
+          try {
+            const response = await fetch('/api/scheduling/stats');
+            if (response.ok) {
+              const stats = await response.json();
+              displayScheduleStats(stats);
+            } else {
+              console.error('Failed to load schedule stats:', await response.text());
+              displayScheduleStats([]);
+            }
+          } catch (error) {
+            console.error('Error loading schedule stats:', error);
+            displayScheduleStats([]);
+          }
+        }
+
+        // Display schedule statistics in table
+        function displayScheduleStats(stats) {
+          const tableBody = document.getElementById('scheduleStatsTableBody');
+          const noStatsRow = document.getElementById('noScheduleStatsRow');
+          
+          // Clear existing rows except the no-data row
+          const existingRows = tableBody.querySelectorAll('tr:not(#noScheduleStatsRow)');
+          existingRows.forEach(row => row.remove());
+          
+          if (!stats || stats.length === 0) {
+            noStatsRow.style.display = 'table-row';
+            return;
+          }
+          
+          noStatsRow.style.display = 'none';
+          
+          stats.forEach(stat => {
+            const isActive = schedules.has(stat.schedulename);
+            const row = document.createElement('tr');
+            row.innerHTML = \`
+              <td><span class="schedule-name">\${stat.schedulename}</span></td>
+              <td><span class="executions-badge">\${stat["no of executions"]}</span></td>
+              <td><span class="time-text">\${stat["last run"] || 'Never'}</span></td>
+              <td><span class="time-text">\${stat["next run"]}</span></td>
+              <td><span class="status-badge \${isActive ? 'status-active' : 'status-inactive'}">\${isActive ? 'Active' : 'Stopped'}</span></td>
+            \`;
+            tableBody.appendChild(row);
+          });
+        }
+
         // Delete schedule from UI and server
         async function deleteScheduleFromList(scheduleName) {
           try {
@@ -447,6 +616,7 @@ const Scheduling = () => {
               // Update local storage
               schedules.delete(scheduleName);
               updateSchedulesDisplay();
+              loadScheduleStats(); // Refresh stats after deleting schedule
               showToast(\`Schedule "\${scheduleName}" deleted successfully\`);
               showResult(\`Schedule "\${scheduleName}" has been cancelled and removed\`);
             } else {
@@ -507,6 +677,7 @@ const Scheduling = () => {
                 cron: cronExpression
               });
               updateSchedulesDisplay();
+              loadScheduleStats(); // Refresh stats after creating schedule
               showToast(\`Schedule "\${scheduleName}" created successfully\`);
               showResult(\`Schedule created:\\nName: \${scheduleName}\\nScript: \${scriptFilename}\\nCron: \${cronExpression}\`);
               
@@ -552,6 +723,7 @@ const Scheduling = () => {
               // Update local storage
               schedules.delete(scheduleName);
               updateSchedulesDisplay();
+              loadScheduleStats(); // Refresh stats after deleting schedule
               showToast(\`Schedule "\${scheduleName}" deleted successfully\`);
               showResult(\`Schedule "\${scheduleName}" has been cancelled and removed\`);
               
@@ -571,13 +743,31 @@ const Scheduling = () => {
         });
 
 
+        // Refresh schedule stats button
+        document.getElementById('refreshScheduleStatsButton').addEventListener('click', async function() {
+          const originalHtml = this.innerHTML;
+          this.disabled = true;
+          this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Refreshing...';
+          
+          await loadScheduleStats();
+          
+          this.disabled = false;
+          this.innerHTML = originalHtml;
+        });
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
           checkServiceStatus();
           updateSchedulesDisplay();
           
-          // Check status periodically
-          setInterval(checkServiceStatus, 30000); // Check every 30 seconds
+          // Load schedule stats initially
+          loadScheduleStats();
+          
+          // Check status and refresh stats periodically
+          setInterval(() => {
+            checkServiceStatus();
+            loadScheduleStats(); // Refresh stats periodically
+          }, 30000); // Check every 30 seconds
         });
       `}} />
 

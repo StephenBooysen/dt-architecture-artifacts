@@ -53,6 +53,15 @@ module.exports = (options, eventEmitter, cache) => {
       res.status(200).json('caching api running');
     });
 
+    app.get('/api/caching/stats', (req, res) => {
+      try {
+        const stats = cache.getKeyStats ? cache.getKeyStats() : [];
+        res.status(200).json(stats);
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+    });
+
     // Swagger UI routes
     app.get('/api/caching/openapi.json', (req, res) => {
       res.json(openApiSpec);

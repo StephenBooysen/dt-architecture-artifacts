@@ -48,6 +48,15 @@ module.exports = (options, eventEmitter, scheduler) => {
       res.status(200).json('scheduling api running');
     });
 
+    app.get('/api/scheduling/stats', (req, res) => {
+      try {
+        const stats = scheduler.getScheduleStats ? scheduler.getScheduleStats() : [];
+        res.status(200).json(stats);
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+    });
+
     // Swagger UI routes
     app.get('/api/scheduling/openapi.json', (req, res) => {
       res.json(openApiSpec);

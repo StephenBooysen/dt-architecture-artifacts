@@ -58,6 +58,35 @@ const Caching = () => {
         <pre id="resultContent"></pre>
       </div>
 
+      <div className="cache-stats-section">
+        <div className="stats-header">
+          <h2>
+            <i className="bi bi-bar-chart me-2"></i>
+            Cache Key Statistics
+          </h2>
+          <button type="button" className="btn btn-outline-primary btn-sm" id="refreshStatsButton">
+            <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+          </button>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-hover" id="cacheStatsTable">
+            <thead>
+              <tr>
+                <th>Cache Key</th>
+                <th>Hits</th>
+                <th>Last Access</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="cacheStatsTableBody">
+              <tr id="noStatsRow">
+                <td colspan="4" className="text-center text-muted">No cache statistics available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <SwaggerEmbed serviceUrl="/api/caching" serviceName="Caching" />
 
       {/* Toast container for Bootstrap notifications */}
@@ -230,6 +259,72 @@ const Caching = () => {
           opacity: 0.6;
           cursor: not-allowed;
         }
+        .cache-stats-section {
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+          margin-bottom: 2rem;
+        }
+        .stats-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem;
+          background: #f8f9fa;
+          border-bottom: 1px solid #dfe1e6;
+        }
+        .stats-header h2 {
+          color: #172b4d;
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin: 0;
+          display: flex;
+          align-items: center;
+        }
+        .table-responsive {
+          padding: 0;
+        }
+        .table {
+          margin-bottom: 0;
+        }
+        .table th {
+          background: #f8f9fa;
+          border-top: none;
+          border-bottom: 2px solid #dfe1e6;
+          color: #5e6c84;
+          font-weight: 600;
+          font-size: 0.875rem;
+          padding: 1rem;
+        }
+        .table td {
+          padding: 1rem;
+          color: #172b4d;
+          font-size: 0.875rem;
+          border-bottom: 1px solid #f4f5f7;
+        }
+        .table-hover tbody tr:hover {
+          background-color: #f8f9fa;
+        }
+        .text-muted {
+          color: #5e6c84 !important;
+        }
+        .cache-key {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          background: #f4f5f7;
+          padding: 0.25rem 0.5rem;
+          border-radius: 3px;
+          font-size: 0.8125rem;
+        }
+        .hits-badge {
+          background: #deebff;
+          color: #0052cc;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
@@ -325,6 +420,64 @@ const Caching = () => {
           resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
+        // Format timestamp for display
+        function formatTimestamp(timestamp) {
+          const date = new Date(timestamp);
+          return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+        }
+
+        // Load and display cache statistics
+        async function loadCacheStats() {
+          try {
+            const response = await fetch('/api/caching/stats');
+            if (response.ok) {
+              const stats = await response.json();
+              displayCacheStats(stats);
+            } else {
+              console.error('Failed to load cache stats:', await response.text());
+              displayCacheStats([]);
+            }
+          } catch (error) {
+            console.error('Error loading cache stats:', error);
+            displayCacheStats([]);
+          }
+        }
+
+        // Display cache statistics in table
+        function displayCacheStats(stats) {
+          const tableBody = document.getElementById('cacheStatsTableBody');
+          const noStatsRow = document.getElementById('noStatsRow');
+          
+          // Clear existing rows except the no-data row
+          const existingRows = tableBody.querySelectorAll('tr:not(#noStatsRow)');
+          existingRows.forEach(row => row.remove());
+          
+          if (!stats || stats.length === 0) {
+            noStatsRow.style.display = 'table-row';
+            return;
+          }
+          
+          noStatsRow.style.display = 'none';
+          
+          stats.forEach(stat => {
+            const row = document.createElement('tr');
+            row.innerHTML = \`
+              <td><span class="cache-key">\${stat.cachekey}</span></td>
+              <td><span class="hits-badge">\${stat.hits}</span></td>
+              <td>\${formatTimestamp(stat.lastAccess)}</td>
+              <td>\${formatTimestamp(stat.created)}</td>
+            \`;
+            tableBody.appendChild(row);
+          });
+        }
+
         // PUT operation
         document.getElementById('putButton').addEventListener('click', async function() {
           const key = document.getElementById('cacheKey').value.trim();
@@ -361,6 +514,7 @@ const Caching = () => {
               const result = await response.text();
               showToast('Value cached successfully');
               showResult(\`Key "\${key}" cached successfully\`);
+              loadCacheStats(); // Refresh stats after successful operation
             } else {
               const error = await response.text();
               throw new Error(error);
@@ -393,6 +547,7 @@ const Caching = () => {
               const result = await response.json();
               showToast('Value retrieved successfully');
               showResult(result !== null ? result : 'Key not found or value is null');
+              loadCacheStats(); // Refresh stats after successful operation
             } else {
               const error = await response.text();
               throw new Error(error);
@@ -431,6 +586,7 @@ const Caching = () => {
               const result = await response.text();
               showToast('Value deleted successfully');
               showResult(\`Key "\${key}" deleted successfully\`);
+              loadCacheStats(); // Refresh stats after successful operation
             } else {
               const error = await response.text();
               throw new Error(error);
@@ -457,12 +613,29 @@ const Caching = () => {
           }, 10);
         });
 
+        // Refresh stats button
+        document.getElementById('refreshStatsButton').addEventListener('click', async function() {
+          const originalHtml = this.innerHTML;
+          this.disabled = true;
+          this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Refreshing...';
+          
+          await loadCacheStats();
+          
+          this.disabled = false;
+          this.innerHTML = originalHtml;
+        });
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
           // Check status periodically
           checkServiceStatus();
           setInterval(checkServiceStatus, 30000); // Check every 30 seconds
+          
+          // Load cache stats initially
+          loadCacheStats();
+          
+          // Refresh stats periodically
+          setInterval(loadCacheStats, 60000); // Refresh every minute
         });
       `}} />
     </>

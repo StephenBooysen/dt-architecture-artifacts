@@ -12,6 +12,7 @@ const { getFilingProviderForSpace } = require('../routes/spaces');
 // Import service singletons
 const cacheInstance = require('./caching/singleton');
 const searchInstance = require('./searching/singleton');
+const loggingInstance = require('./logging/singleton');
 
 class GitSpaceScheduler {
   constructor() {
@@ -276,9 +277,9 @@ class GitSpaceScheduler {
   async addToSearchService(key, data) {
     try {
       await searchInstance.add(key, data);
-      console.log(`Successfully indexed search data for key: ${key}`);
+      loggingInstance.info(`Successfully indexed search data for key: ${key}`);
     } catch (error) {
-      console.warn(`Error adding search data for key ${key}:`, error.message);
+      loggingInstance.error(`Error adding search data for key ${key}:`, error.message);
     }
   }
 
@@ -287,13 +288,13 @@ class GitSpaceScheduler {
    */
   async syncPersonalSpaceForUser(username) {
     try {
-      console.log(`GitSpaceScheduler: Syncing Personal space for user: ${username}`);
+      loggingInstance.info(`GitSpaceScheduler: Syncing Personal space for user: ${username}`);
       
       // Get the filing provider for Personal space
       const filing = await getFilingProviderForSpace('Personal');
       
       if (!filing) {
-        console.error(`No filing provider found for Personal space`);
+        loggingInstance.error(`No filing provider found for Personal space`);
         return;
       }
 
@@ -303,7 +304,7 @@ class GitSpaceScheduler {
       }
 
       // Get the directory tree from filing provider
-      console.log(`GitSpaceScheduler: Getting directory tree for Personal space (user: ${username})`);
+      loggingInstance.info(`GitSpaceScheduler: Getting directory tree for Personal space (user: ${username})`);
       const tree = await this.getDirectoryTreeFromFiling(filing, '', false); // Personal is not readonly
       
       // Cache the tree data with user-specific key
@@ -318,11 +319,11 @@ class GitSpaceScheduler {
       // Update search service with file content
       await this.updateSearchService(filing, tree, `Personal:${username}`, false);
 
-      console.log(`Successfully synced Personal space for user: ${username} (${tree.length} items)`);
+      loggingInstance.info(`Successfully synced Personal space for user: ${username} (${tree.length} items)`);
       return tree;
     } catch (error) {
-      console.error(`Error syncing Personal space for user ${username}:`, error.message);
-      console.error('Stack trace:', error.stack);
+      loggingInstance.error(`Error syncing Personal space for user ${username}:`, error.message);
+      loggingInstance.error('Stack trace:', error.stack);
       throw error;
     }
   }

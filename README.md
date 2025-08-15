@@ -120,6 +120,11 @@ cp .env.example .env
 npm run dev
 ```
 
+5. For development purposes install claude code
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
 This will start:
 - Backend server on `http://localhost:5000`
 - Frontend development server on `http://localhost:3000`

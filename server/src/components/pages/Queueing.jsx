@@ -79,6 +79,36 @@ const Queueing = () => {
         <pre id="resultContent"></pre>
       </div>
 
+      <div className="queue-stats-section">
+        <div className="stats-header">
+          <h2>
+            <i className="bi bi-list-ul me-2"></i>
+            Queue Statistics
+          </h2>
+          <button type="button" className="btn btn-outline-primary btn-sm" id="refreshQueueStatsButton">
+            <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+          </button>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-hover" id="queueStatsTable">
+            <thead>
+              <tr>
+                <th>Queue Name</th>
+                <th>Messages</th>
+                <th>Last Enqueued</th>
+                <th>Total Enqueued</th>
+                <th>Total Dequeued</th>
+              </tr>
+            </thead>
+            <tbody id="queueStatsTableBody">
+              <tr id="noQueueStatsRow">
+                <td colspan="5" className="text-center text-muted">No queue statistics available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Toast container for Bootstrap notifications */}
       <div className="toast-container position-fixed top-0 end-0 p-3" style={{zIndex: 1100}}>
         <div id="queueToast" className="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -314,6 +344,85 @@ const Queueing = () => {
           opacity: 0.6;
           cursor: not-allowed;
         }
+        .queue-stats-section {
+          background: #ffffff;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+          margin-bottom: 2rem;
+        }
+        .stats-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem;
+          background: #f8f9fa;
+          border-bottom: 1px solid #dfe1e6;
+        }
+        .stats-header h2 {
+          color: #172b4d;
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin: 0;
+          display: flex;
+          align-items: center;
+        }
+        .table-responsive {
+          padding: 0;
+        }
+        .table {
+          margin-bottom: 0;
+        }
+        .table th {
+          background: #f8f9fa;
+          border-top: none;
+          border-bottom: 2px solid #dfe1e6;
+          color: #5e6c84;
+          font-weight: 600;
+          font-size: 0.875rem;
+          padding: 1rem;
+        }
+        .table td {
+          padding: 1rem;
+          color: #172b4d;
+          font-size: 0.875rem;
+          border-bottom: 1px solid #f4f5f7;
+        }
+        .table-hover tbody tr:hover {
+          background-color: #f8f9fa;
+        }
+        .queue-name {
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          background: #f4f5f7;
+          padding: 0.25rem 0.5rem;
+          border-radius: 3px;
+          font-size: 0.8125rem;
+        }
+        .messages-badge {
+          background: #e3fcef;
+          color: #006644;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .enqueued-badge {
+          background: #deebff;
+          color: #0052cc;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .dequeued-badge {
+          background: #fff4e6;
+          color: #974f0c;
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
@@ -425,6 +534,66 @@ const Queueing = () => {
           resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
+        // Format timestamp for display
+        function formatTimestamp(timestamp) {
+          if (!timestamp) return 'Never';
+          const date = new Date(timestamp);
+          return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+        }
+
+        // Load and display queue statistics
+        async function loadQueueStats() {
+          try {
+            const response = await fetch('/api/queueing/stats');
+            if (response.ok) {
+              const stats = await response.json();
+              displayQueueStats(stats);
+            } else {
+              console.error('Failed to load queue stats:', await response.text());
+              displayQueueStats([]);
+            }
+          } catch (error) {
+            console.error('Error loading queue stats:', error);
+            displayQueueStats([]);
+          }
+        }
+
+        // Display queue statistics in table
+        function displayQueueStats(stats) {
+          const tableBody = document.getElementById('queueStatsTableBody');
+          const noStatsRow = document.getElementById('noQueueStatsRow');
+          
+          // Clear existing rows except the no-data row
+          const existingRows = tableBody.querySelectorAll('tr:not(#noQueueStatsRow)');
+          existingRows.forEach(row => row.remove());
+          
+          if (!stats || stats.length === 0) {
+            noStatsRow.style.display = 'table-row';
+            return;
+          }
+          
+          noStatsRow.style.display = 'none';
+          
+          stats.forEach(stat => {
+            const row = document.createElement('tr');
+            row.innerHTML = \`
+              <td><span class="queue-name">\${stat.queuename}</span></td>
+              <td><span class="messages-badge">\${stat.messages}</span></td>
+              <td>\${formatTimestamp(stat.lastEnqueued)}</td>
+              <td><span class="enqueued-badge">\${stat.totalEnqueued}</span></td>
+              <td><span class="dequeued-badge">\${stat.totalDequeued}</span></td>
+            \`;
+            tableBody.appendChild(row);
+          });
+        }
+
         // Enqueue operation
         document.getElementById('enqueueButton').addEventListener('click', async function() {
           const queueName = document.getElementById('queueName').value.trim();
@@ -466,8 +635,9 @@ const Queueing = () => {
               document.getElementById('queueData').value = '';
               validateAndFormatJson(''); // Reset validation state
               
-              // Update queue size
+              // Update queue size and stats
               updateQueueSize();
+              loadQueueStats();
             } else {
               const error = await response.text();
               throw new Error(error);
@@ -506,8 +676,9 @@ const Queueing = () => {
                 showResult('No tasks in queue');
               }
               
-              // Update queue size
+              // Update queue size and stats
               updateQueueSize();
+              loadQueueStats();
             } else {
               const error = await response.text();
               throw new Error(error);
@@ -551,6 +722,17 @@ const Queueing = () => {
           }, 10);
         });
 
+        // Refresh queue stats button
+        document.getElementById('refreshQueueStatsButton').addEventListener('click', async function() {
+          const originalHtml = this.innerHTML;
+          this.disabled = true;
+          this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Refreshing...';
+          
+          await loadQueueStats();
+          
+          this.disabled = false;
+          this.innerHTML = originalHtml;
+        });
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -558,9 +740,13 @@ const Queueing = () => {
           checkServiceStatus();
           updateQueueSize();
           
+          // Load queue stats initially
+          loadQueueStats();
+          
           setInterval(() => {
             checkServiceStatus();
             updateQueueSize();
+            loadQueueStats(); // Refresh stats periodically
           }, 30000); // Check every 30 seconds
         });
       `}} />

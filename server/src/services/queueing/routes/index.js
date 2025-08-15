@@ -56,6 +56,15 @@ module.exports = (options, eventEmitter, queue) => {
       res.status(200).json('queueing api running');
     });
 
+    app.get('/api/queueing/stats', (req, res) => {
+      try {
+        const stats = queue.getQueueStats ? queue.getQueueStats() : [];
+        res.status(200).json(stats);
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+    });
+
     // Swagger UI routes
     app.get('/api/queueing/openapi.json', (req, res) => {
       res.json(openApiSpec);

@@ -258,6 +258,7 @@ patchEmitter(eventEmitter);
 // Initialize all service singletons
 const loggingService = require('./src/services/logging/singleton');
 const log = loggingService.initialize('console', { 'express-app': app }, eventEmitter);
+log.log("Server", "Server Started up at " + new Date());
 
 const cacheService = require('./src/services/caching/singleton');
 cacheService.initialize('memory', { 'express-app': app }, eventEmitter);
@@ -308,7 +309,7 @@ async function initializePlugins() {
     pluginMiddleware = pluginLoader.createPluginMiddleware(app);
     console.log('✅ Plugins initialized successfully');
   } catch (error) {
-    console.error('❌ Failed to initialize plugins:', error);
+    logging.error('❌ Failed to initialize plugins:', error);
   }
 }
 
@@ -1132,9 +1133,6 @@ function getNavigation(activeSection) {
               <a href="/monitoring/api" class="nav-item ${activeSection === 'monitoring' ? 'active' : ''}">
                 <i class="bi bi-graph-up me-2"></i>API Monitor
               </a>
-              <a href="/test-apis" class="nav-item ${activeSection === 'test-apis' ? 'active' : ''}">
-                <i class="bi bi-code-square me-2"></i>Test APIs
-              </a>
             </div>
 
             <div class="nav-section">
@@ -1553,14 +1551,6 @@ app.get('/monitoring/api', requireServerAuth, (req, res) => {
   res.send(html);
 });
 
-// Test APIs page with Swagger UI
-app.get('/test-apis', requireServerAuth, (req, res) => {
-  const html = renderComponent('swaggerui', {
-    activeSection: 'test-apis',
-    title: 'Test APIs - Design Artifacts'
-  });
-  res.send(html);
-});
 
 // Serve OpenAPI specification
 app.get('/api-spec/swagger.json', (req, res) => {
@@ -2215,7 +2205,7 @@ app.get('/api/spaces', requireServerAuth, (req, res) => {
     const spaces = JSON.parse(spacesData);
     res.json(spaces);
   } catch (error) {
-    console.error('Error loading spaces:', error);
+    log.error('Error loading spaces:', error);
     res.status(500).json({ error: 'Failed to load spaces' });
   }
 });
@@ -2250,7 +2240,7 @@ app.post('/api/spaces', requireServerAuth, (req, res) => {
     
     res.json(newSpace);
   } catch (error) {
-    console.error('Error creating space:', error);
+    log.error('Error creating space:', error);
     res.status(500).json({ error: 'Failed to create space' });
   }
 });
@@ -2290,7 +2280,7 @@ app.put('/api/spaces/:index', requireServerAuth, (req, res) => {
     
     res.json(spaces[spaceIndex]);
   } catch (error) {
-    console.error('Error updating space:', error);
+    log.error('Error updating space:', error);
     res.status(500).json({ error: 'Failed to update space' });
   }
 });
@@ -2320,7 +2310,7 @@ app.delete('/api/spaces/:index', requireServerAuth, (req, res) => {
     
     res.json({ message: 'Space deleted successfully', deletedSpace });
   } catch (error) {
-    console.error('Error deleting space:', error);
+    log.error('Error deleting space:', error);
     res.status(500).json({ error: 'Failed to delete space' });
   }
 });
@@ -2349,7 +2339,7 @@ app.post('/api/plugins/:name/reload', requireServerAuth, async (req, res) => {
       plugin: reloadedPlugin 
     });
   } catch (error) {
-    console.error('Error reloading plugin:', error);
+    log.error('Error reloading plugin:', error);
     res.status(500).json({ error: `Failed to reload plugin: ${error.message}` });
   }
 });
@@ -2367,7 +2357,7 @@ app.delete('/api/plugins/:name', requireServerAuth, (req, res) => {
       res.status(404).json({ error: 'Plugin not found' });
     }
   } catch (error) {
-    console.error('Error unloading plugin:', error);
+    log.error('Error unloading plugin:', error);
     res.status(500).json({ error: `Failed to unload plugin: ${error.message}` });
   }
 });

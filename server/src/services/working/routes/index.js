@@ -49,6 +49,15 @@ module.exports = (options, eventEmitter, worker) => {
       res.status(200).json('working api running');
     });
 
+    app.get('/api/working/stats', (req, res) => {
+      try {
+        const stats = worker.getWorkerStats ? worker.getWorkerStats() : [];
+        res.status(200).json(stats);
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+    });
+
     // Swagger UI routes
     app.get('/api/working/openapi.json', (req, res) => {
       res.json(openApiSpec);

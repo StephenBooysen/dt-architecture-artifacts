@@ -96,19 +96,43 @@ const Logging = () => {
         </div>
       </div>
 
-      <div className="recent-logs" id="recentLogs" style={{display: 'none'}}>
-        <h3>Recent Logs</h3>
-        <table className="logs-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Message</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody id="logsList">
-          </tbody>
-        </table>
+      <div className="logs-viewer" id="logsViewer">
+        <div className="logs-header">
+          <h3>Stored Logs</h3>
+          <div className="logs-controls">
+            <div className="filter-group">
+              <label htmlFor="typeFilter">Filter by Type:</label>
+              <select id="typeFilter" className="form-control-sm">
+                <option value="all">All Types</option>
+                <option value="info">Info</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+            <button id="refreshLogs" className="btn btn-sm btn-outline-primary">
+              <i className="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+            <button id="clearLogs" className="btn btn-sm btn-outline-danger">
+              <i className="bi bi-trash me-1"></i>Clear All
+            </button>
+          </div>
+        </div>
+        <div className="logs-table-container">
+          <table className="logs-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Message</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="storedLogsList">
+              <tr>
+                <td colspan="4" className="loading-row">Loading logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <SwaggerEmbed serviceUrl="/api/logging" serviceName="Logging" />
@@ -208,7 +232,7 @@ const Logging = () => {
           50% { transform: scale(1.2); opacity: 0.7; }
           100% { transform: scale(1); opacity: 1; }
         }
-        .recent-logs {
+        .logs-viewer {
           background: #ffffff;
           border: 1px solid #dfe1e6;
           border-radius: 8px;
@@ -216,12 +240,47 @@ const Logging = () => {
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
           margin-top: 2rem;
         }
-        .recent-logs h3 {
+        .logs-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem 1rem 2rem;
+          border-bottom: 1px solid #f1f2f4;
+          background: #f8f9fa;
+        }
+        .logs-header h3 {
           color: #172b4d;
           font-size: 1.25rem;
           font-weight: 600;
-          margin-bottom: 0;
-          padding: 1.5rem 2rem 1rem 2rem;
+          margin: 0;
+        }
+        .logs-controls {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        .filter-group {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .filter-group label {
+          font-size: 0.875rem;
+          color: #5e6c84;
+          font-weight: 500;
+          margin: 0;
+        }
+        .form-control-sm {
+          padding: 0.375rem 0.75rem;
+          font-size: 0.875rem;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          background: #ffffff;
+          color: #172b4d;
+        }
+        .logs-table-container {
+          max-height: 600px;
+          overflow-y: auto;
         }
         .logs-table {
           width: 100%;
@@ -241,6 +300,29 @@ const Logging = () => {
           padding: 0.75rem 1rem;
           font-size: 0.875rem;
           color: #172b4d;
+          vertical-align: top;
+        }
+        .loading-row {
+          text-align: center;
+          color: #5e6c84;
+          font-style: italic;
+        }
+        .empty-logs-row {
+          text-align: center;
+          color: #5e6c84;
+          font-style: italic;
+        }
+        .log-type-cell {
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          white-space: nowrap;
+        }
+        .log-type-info {
+          color: #36b37e;
+        }
+        .log-type-error {
+          color: #de350b;
         }
         .logs-table tbody tr:hover {
           background: #f8f9fa;
@@ -336,7 +418,8 @@ const Logging = () => {
       `}} />
 
       <script dangerouslySetInnerHTML={{__html: `
-        let recentLogs = [];
+        let storedLogs = [];
+        let filteredLogs = [];
         let isValidJson = false;
         let isValidErrorJson = false;
 
@@ -487,6 +570,74 @@ const Logging = () => {
           validateAndFormatErrorJson(errorMessageArea.value);
         }
 
+        // Load stored logs from API
+        async function loadStoredLogs() {
+          try {
+            const response = await fetch('/api/logging/logs');
+            if (response.ok) {
+              storedLogs = await response.json();
+              applyFilter();
+            } else {
+              console.error('Failed to load stored logs');
+              updateStoredLogsDisplay([]);
+            }
+          } catch (error) {
+            console.error('Error loading stored logs:', error);
+            updateStoredLogsDisplay([]);
+          }
+        }
+
+        // Apply current filter to stored logs
+        function applyFilter() {
+          const filterValue = document.getElementById('typeFilter').value;
+          
+          if (filterValue === 'all') {
+            filteredLogs = [...storedLogs];
+          } else {
+            filteredLogs = storedLogs.filter(log => log.type === filterValue);
+          }
+          
+          updateStoredLogsDisplay(filteredLogs);
+        }
+
+        // Update the stored logs table display
+        function updateStoredLogsDisplay(logs) {
+          const logsList = document.getElementById('storedLogsList');
+          
+          if (logs.length === 0) {
+            logsList.innerHTML = '<tr><td colspan="4" class="empty-logs-row">No logs found</td></tr>';
+            return;
+          }
+          
+          logsList.innerHTML = logs.map(log => \`
+            <tr>
+              <td class="log-type-cell log-type-\${log.type}">\${log.type.toUpperCase()}</td>
+              <td class="log-name-cell">\${log.name || 'N/A'}</td>
+              <td class="log-message-cell">\${typeof log.message === 'string' ? log.message : JSON.stringify(log.message)}</td>
+              <td class="log-time-cell">\${new Date(log.date).toLocaleString()}</td>
+            </tr>
+          \`).join('');
+        }
+
+        // Clear all stored logs
+        async function clearStoredLogs() {
+          try {
+            const response = await fetch('/api/logging/logs', {
+              method: 'DELETE'
+            });
+            
+            if (response.ok) {
+              showToast('All logs cleared successfully!', 'success');
+              await loadStoredLogs(); // Reload to reflect changes
+            } else {
+              throw new Error('Failed to clear logs');
+            }
+          } catch (error) {
+            showToast('Failed to clear logs. Please try again.', 'error');
+            console.error('Clear logs error:', error);
+          }
+        }
+
         // Check service status on page load
         async function checkServiceStatus() {
           try {
@@ -545,15 +696,8 @@ const Logging = () => {
             if (response.ok) {
               showToast('Message logged successfully!', 'success');
               
-              // Add to recent logs
-              const logEntry = {
-                name: name,
-                message: message,
-                time: new Date().toISOString()
-              };
-              recentLogs.unshift(logEntry);
-              recentLogs = recentLogs.slice(0, 10); // Keep only last 10 logs
-              updateRecentLogs();
+              // Refresh stored logs to show the new entry
+              await loadStoredLogs();
               
               // Clear form
               document.getElementById('logMessage').value = '';
@@ -609,15 +753,8 @@ const Logging = () => {
             if (response.ok) {
               showToast('Error message logged successfully!', 'success');
               
-              // Add to recent logs
-              const logEntry = {
-                name: errorName + ' (ERROR)',
-                message: errorMessage,
-                time: new Date().toISOString()
-              };
-              recentLogs.unshift(logEntry);
-              recentLogs = recentLogs.slice(0, 10); // Keep only last 10 logs
-              updateRecentLogs();
+              // Refresh stored logs to show the new entry
+              await loadStoredLogs();
               
               // Clear form
               document.getElementById('errorLogMessage').value = '';
@@ -666,21 +803,6 @@ const Logging = () => {
           bsToast.show();
         }
 
-        function updateRecentLogs() {
-          const recentLogsContainer = document.getElementById('recentLogs');
-          const logsList = document.getElementById('logsList');
-          
-          if (recentLogs.length > 0) {
-            recentLogsContainer.style.display = 'block';
-            logsList.innerHTML = recentLogs.map(log => \`
-              <tr>
-                <td class="log-name-cell">\${log.name}</td>
-                <td class="log-message-cell">\${log.message}</td>
-                <td class="log-time-cell">\${new Date(log.time).toLocaleString()}</td>
-              </tr>
-            \`).join('');
-          }
-        }
 
         // Add event listener for JSON validation
         document.getElementById('logMessage').addEventListener('input', function(e) {
@@ -707,6 +829,18 @@ const Logging = () => {
             validateAndFormatErrorJson(e.target.value);
           }, 10);
         });
+
+        // Add event listeners for new functionality
+        document.getElementById('typeFilter').addEventListener('change', applyFilter);
+        document.getElementById('refreshLogs').addEventListener('click', loadStoredLogs);
+        document.getElementById('clearLogs').addEventListener('click', async function() {
+          if (confirm('Are you sure you want to clear all stored logs? This action cannot be undone.')) {
+            await clearStoredLogs();
+          }
+        });
+
+        // Load stored logs on page load
+        loadStoredLogs();
 
         // Check status periodically
         checkServiceStatus();
