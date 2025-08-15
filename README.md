@@ -53,12 +53,14 @@ A comprehensive enterprise design documentation platform with glassmorphism them
 - **Search Results**: Contextual search results with content previews
 
 ### Additional Services
-- **Filing Service**: Multi-provider file storage (Local, FTP, AWS S3)
-- **DataServe Service**: Database operations and data management
+- **Filing Service**: Multi-provider file storage (Local, FTP, AWS S3, Git)
+- **DataServe Service**: Database operations and file-based data management
 - **Caching Service**: Multi-provider caching (In-memory, Redis, Memcached)
-- **Authentication**: Passport.js with local authentication and session management
+- **Authentication**: Passport.js with local and OAuth authentication, session management
 - **Workflow Engine**: Step-based workflow processing with error handling
 - **File Watcher**: Automated content synchronization and monitoring
+- **AI Integration**: Claude AI and Ollama integration for document analysis
+- **Document Conversion**: DOCX to Markdown, PPTX to Markdown conversion plugins
 
 ## Tech Stack
 
@@ -71,6 +73,9 @@ A comprehensive enterprise design documentation platform with glassmorphism them
 - Multer for file uploads
 - AWS SDK for S3 integration
 - Redis and Memcached for caching
+- Anthropic SDK for Claude AI integration
+- Mammoth for DOCX conversion
+- Chokidar for file watching
 
 ### Frontend
 - React 18 with React DOM
@@ -128,22 +133,28 @@ dt-design-artifacts/
 ├── server/                     # Backend Express server
 │   ├── index.js               # Main server file
 │   ├── src/
-│   │   ├── services/          # Microservices architecture
-│   │   │   ├── caching/       # Caching service (Redis, Memcached)
+│   │   ├── services/          # Microservices architecture (11 services)
+│   │   │   ├── caching/       # Caching service (Redis, Memcached, In-memory)
 │   │   │   ├── searching/     # Search service with JSON storage
-│   │   │   ├── logging/       # Logging service
-│   │   │   ├── filing/        # File storage (Local, FTP, S3)
-│   │   │   ├── dataserve/     # Database operations
-│   │   │   ├── queueing/      # Queue management
+│   │   │   ├── logging/       # Logging service (console, file)
+│   │   │   ├── filing/        # File storage (Local, FTP, S3, Git)
+│   │   │   ├── dataserve/     # Database operations and data management
+│   │   │   ├── queueing/      # Queue management (in-memory)
 │   │   │   ├── measuring/     # Metrics and monitoring
 │   │   │   ├── notifying/     # Notification service
-│   │   │   ├── scheduling/    # Task scheduling
-│   │   │   ├── working/       # Worker processes
-│   │   │   └── workflow/      # Workflow engine
+│   │   │   ├── scheduling/    # Task scheduling (cron-based)
+│   │   │   ├── working/       # Worker processes and background tasks
+│   │   │   └── workflow/      # Step-based workflow engine
 │   │   ├── auth/              # Authentication & user management
-│   │   ├── components/        # Server-side React components
-│   │   └── routes/            # API route definitions
-│   └── plugins/               # Server plugins (Word to MD converter)
+│   │   ├── components/        # Server-side React components for UIs
+│   │   ├── routes/            # API route definitions
+│   │   └── utils/             # Utility functions and helpers
+│   ├── integrations/          # AI and document conversion integrations
+│   │   ├── claude-ai/         # Claude AI integration
+│   │   ├── ollama-ai/         # Ollama AI integration
+│   │   ├── docx-to-md/        # DOCX to Markdown conversion
+│   │   └── pptx-to-markdown/  # PowerPoint to Markdown conversion
+│   └── plugins/               # Extensible plugin system
 ├── client/                    # React web frontend
 │   ├── src/
 │   │   ├── components/        # React components
@@ -157,6 +168,7 @@ dt-design-artifacts/
 ├── client-extensions/         # Browser extensions
 │   ├── google/               # Chrome extension
 │   ├── edge/                 # Edge extension
+│   ├── firefox/              # Firefox extension
 │   └── vscode/               # VS Code extension
 ├── client-watcher/           # File watcher service
 │   ├── src/                  # Watcher source code
@@ -293,7 +305,8 @@ The Electron-based desktop app provides native OS integration:
 Quick access to documentation search from any webpage:
 - **Chrome**: Load from `client-extensions/google/`
 - **Edge**: Load from `client-extensions/edge/`
-- **VS Code**: Extension for in-editor documentation access
+- **Firefox**: Load from `client-extensions/firefox/`
+- **VS Code**: Extension for in-editor documentation access at `client-extensions/vscode/`
 - **Features**: Search documentation, preview files, configurable server connection
 
 ## Enterprise Features
