@@ -59,9 +59,6 @@ function patchEmitter(emitter) {
   emitter.emit = function () {
     const eventName = arguments[0];
     const args = Array.from(arguments).slice(1);
-
-    //console.log(`Caught event: "${eventName}" with arguments:`, args);
-
     return originalEmit.apply(this, arguments);
   };
 }
@@ -164,9 +161,9 @@ function configureMiddleware() {
     }
   });
 
-  // Rate limiting (commented out for now)
-  // const limiter = configureRateLimit(config.RATE_LIMIT_WINDOW, config.RATE_LIMIT_MAX);
-  // app.use('/api/', limiter);
+  // Apply rate limiter
+  const limiter = configureRateLimit(config.RATE_LIMIT_WINDOW, config.RATE_LIMIT_MAX);
+  app.use('/api/', limiter);
 }
 
 /**

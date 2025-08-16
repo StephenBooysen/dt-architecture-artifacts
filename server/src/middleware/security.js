@@ -103,6 +103,7 @@ function configureRateLimit(windowMs, max) {
     windowMs,
     max,
     message: 'Too many requests from this IP, please try again later.',
+    validate: {xForwardedForHeader: false}
   });
 }
 
