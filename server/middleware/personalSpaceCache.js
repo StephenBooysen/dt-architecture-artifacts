@@ -5,15 +5,50 @@
 
 const path = require('path');
 
-// Import cache service singleton
-const cacheInstance = require('../src/services/caching/singleton');
+// Cache instance will be retrieved from DI container
+let cacheInstance = null;
 
 /**
- * Cache service helpers
+ * Initialize cache instance from service container
+ * @param {Object} serviceContainer - The DI service container
  */
-async function getCacheValue(key) {
+function initializeCache(serviceContainer) {
+  if (!cacheInstance && serviceContainer && serviceContainer.has('cache')) {
+    try {
+      cacheInstance = serviceContainer.get('cache');
+      console.log('PersonalSpaceCache: Cache service initialized from DI container');
+    } catch (error) {
+      console.warn('PersonalSpaceCache: Failed to get cache from DI container:', error.message);
+    }
+  }
+}
+
+/**
+ * Get cache instance, attempting to initialize if needed
+ * @param {Object} req - Express request object (contains app.locals.serviceContainer)
+ * @returns {Object|null} Cache instance or null if not available
+ */
+function getCacheInstance(req) {
+  if (!cacheInstance && req && req.app && req.app.locals && req.app.locals.serviceContainer) {
+    initializeCache(req.app.locals.serviceContainer);
+  }
+  return cacheInstance;
+}
+
+/**
+ * Get a cache value
+ * @param {string} key 
+ * @param {object} req 
+ * @returns 
+ */
+async function getCacheValue(key, req = null) {
   try {
-    const value = await cacheInstance.get(key);
+    const cache = req ? getCacheInstance(req) : cacheInstance;
+    if (!cache) {
+      console.warn(`Cache not available for key ${key}`);
+      return null;
+    }
+    const value = await cache.get(key);
     return value || null;
   } catch (error) {
     console.warn(`Error accessing cache for key ${key}:`, error.message);
@@ -21,9 +56,22 @@ async function getCacheValue(key) {
   }
 }
 
-async function setCacheValue(key, value, ttl = 3600) {
+/**
+ * Set a cache value
+ * @param {string} key 
+ * @param {string} value 
+ * @param {object} req 
+ * @param {int} ttl 
+ * @returns 
+ */
+async function setCacheValue(key, value, req = null, ttl = 3600) {
   try {
-    await cacheInstance.put(key, value);
+    const cache = req ? getCacheInstance(req) : cacheInstance;
+    if (!cache) {
+      console.warn(`Cache not available for key ${key}`);
+      return;
+    }
+    await cache.put(key, value);
   } catch (error) {
     console.warn(`Error caching key ${key}:`, error.message);
   }
@@ -31,6 +79,10 @@ async function setCacheValue(key, value, ttl = 3600) {
 
 /**
  * Generate cache keys for personal space data
+ * @param {string} username 
+ * @param {string} filePath 
+ * @param {string} operation 
+ * @returns 
  */
 function generateCacheKeys(username, filePath = '', operation = 'content') {
   const base = `personal:${username}`;
@@ -75,14 +127,14 @@ function cacheFirstContent() {
     try {
       // Try cache first
       const cacheKey = generateCacheKeys(username, filePath, 'content');
-      const cachedContent = await getCacheValue(cacheKey);
+      const cachedContent = await getCacheValue(cacheKey, req);
       
       if (cachedContent) {
         console.log(`Cache hit for: ${username}:${filePath}`);
         
         // Also get cached metadata if available
         const metaCacheKey = generateCacheKeys(username, filePath, 'metadata');
-        const cachedMeta = await getCacheValue(metaCacheKey);
+        const cachedMeta = await getCacheValue(metaCacheKey, req);
         
         // Format response similar to file route
         const response = {
@@ -119,7 +171,7 @@ function cacheFirstContent() {
           const metaCacheKey = generateCacheKeys(username, filePath, 'metadata');
           
           // Cache content
-          setCacheValue(cacheKey, data.content).catch(console.warn);
+          setCacheValue(cacheKey, data.content, req).catch(console.warn);
           
           // Cache metadata
           const metadata = {
@@ -128,7 +180,7 @@ function cacheFirstContent() {
             mtime: data.mtime,
             processedAt: new Date().toISOString()
           };
-          setCacheValue(metaCacheKey, metadata).catch(console.warn);
+          setCacheValue(metaCacheKey, metadata, req).catch(console.warn);
         }
         
         // Call original method
@@ -166,7 +218,7 @@ function cacheFirstTree() {
     
     try {
       // Try cache first
-      const cachedData = await getCacheValue(cacheKey);
+      const cachedData = await getCacheValue(cacheKey, req);
       
       if (cachedData) {
         console.log(`Tree cache hit for space: ${spaceName}`);
@@ -196,7 +248,7 @@ function cacheFirstTree() {
               tree: data,
               cachedAt: new Date().toISOString()
             };
-            setCacheValue(cacheKey, cacheData).catch(console.warn);
+            setCacheValue(cacheKey, cacheData, req).catch(console.warn);
           }
           
           // Call original method
@@ -235,7 +287,7 @@ function cacheFirstTemplates() {
     try {
       // Try cache first
       const cacheKey = generateCacheKeys(username, '', 'templates');
-      const cachedTemplates = await getCacheValue(cacheKey);
+      const cachedTemplates = await getCacheValue(cacheKey, req);
       
       if (cachedTemplates) {
         console.log(`Templates cache hit for user: ${username}`);
@@ -257,7 +309,7 @@ function cacheFirstTemplates() {
             templates: data,
             cachedAt: new Date().toISOString()
           };
-          setCacheValue(cacheKey, cacheData).catch(console.warn);
+          setCacheValue(cacheKey, cacheData, req).catch(console.warn);
         }
         
         // Call original method
@@ -296,20 +348,20 @@ function invalidateCacheOnWrite() {
         
         // Invalidate tree cache (always)
         const treeCacheKey = generateCacheKeys(username, '', 'tree');
-        deleteCacheValue(treeCacheKey).catch(console.warn);
+        deleteCacheValue(treeCacheKey, req).catch(console.warn);
         
         // Invalidate content cache for specific file
         if (filePath) {
           const contentCacheKey = generateCacheKeys(username, filePath, 'content');
           const metaCacheKey = generateCacheKeys(username, filePath, 'metadata');
-          deleteCacheValue(contentCacheKey).catch(console.warn);
-          deleteCacheValue(metaCacheKey).catch(console.warn);
+          deleteCacheValue(contentCacheKey, req).catch(console.warn);
+          deleteCacheValue(metaCacheKey, req).catch(console.warn);
         }
         
         // Invalidate templates cache if template operation
         if (req.path.includes('/templates')) {
           const templatesCacheKey = generateCacheKeys(username, '', 'templates');
-          deleteCacheValue(templatesCacheKey).catch(console.warn);
+          deleteCacheValue(templatesCacheKey, req).catch(console.warn);
         }
         
         console.log(`Invalidated cache for write operation: ${username}:${filePath}`);
@@ -323,17 +375,22 @@ function invalidateCacheOnWrite() {
   };
 }
 
-async function deleteCacheValue(key) {
+/**
+ * Delete a cache key
+ * @param {string} key 
+ * @param {*} req 
+ * @returns 
+ */
+async function deleteCacheValue(key, req = null) {
   try {
-    const response = await axios.delete(`${CACHE_BASE_URL}/delete/${encodeURIComponent(key)}`);
-    
-    if (response.status !== 200) {
-      console.warn(`Failed to delete cache key ${key}:`, response.statusText);
+    const cache = req ? getCacheInstance(req) : cacheInstance;
+    if (!cache) {
+      console.warn(`Cache not available for deleting key ${key}`);
+      return;
     }
+    await cache.delete(key);
   } catch (error) {
-    if (error.response?.status !== 404) {
-      console.warn(`Error deleting cache key ${key}:`, error.message);
-    }
+    console.warn(`Error deleting cache key ${key}:`, error.message);
   }
 }
 
@@ -342,5 +399,6 @@ module.exports = {
   cacheFirstTree,
   cacheFirstTemplates,
   invalidateCacheOnWrite,
-  generateCacheKeys
+  generateCacheKeys,
+  initializeCache
 };

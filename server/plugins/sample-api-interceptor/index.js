@@ -67,9 +67,6 @@ class SampleApiInterceptorPlugin {
     const isAuthEndpoint = req.url.includes('/auth/') || req.url.includes('/login') || req.url.includes('/register');
     
     if (isAuthEndpoint) {
-      if (this.options.logRequests) {
-        console.log(`[${this.name}] Skipping interception for auth endpoint: ${req.method} ${req.url}`);
-      }
       return next();
     }
 

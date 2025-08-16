@@ -10,7 +10,9 @@ const axios = require('axios');
 const CACHE_BASE_URL = 'http://localhost:3001/api/caching';
 
 /**
- * Cache service helpers
+ * Get a cache value
+ * @param {string} key 
+ * @returns 
  */
 async function getCacheValue(key) {
   try {
@@ -30,6 +32,12 @@ async function getCacheValue(key) {
   }
 }
 
+/**
+ * Set a cache value
+ * @param {string} key 
+ * @param {string} value 
+ * @param {int} ttl 
+ */
 async function setCacheValue(key, value, ttl = 3600) {
   try {
     const response = await axios.post(`${CACHE_BASE_URL}/put/${encodeURIComponent(key)}`, value, {
@@ -46,6 +54,10 @@ async function setCacheValue(key, value, ttl = 3600) {
   }
 }
 
+/**
+ * Delete a cache value
+ * @param {string} key 
+ */
 async function deleteCacheValue(key) {
   try {
     const response = await axios.delete(`${CACHE_BASE_URL}/delete/${encodeURIComponent(key)}`);
@@ -62,6 +74,10 @@ async function deleteCacheValue(key) {
 
 /**
  * Generate cache keys for git space data
+ * @param {string} spaceName 
+ * @param {string} filePath 
+ * @param {string} operation 
+ * @returns 
  */
 function generateGitCacheKeys(spaceName, filePath = '', operation = 'content') {
   const base = `git:${spaceName.toLowerCase()}`;
@@ -396,6 +412,10 @@ function universalCacheFirstTree() {
   };
 }
 
+/**
+ * Invalidate the cache if we write something
+ * @returns I
+ */
 function universalInvalidateCacheOnWrite() {
   return async (req, res, next) => {
     if (req.params.space === 'Personal') {

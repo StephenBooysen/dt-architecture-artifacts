@@ -1,0 +1,64 @@
+/**
+ * CSS Module for StarredFilesView component
+ * Using our design system tokens for consistency
+ */
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-4xl);
+}
+
+.emptyIcon {
+  font-size: var(--font-size-4xl);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
+}
+
+.fileItem {
+  cursor: pointer;
+  transition: var(--transition-normal);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  background: var(--color-bg-card);
+  position: relative;
+}
+
+.fileItem:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
+}
+
+.starIcon {
+  font-size: var(--font-size-xl);
+  color: var(--color-warning);
+  margin-right: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.unstarButton {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  z-index: var(--z-popover);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-xs);
+  transition: var(--transition-fast);
+}
+
+.unstarButton:hover {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+  border-color: var(--color-danger);
+}

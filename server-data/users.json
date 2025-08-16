@@ -32,8 +32,7 @@
     "createdAt": "2025-08-04T04:45:33.591Z",
     "roles": [
       "read",
-      "write",
-      "admin"
+      "write"
     ],
     "spaces": "Personal"
   },

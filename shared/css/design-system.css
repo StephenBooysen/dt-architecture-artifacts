@@ -1,0 +1,195 @@
+/**
+ * Shared Design System for Design Artifacts
+ * Used by both client and server applications
+ * Provides consistent design tokens across the entire platform
+ */
+
+:root {
+  /* === Core Color Palette === */
+  /* Primary Colors */
+  --ds-color-primary: #0052cc;
+  --ds-color-primary-hover: #0747a6;
+  --ds-color-primary-light: #4c9aff;
+  --ds-color-primary-dark: #003884;
+  
+  /* Secondary Colors */
+  --ds-color-secondary: #6b778c;
+  --ds-color-secondary-light: #8993a4;
+  --ds-color-secondary-dark: #5e6c84;
+  
+  /* Text Colors */
+  --ds-color-text: #172b4d;
+  --ds-color-text-subtle: #6b778c;
+  --ds-color-text-muted: #97a0af;
+  --ds-color-text-inverse: #ffffff;
+  
+  /* Background Colors */
+  --ds-color-bg: #f7f8fa;
+  --ds-color-bg-card: #ffffff;
+  --ds-color-bg-elevated: #ffffff;
+  --ds-color-bg-overlay: rgba(9, 30, 66, 0.54);
+  
+  /* Border Colors */
+  --ds-color-border: #e5e8ec;
+  --ds-color-border-subtle: #f4f5f7;
+  --ds-color-border-focus: #4c9aff;
+  
+  /* Status Colors */
+  --ds-color-success: #36b37e;
+  --ds-color-success-light: #57d9a3;
+  --ds-color-success-dark: #00875a;
+  
+  --ds-color-warning: #ffab00;
+  --ds-color-warning-light: #ffc400;
+  --ds-color-warning-dark: #ff8b00;
+  
+  --ds-color-danger: #de350b;
+  --ds-color-danger-light: #ff5630;
+  --ds-color-danger-dark: #bf2600;
+  
+  --ds-color-info: #0052cc;
+  --ds-color-info-light: #4c9aff;
+  --ds-color-info-dark: #0747a6;
+  
+  /* === Typography === */
+  --ds-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --ds-font-family-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  
+  --ds-font-size-xs: 0.75rem;
+  --ds-font-size-sm: 0.875rem;
+  --ds-font-size-md: 1rem;
+  --ds-font-size-lg: 1.125rem;
+  --ds-font-size-xl: 1.25rem;
+  --ds-font-size-2xl: 1.5rem;
+  --ds-font-size-3xl: 1.875rem;
+  --ds-font-size-4xl: 2.25rem;
+  
+  --ds-font-weight-normal: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+  
+  --ds-line-height-tight: 1.25;
+  --ds-line-height-normal: 1.5;
+  --ds-line-height-relaxed: 1.75;
+  
+  /* === Spacing === */
+  --ds-space-xs: 0.25rem;
+  --ds-space-sm: 0.5rem;
+  --ds-space-md: 0.75rem;
+  --ds-space-lg: 1rem;
+  --ds-space-xl: 1.5rem;
+  --ds-space-2xl: 2rem;
+  --ds-space-3xl: 3rem;
+  --ds-space-4xl: 4rem;
+  --ds-space-5xl: 6rem;
+  
+  /* === Shadows === */
+  --ds-shadow-sm: 0 1px 2px rgba(9, 30, 66, 0.08);
+  --ds-shadow-md: 0 4px 8px rgba(9, 30, 66, 0.12);
+  --ds-shadow-lg: 0 8px 16px rgba(9, 30, 66, 0.16);
+  --ds-shadow-xl: 0 16px 32px rgba(9, 30, 66, 0.20);
+  
+  /* === Border Radius === */
+  --ds-radius-sm: 3px;
+  --ds-radius-md: 4px;
+  --ds-radius-lg: 6px;
+  --ds-radius-xl: 8px;
+  --ds-radius-2xl: 12px;
+  --ds-radius-full: 9999px;
+  
+  /* === Transitions === */
+  --ds-transition-fast: 0.15s ease;
+  --ds-transition-normal: 0.2s ease;
+  --ds-transition-slow: 0.3s ease;
+  
+  /* === Z-Index === */
+  --ds-z-dropdown: 1000;
+  --ds-z-sticky: 1020;
+  --ds-z-fixed: 1030;
+  --ds-z-modal-backdrop: 1040;
+  --ds-z-modal: 1050;
+  --ds-z-popover: 1060;
+  --ds-z-tooltip: 1070;
+  --ds-z-toast: 1080;
+  
+  /* === Legacy Variable Names for Backward Compatibility === */
+  --confluence-primary: var(--ds-color-primary);
+  --confluence-primary-hover: var(--ds-color-primary-hover);
+  --confluence-secondary: var(--ds-color-secondary);
+  --confluence-text: var(--ds-color-text);
+  --confluence-text-subtle: var(--ds-color-text-subtle);
+  --confluence-bg: var(--ds-color-bg);
+  --confluence-bg-card: var(--ds-color-bg-card);
+  --confluence-border: var(--ds-color-border);
+  --confluence-border-subtle: var(--ds-color-border-subtle);
+  --confluence-success: var(--ds-color-success);
+  --confluence-danger: var(--ds-color-danger);
+  --confluence-warning: var(--ds-color-warning);
+  --confluence-info: var(--ds-color-info);
+}
+
+/* === Dark Theme === */
+[data-theme="dark"] {
+  --ds-color-primary: #4c9aff;
+  --ds-color-primary-hover: #2684ff;
+  --ds-color-primary-light: #8db4ff;
+  --ds-color-primary-dark: #0065ff;
+  
+  --ds-color-secondary: #8993a4;
+  --ds-color-secondary-light: #b3bac5;
+  --ds-color-secondary-dark: #6b778c;
+  
+  --ds-color-text: #f4f5f7;
+  --ds-color-text-subtle: #b3bac5;
+  --ds-color-text-muted: #8993a4;
+  --ds-color-text-inverse: #172b4d;
+  
+  --ds-color-bg: #0d1117;
+  --ds-color-bg-card: #161b22;
+  --ds-color-bg-elevated: #21262d;
+  --ds-color-bg-overlay: rgba(0, 0, 0, 0.7);
+  
+  --ds-color-border: #30363d;
+  --ds-color-border-subtle: #21262d;
+  --ds-color-border-focus: #4c9aff;
+  
+  --ds-color-success: #56d364;
+  --ds-color-success-light: #7ee787;
+  --ds-color-success-dark: #2ea043;
+  
+  --ds-color-warning: #e3b341;
+  --ds-color-warning-light: #f2cc60;
+  --ds-color-warning-dark: #d29922;
+  
+  --ds-color-danger: #f85149;
+  --ds-color-danger-light: #ff7b72;
+  --ds-color-danger-dark: #da3633;
+  
+  --ds-color-info: #4c9aff;
+  --ds-color-info-light: #79c0ff;
+  --ds-color-info-dark: #1f6feb;
+}
+
+/* === Accessibility === */
+@media (prefers-contrast: high) {
+  :root {
+    --ds-color-border: #000000;
+    --ds-color-text: #000000;
+    --ds-color-bg: #ffffff;
+  }
+  
+  [data-theme="dark"] {
+    --ds-color-border: #ffffff;
+    --ds-color-text: #ffffff;
+    --ds-color-bg: #000000;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-transition-fast: 0s;
+    --ds-transition-normal: 0s;
+    --ds-transition-slow: 0s;
+  }
+}

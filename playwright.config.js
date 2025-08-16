@@ -6,7 +6,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
-  testDir: './tests-playwright',
+  testDir: './tests/playwright',
   
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -22,8 +22,8 @@ module.exports = defineConfig({
   
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['html', { outputFolder: 'tests-playwright-report' }],
-    ['json', { outputFile: 'tests-playwright-report/results.json' }],
+    ['html', { outputFolder: './tests/playwright-report' }],
+    ['json', { outputFile: 'playwright-report/results.json' }],
     ['line']
   ],
   
@@ -101,8 +101,8 @@ module.exports = defineConfig({
   ],
 
   /* Global setup and teardown */
-  globalSetup: require.resolve('./tests-playwright/config/global-setup.js'),
-  globalTeardown: require.resolve('./tests-playwright/config/global-teardown.js'),
+  globalSetup: require.resolve('./tests/playwright/config/global-setup.js'),
+  globalTeardown: require.resolve('./tests/playwright/config/global-teardown.js'),
 
   /* Test timeout */
   timeout: 60 * 1000,

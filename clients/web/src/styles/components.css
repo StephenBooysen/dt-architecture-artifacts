@@ -1,0 +1,165 @@
+/**
+ * Component-specific styles extracted from inline styles
+ * Organized by component for better maintainability
+ */
+
+/* === FileDownloader Component === */
+.file-downloader__icon {
+  font-size: 4rem;
+}
+
+/* === PDFViewer Component === */
+.pdf-viewer__loading-container {
+  height: 400px;
+}
+
+.pdf-viewer__error-container {
+  height: 400px;
+}
+
+.pdf-viewer__error-icon {
+  font-size: 3rem;
+}
+
+.pdf-viewer__container {
+  position: relative;
+  height: 100%;
+  min-height: 600px;
+}
+
+.pdf-viewer__embed,
+.pdf-viewer__iframe {
+  border: none;
+}
+
+.pdf-viewer__download-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-viewer__fallback-container {
+  height: 400px;
+}
+
+/* === StarredFilesView Component === */
+.starred-files__loading-container {
+  min-height: 200px;
+}
+
+.starred-files__empty-icon {
+  font-size: 3rem;
+}
+
+.starred-files__item {
+  cursor: pointer;
+}
+
+.starred-files__star-icon {
+  font-size: 1.2rem;
+}
+
+.starred-files__unstar-button {
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+/* === ImageViewer Component === */
+.image-viewer__container {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-viewer__fullscreen-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  cursor: pointer;
+}
+
+/* === Common Loading States === */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-container--large {
+  height: 400px;
+}
+
+.loading-container--medium {
+  height: 200px;
+}
+
+.loading-container--small {
+  height: 100px;
+}
+
+/* === Icon Sizes === */
+.icon--xs { font-size: 0.75rem; }
+.icon--sm { font-size: 1rem; }
+.icon--md { font-size: 1.2rem; }
+.icon--lg { font-size: 1.5rem; }
+.icon--xl { font-size: 2rem; }
+.icon--2xl { font-size: 3rem; }
+.icon--3xl { font-size: 4rem; }
+
+/* === Position Utilities === */
+.position--absolute-top-right {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.position--fixed-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* === Interactive Elements === */
+.interactive--hover {
+  transition: all 0.2s ease;
+}
+
+.interactive--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.interactive--cursor-pointer {
+  cursor: pointer;
+}
+
+/* === Background Overlays === */
+.overlay--dark {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.overlay--light {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.overlay--semi-transparent {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(2px);
+}

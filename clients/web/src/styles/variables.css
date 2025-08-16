@@ -1,0 +1,209 @@
+/**
+ * CSS Custom Properties (Variables) for Design Artifacts Client
+ * References the shared design system for consistency
+ */
+
+/* Import shared design system */
+@import './design-system.css';
+
+:root {
+  /* === Client-specific aliases using shared design system === */
+  /* Primary Colors */
+  --color-primary: var(--ds-color-primary);
+  --color-primary-hover: var(--ds-color-primary-hover);
+  --color-primary-light: var(--ds-color-primary-light);
+  --color-primary-dark: var(--ds-color-primary-dark);
+  
+  /* Secondary Colors */
+  --color-secondary: var(--ds-color-secondary);
+  --color-secondary-light: var(--ds-color-secondary-light);
+  --color-secondary-dark: var(--ds-color-secondary-dark);
+  
+  /* Text Colors */
+  --color-text: var(--ds-color-text);
+  --color-text-subtle: var(--ds-color-text-subtle);
+  --color-text-muted: var(--ds-color-text-muted);
+  --color-text-inverse: var(--ds-color-text-inverse);
+  
+  /* Background Colors */
+  --color-bg: #f7f8fa;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-overlay: rgba(9, 30, 66, 0.54);
+  
+  /* Border Colors */
+  --color-border: #e5e8ec;
+  --color-border-subtle: #f4f5f7;
+  --color-border-focus: #4c9aff;
+  
+  /* Status Colors */
+  --color-success: #36b37e;
+  --color-success-light: #57d9a3;
+  --color-success-dark: #00875a;
+  
+  --color-warning: #ffab00;
+  --color-warning-light: #ffc400;
+  --color-warning-dark: #ff8b00;
+  
+  --color-danger: #de350b;
+  --color-danger-light: #ff5630;
+  --color-danger-dark: #bf2600;
+  
+  --color-info: #0052cc;
+  --color-info-light: #4c9aff;
+  --color-info-dark: #0747a6;
+  
+  /* === Spacing System === */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 0.75rem;    /* 12px */
+  --space-lg: 1rem;       /* 16px */
+  --space-xl: 1.5rem;     /* 24px */
+  --space-2xl: 2rem;      /* 32px */
+  --space-3xl: 3rem;      /* 48px */
+  --space-4xl: 4rem;      /* 64px */
+  --space-5xl: 6rem;      /* 96px */
+  
+  /* === Typography === */
+  /* Font Families */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-monospace: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* === Layout === */
+  /* Container Widths */
+  --container-xs: 480px;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Sidebar */
+  --sidebar-width: 300px;
+  --sidebar-width-collapsed: 0px;
+  
+  /* Header */
+  --header-height: 64px;
+  
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px rgba(9, 30, 66, 0.08);
+  --shadow-md: 0 4px 8px rgba(9, 30, 66, 0.12);
+  --shadow-lg: 0 8px 16px rgba(9, 30, 66, 0.16);
+  --shadow-xl: 0 16px 32px rgba(9, 30, 66, 0.20);
+  
+  /* === Border Radius === */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 12px;
+  --radius-full: 9999px;
+  
+  /* === Transitions === */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  
+  /* === Z-Index Scale === */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* === Dark Theme Overrides === */
+[data-theme="dark"] {
+  /* Primary Colors (adjusted for dark theme) */
+  --color-primary: #4c9aff;
+  --color-primary-hover: #2684ff;
+  --color-primary-light: #8db4ff;
+  --color-primary-dark: #0065ff;
+  
+  /* Secondary Colors */
+  --color-secondary: #8993a4;
+  --color-secondary-light: #b3bac5;
+  --color-secondary-dark: #6b778c;
+  
+  /* Text Colors */
+  --color-text: #f4f5f7;
+  --color-text-subtle: #b3bac5;
+  --color-text-muted: #8993a4;
+  --color-text-inverse: #172b4d;
+  
+  /* Background Colors */
+  --color-bg: #0d1117;
+  --color-bg-card: #161b22;
+  --color-bg-elevated: #21262d;
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+  
+  /* Border Colors */
+  --color-border: #30363d;
+  --color-border-subtle: #21262d;
+  --color-border-focus: #4c9aff;
+  
+  /* Status Colors (adjusted for dark theme) */
+  --color-success: #56d364;
+  --color-success-light: #7ee787;
+  --color-success-dark: #2ea043;
+  
+  --color-warning: #e3b341;
+  --color-warning-light: #f2cc60;
+  --color-warning-dark: #d29922;
+  
+  --color-danger: #f85149;
+  --color-danger-light: #ff7b72;
+  --color-danger-dark: #da3633;
+  
+  --color-info: #4c9aff;
+  --color-info-light: #79c0ff;
+  --color-info-dark: #1f6feb;
+}
+
+/* === High Contrast Theme === */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000000;
+    --color-text: #000000;
+    --color-bg: #ffffff;
+  }
+  
+  [data-theme="dark"] {
+    --color-border: #ffffff;
+    --color-text: #ffffff;
+    --color-bg: #000000;
+  }
+}
+
+/* === Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0s;
+    --transition-normal: 0s;
+    --transition-slow: 0s;
+  }
+}

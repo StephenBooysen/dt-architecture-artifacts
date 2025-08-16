@@ -1,0 +1,41 @@
+/**
+ * CSS Module for ImageViewer component
+ * Using our design system tokens for consistency
+ */
+
+.container {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+}
+
+.container:hover {
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.02);
+}
+
+.fullscreenContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.fullscreenImage {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}

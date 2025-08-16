@@ -9,16 +9,46 @@ const path = require('path');
 const { getSpaceConfigs } = require('../config/spaces');
 const { getFilingProviderForSpace } = require('../routes/spaces');
 
-// Import service singletons
-const cacheInstance = require('./caching/singleton');
-const searchInstance = require('./searching/singleton');
-const loggingInstance = require('./logging/singleton');
+// Service instances will be retrieved from DI container
+let cacheInstance = null;
+let searchInstance = null;
+let loggingInstance = null;
+let serviceContainer = null;
 
 class GitSpaceScheduler {
   constructor() {
     this.syncIntervalId = null;
     this.isRunning = false;
     this.syncInterval = 5 * 60 * 1000; // 5 minutes
+  }
+
+  /**
+   * Initialize the scheduler with service container
+   * @param {Object} container - The DI service container
+   */
+  initialize(container) {
+    serviceContainer = container;
+    if (container.has('cache')) {
+      cacheInstance = container.get('cache');
+    }
+    if (container.has('searching')) {
+      searchInstance = container.get('searching');
+    }
+    if (container.has('logging')) {
+      loggingInstance = container.get('logging');
+    }
+    console.log('GitSpaceScheduler: Initialized with DI container');
+  }
+
+  /**
+   * Get service instances safely
+   */
+  getServices() {
+    return {
+      cache: cacheInstance,
+      search: searchInstance,
+      logging: loggingInstance
+    };
   }
 
   /**
@@ -32,10 +62,10 @@ class GitSpaceScheduler {
 
     console.log('Starting GitSpaceScheduler...');
     this.isRunning = true;
-    
+
     // Run initial sync
     this.syncAllSpaces();
-    
+
     // Set up periodic sync
     this.syncIntervalId = setInterval(() => {
       this.syncAllSpaces();
@@ -66,7 +96,7 @@ class GitSpaceScheduler {
       console.log('GitSpaceScheduler: Starting sync cycle...');
       const spaceConfigs = getSpaceConfigs();
       console.log('GitSpaceScheduler: Found space configs:', Object.keys(spaceConfigs));
-      
+
       for (const [spaceName, config] of Object.entries(spaceConfigs)) {
         // Sync all spaces that have filing providers
         if (config.filing && (config.filing.type === 'git' || config.filing.type === 'local')) {
@@ -92,10 +122,10 @@ class GitSpaceScheduler {
         console.log(`Skipping Personal space - requires user-specific context`);
         return;
       }
-      
+
       // Get the filing provider for this space
       const filing = await getFilingProviderForSpace(spaceName, null); // No user context for scheduler
-      
+
       if (!filing) {
         console.error(`No filing provider found for space: ${spaceName}`);
         return;
@@ -105,7 +135,7 @@ class GitSpaceScheduler {
       const isReadonly = config.access === 'readonly';
       console.log(`GitSpaceScheduler: Getting directory tree for ${spaceName} (readonly: ${isReadonly})`);
       const tree = await this.getDirectoryTreeFromFiling(filing, '', isReadonly);
-      
+
       // Cache the tree data
       const cacheKey = `space:${spaceName}:tree`;
       await this.setCacheValue(cacheKey, {
@@ -128,10 +158,10 @@ class GitSpaceScheduler {
    * Get directory tree from filing provider (copied from spaces/index.js but with draft detection)
    */
   async getDirectoryTreeFromFiling(filing, relativePath = '', isReadonly = false) {
-    const basePath = isReadonly 
-      ? (relativePath || '') 
+    const basePath = isReadonly
+      ? (relativePath || '')
       : (relativePath ? `markdown/${relativePath}` : 'markdown');
-    
+
     let items;
     try {
       items = await filing.listDetailed(basePath);
@@ -143,7 +173,7 @@ class GitSpaceScheduler {
       console.warn(`Error listing directory ${basePath}:`, error.message);
       return [];
     }
-    
+
     const tree = [];
 
     // Get draft files if the filing provider supports it
@@ -176,11 +206,11 @@ class GitSpaceScheduler {
       } else {
         // Include all files, not just markdown
         const fileType = this.detectFileType(item.name);
-        
+
         // Check if this file is a draft
         const spacePath = isReadonly ? relPath : `markdown/${relPath}`;
         const isDraft = draftFiles.includes(spacePath) || (item.isDraft === true);
-        
+
         tree.push({
           name: item.name,
           type: 'file',
@@ -203,7 +233,7 @@ class GitSpaceScheduler {
    */
   detectFileType(fileName) {
     const ext = path.extname(fileName).toLowerCase();
-    
+
     if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].includes(ext)) {
       return 'image';
     } else if (ext === '.pdf') {
@@ -213,7 +243,7 @@ class GitSpaceScheduler {
     } else if (['.md', '.markdown'].includes(ext)) {
       return 'markdown';
     }
-    
+
     return 'unknown';
   }
 
@@ -232,7 +262,7 @@ class GitSpaceScheduler {
               // Read file content
               const fullPath = isReadonly ? item.path : `markdown/${item.path}`;
               const content = await filing.read(fullPath, 'utf8');
-              
+
               // Add to search service
               const searchKey = `${spaceName}:${item.path}`;
               const searchData = {
@@ -244,7 +274,7 @@ class GitSpaceScheduler {
                 isDraft: item.isDraft || false,
                 indexedAt: new Date().toISOString()
               };
-              
+
               await this.addToSearchService(searchKey, searchData);
             } catch (error) {
               console.warn(`Failed to index file ${item.path}:`, error.message);
@@ -264,6 +294,10 @@ class GitSpaceScheduler {
    */
   async setCacheValue(key, value) {
     try {
+      if (!cacheInstance) {
+        console.warn(`Cache service not available for key ${key}`);
+        return;
+      }
       await cacheInstance.put(key, value);
       console.log(`Successfully cached key: ${key}`);
     } catch (error) {
@@ -276,10 +310,14 @@ class GitSpaceScheduler {
    */
   async addToSearchService(key, data) {
     try {
+      if (!searchInstance) {
+        console.warn(`Search service not available for key ${key}`);
+        return;
+      }
       await searchInstance.add(key, data);
-      loggingInstance.info(`Successfully indexed search data for key: ${key}`);
+      console.log(`Successfully indexed search data for key: ${key}`);
     } catch (error) {
-      loggingInstance.error(`Error adding search data for key ${key}:`, error.message);
+      console.error(`Error adding search data for key ${key}:`, error.message);
     }
   }
 
@@ -288,13 +326,13 @@ class GitSpaceScheduler {
    */
   async syncPersonalSpaceForUser(username) {
     try {
-      loggingInstance.info(`GitSpaceScheduler: Syncing Personal space for user: ${username}`);
-      
+      console.log(`GitSpaceScheduler: Syncing Personal space for user: ${username}`);
+
       // Get the filing provider for Personal space
       const filing = await getFilingProviderForSpace('Personal');
-      
+
       if (!filing) {
-        loggingInstance.error(`No filing provider found for Personal space`);
+        console.error(`No filing provider found for Personal space`);
         return;
       }
 
@@ -304,9 +342,9 @@ class GitSpaceScheduler {
       }
 
       // Get the directory tree from filing provider
-      loggingInstance.info(`GitSpaceScheduler: Getting directory tree for Personal space (user: ${username})`);
+      console.log(`GitSpaceScheduler: Getting directory tree for Personal space (user: ${username})`);
       const tree = await this.getDirectoryTreeFromFiling(filing, '', false); // Personal is not readonly
-      
+
       // Cache the tree data with user-specific key
       const cacheKey = `personal:${username}:tree`;
       await this.setCacheValue(cacheKey, {
@@ -318,12 +356,11 @@ class GitSpaceScheduler {
 
       // Update search service with file content
       await this.updateSearchService(filing, tree, `Personal:${username}`, false);
-
-      loggingInstance.info(`Successfully synced Personal space for user: ${username} (${tree.length} items)`);
+      console.log(`Successfully synced Personal space for user: ${username} (${tree.length} items)`);
       return tree;
     } catch (error) {
-      loggingInstance.error(`Error syncing Personal space for user ${username}:`, error.message);
-      loggingInstance.error('Stack trace:', error.stack);
+      console.error(`Error syncing Personal space for user ${username}:`, error.message);
+      console.error('Stack trace:', error.stack);
       throw error;
     }
   }

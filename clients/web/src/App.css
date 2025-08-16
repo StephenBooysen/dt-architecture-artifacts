@@ -1,10 +1,15 @@
-/* Landing Page Styles */
+/* Import our design system CSS files */
+@import './styles/variables.css';
+@import './styles/utilities.css';
+@import './styles/components.css';
+
+/* Landing Page Styles - Updated to use CSS custom properties */
 .landing-layout {
   display: flex;
   align-items: center;
-  max-width: 800px;
+  max-width: var(--container-lg);
   width: 100%;
-  gap: 3rem;
+  gap: var(--space-3xl);
 }
 
 .landing-image-container {
@@ -15,8 +20,8 @@
 .landing-image {
   width: 100%;
   height: auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .landing-content {
@@ -28,7 +33,7 @@
   .landing-layout {
     flex-direction: column;
     text-align: center;
-    gap: 2rem;
+    gap: var(--space-2xl);
   }
   
   .landing-image-container {
@@ -37,38 +42,40 @@
   }
 }
 
-/* Bootstrap 5 Custom Confluence Theme */
+/* Bootstrap 5 Theme Overrides - Updated to use our design system */
 :root {
-  --confluence-primary: #0052cc;
-  --confluence-primary-hover: #0747a6;
-  --confluence-secondary: #6b778c;
-  --confluence-text: #172b4d;
-  --confluence-text-subtle: #6b778c;
-  --confluence-bg: #f7f8fa;
-  --confluence-bg-card: #ffffff;
-  --confluence-border: #e5e8ec;
-  --confluence-border-subtle: #f4f5f7;
-  --confluence-success: #36b37e;
-  --confluence-danger: #de350b;
-  --confluence-warning: #ffab00;
-  --confluence-info: #0052cc;
+  /* Legacy variable names for backward compatibility */
+  --confluence-primary: var(--color-primary);
+  --confluence-primary-hover: var(--color-primary-hover);
+  --confluence-secondary: var(--color-secondary);
+  --confluence-text: var(--color-text);
+  --confluence-text-subtle: var(--color-text-subtle);
+  --confluence-bg: var(--color-bg);
+  --confluence-bg-card: var(--color-bg-card);
+  --confluence-border: var(--color-border);
+  --confluence-border-subtle: var(--color-border-subtle);
+  --confluence-success: var(--color-success);
+  --confluence-danger: var(--color-danger);
+  --confluence-warning: var(--color-warning);
+  --confluence-info: var(--color-info);
 }
 
-/* Dark Theme */
+/* Dark Theme - Updated to use our design system */
 [data-theme="dark"] {
-  --confluence-primary: #4c9aff;
-  --confluence-primary-hover: #2684ff;
-  --confluence-secondary: #8993a4;
-  --confluence-text: #f4f5f7;
-  --confluence-text-subtle: #b3bac5;
-  --confluence-bg: #0d1117;
-  --confluence-bg-card: #161b22;
-  --confluence-border: #30363d;
-  --confluence-border-subtle: #21262d;
-  --confluence-success: #56d364;
-  --confluence-danger: #f85149;
-  --confluence-warning: #e3b341;
-  --confluence-info: #4c9aff;
+  /* Legacy variables now reference our design system */
+  --confluence-primary: var(--color-primary);
+  --confluence-primary-hover: var(--color-primary-hover);
+  --confluence-secondary: var(--color-secondary);
+  --confluence-text: var(--color-text);
+  --confluence-text-subtle: var(--color-text-subtle);
+  --confluence-bg: var(--color-bg);
+  --confluence-bg-card: var(--color-bg-card);
+  --confluence-border: var(--color-border);
+  --confluence-border-subtle: var(--color-border-subtle);
+  --confluence-success: var(--color-success);
+  --confluence-danger: var(--color-danger);
+  --confluence-warning: var(--color-warning);
+  --confluence-info: var(--color-info);
 }
 
 /* Override Bootstrap variables with Confluence colors */

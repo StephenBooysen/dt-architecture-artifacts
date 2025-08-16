@@ -1,154 +1,129 @@
 /**
- * @fileoverview Centralized service registry for singleton access.
- * This provides a single point of access to all services throughout the application.
+ * @fileoverview Compatibility layer for the old service registry.
+ * Redirects calls to the new unified DI container.
+ * 
+ * This maintains backward compatibility while all code migrates to the new pattern.
+ * 
+ * @deprecated Use ServiceContainer or serviceUtils directly instead
  */
 
-const cacheService = require('./caching/singleton');
-const dataserveService = require('./dataserve/singleton');
-const filingService = require('./filing/singleton');
-const loggingService = require('./logging/singleton');
-const measuringService = require('./measuring/singleton');
-const notifyingService = require('./notifying/singleton');
-const queueingService = require('./queueing/singleton');
-const schedulingService = require('./scheduling/singleton');
-const searchingService = require('./searching/singleton');
-const workflowService = require('./workflow/singleton');
-const workingService = require('./working/singleton');
+const { services, getService, getServiceStatus, container } = require('../utils/serviceUtils');
+
+console.warn('⚠️ DEPRECATED: services/index.js is deprecated. Use serviceUtils or ServiceContainer directly.');
 
 /**
- * Service registry for accessing all singleton services
+ * Legacy ServiceRegistry class for backward compatibility
+ * @deprecated Use ServiceContainer directly
  */
 class ServiceRegistry {
-  constructor() {
-    this.services = {
-      cache: cacheService,
-      dataserve: dataserveService,
-      filing: filingService,
-      logging: loggingService,
-      measuring: measuringService,
-      notifying: notifyingService,
-      queueing: queueingService,
-      scheduling: schedulingService,
-      searching: searchingService,
-      workflow: workflowService,
-      working: workingService
-    };
-  }
-
   /**
    * Get a service by name
    * @param {string} serviceName - Name of the service
    * @returns {*} Service singleton instance
+   * @deprecated Use getService() from serviceUtils instead
    */
   get(serviceName) {
-    const service = this.services[serviceName];
-    if (!service) {
-      throw new Error(`Service '${serviceName}' not found. Available services: ${Object.keys(this.services).join(', ')}`);
-    }
-    return service;
+    console.warn(`⚠️ DEPRECATED: serviceRegistry.get('${serviceName}') is deprecated. Use serviceUtils.getService('${serviceName}') instead.`);
+    return getService(serviceName);
   }
 
   /**
    * Check if a service is available
    * @param {string} serviceName - Name of the service
    * @returns {boolean} True if service exists
+   * @deprecated Use container.has() instead
    */
   has(serviceName) {
-    return this.services.hasOwnProperty(serviceName);
+    console.warn(`⚠️ DEPRECATED: serviceRegistry.has('${serviceName}') is deprecated. Use container.has('${serviceName}') instead.`);
+    return container.has(serviceName);
   }
 
   /**
    * Get all available service names
    * @returns {string[]} Array of service names
+   * @deprecated Use container.getServiceNames() instead
    */
   getServiceNames() {
-    return Object.keys(this.services);
+    console.warn('⚠️ DEPRECATED: serviceRegistry.getServiceNames() is deprecated. Use container.getServiceNames() instead.');
+    return container.getServiceNames();
   }
 
   /**
    * Check if all services are initialized
    * @returns {Object} Status of all services
+   * @deprecated Use getServiceStatus() from serviceUtils instead
    */
   getStatus() {
-    const status = {};
-    for (const [name, service] of Object.entries(this.services)) {
-      status[name] = {
-        initialized: service.isReady(),
-        serviceName: service.getServiceName()
-      };
-    }
-    return status;
+    console.warn('⚠️ DEPRECATED: serviceRegistry.getStatus() is deprecated. Use serviceUtils.getServiceStatus() instead.');
+    return getServiceStatus();
   }
 
   /**
-   * Initialize all services with common configuration
-   * @param {Object} commonOptions - Common options for all services
-   * @param {EventEmitter} eventEmitter - Event emitter instance
+   * Initialize all services - NO-OP (services are auto-initialized now)
+   * @deprecated Services are now auto-initialized by the DI container
    */
-  initializeAll(commonOptions = {}, eventEmitter = null) {
-    console.log('Initializing all services...');
-    
-    // Initialize services with their default types
-    const serviceConfigs = {
-      cache: { type: 'memory' },
-      dataserve: { type: '' },
-      filing: { type: 'local' },
-      logging: { type: 'console' },
-      measuring: { type: '' },
-      notifying: { type: '' },
-      queueing: { type: '' },
-      scheduling: { type: '' },
-      searching: { type: '' },
-      workflow: { type: '' },
-      working: { type: '' }
-    };
-
-    const results = {};
-    for (const [name, service] of Object.entries(this.services)) {
-      try {
-        const config = serviceConfigs[name];
-        results[name] = service.initialize(config.type, commonOptions, eventEmitter);
-        console.log(`✅ ${name} service initialized`);
-      } catch (error) {
-        console.error(`❌ Failed to initialize ${name} service:`, error.message);
-        results[name] = null;
-      }
-    }
-    
-    console.log('Service initialization completed');
-    return results;
+  initializeAll() {
+    console.warn('⚠️ DEPRECATED: serviceRegistry.initializeAll() is deprecated. Services are auto-initialized by the DI container.');
+    return getServiceStatus();
   }
 
   /**
-   * Reset all services (mainly for testing)
+   * Reset all services
+   * @deprecated Use container.reset() instead
    */
   resetAll() {
-    console.log('Resetting all services...');
-    for (const [name, service] of Object.entries(this.services)) {
-      try {
-        service.reset();
-        console.log(`✅ ${name} service reset`);
-      } catch (error) {
-        console.error(`❌ Failed to reset ${name} service:`, error.message);
-      }
-    }
+    console.warn('⚠️ DEPRECATED: serviceRegistry.resetAll() is deprecated. Use container.reset() instead.');
+    container.reset();
   }
 
-  // Convenience getters for direct access
-  get cache() { return this.services.cache; }
-  get dataserve() { return this.services.dataserve; }
-  get filing() { return this.services.filing; }
-  get logging() { return this.services.logging; }
-  get measuring() { return this.services.measuring; }
-  get notifying() { return this.services.notifying; }
-  get queueing() { return this.services.queueing; }
-  get scheduling() { return this.services.scheduling; }
-  get searching() { return this.services.searching; }
-  get workflow() { return this.services.workflow; }
-  get working() { return this.services.working; }
+  // Legacy convenience getters
+  get cache() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.cache is deprecated. Use services.cache instead.');
+    return services.cache; 
+  }
+  get dataserve() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.dataserve is deprecated. Use services.dataserve instead.');
+    return services.dataserve; 
+  }
+  get filing() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.filing is deprecated. Use services.filing instead.');
+    return services.filing; 
+  }
+  get logging() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.logging is deprecated. Use services.logging instead.');
+    return services.logging; 
+  }
+  get measuring() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.measuring is deprecated. Use services.measuring instead.');
+    return services.measuring; 
+  }
+  get notifying() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.notifying is deprecated. Use services.notifying instead.');
+    return services.notifying; 
+  }
+  get queueing() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.queueing is deprecated. Use services.queueing instead.');
+    return services.queueing; 
+  }
+  get scheduling() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.scheduling is deprecated. Use services.scheduling instead.');
+    return services.scheduling; 
+  }
+  get searching() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.searching is deprecated. Use services.searching instead.');
+    return services.searching; 
+  }
+  get workflow() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.workflow is deprecated. Use services.workflow instead.');
+    return services.workflow; 
+  }
+  get working() { 
+    console.warn('⚠️ DEPRECATED: serviceRegistry.working is deprecated. Use services.working instead.');
+    return services.working; 
+  }
 }
 
-// Export singleton instance
+// Export legacy singleton instance for backward compatibility
 const serviceRegistry = new ServiceRegistry();
 
 module.exports = serviceRegistry;
