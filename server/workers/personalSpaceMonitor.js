@@ -111,16 +111,16 @@ async function startMonitoringWorkers(services) {
         // For long-running workers, start once and keep alive
         await scheduler.start(
           config.taskName,
-          scriptPath,
           86400, // 24 hours interval (effectively run once)
+          scriptPath,
           executionCallback(config.taskName)
         );
       } else {
         // For periodic workers, set proper interval
         await scheduler.start(
           config.taskName,
-          scriptPath,
           config.intervalSeconds,
+          scriptPath,
           executionCallback(config.taskName)
         );
       }
@@ -164,8 +164,8 @@ async function restartWorker(scheduler, taskName) {
       
       await scheduler.start(
         config.taskName,
-        scriptPath,
         config.intervalSeconds || 86400,
+        scriptPath,
         (status, data) => {
           console.log(`Restarted worker ${taskName} status: ${status}`);
         }
