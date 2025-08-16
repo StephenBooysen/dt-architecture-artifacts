@@ -51,7 +51,7 @@ const MONITORING_CONFIG = {
 async function initializeServices() {
   const eventEmitter = new EventEmitter();
   
-  // Initialize all required services
+  // Initialize all required services for this process
   console.log('Initializing personal space monitoring services...');
   
   const scheduler = getSchedulingService('memory', {}, eventEmitter);
@@ -134,6 +134,9 @@ async function startMonitoringWorkers(services) {
   // Setup event listeners for monitoring
   setupMonitoringEvents(eventEmitter);
   
+  // Register schedules with main server for visibility on services/scheduling page
+  await registerSchedulesWithMainServer();
+  
   console.log('Personal space monitoring workers started successfully');
 }
 
@@ -173,6 +176,34 @@ async function restartWorker(scheduler, taskName) {
   } catch (error) {
     console.error(`✗ Failed to restart ${taskName}:`, error.message);
   }
+}
+
+/**
+ * Register schedules with main server so they appear on services/scheduling page
+ */
+async function registerSchedulesWithMainServer() {
+  console.log('Registering personal space monitoring schedules with main server...');
+  
+  const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+  
+  for (const [workerType, config] of Object.entries(MONITORING_CONFIG)) {
+    try {
+      // Register each worker as a scheduled task with the main server
+      // The scheduling API expects 'task' and 'cron' fields
+      const scheduleData = {
+        task: config.taskName,
+        cron: config.intervalSeconds === 0 ? '0 0 * * *' : `*/${config.intervalSeconds} * * * * *` // Daily for long-running, or interval for periodic
+      };
+      
+      const response = await axios.post(`${serverUrl}/api/scheduling/schedule`, scheduleData);
+      console.log(`✓ Registered ${config.taskName} with main scheduler`);
+    } catch (error) {
+      // Don't fail if we can't register with main server - just log the error
+      console.warn(`⚠ Could not register ${config.taskName} with main server:`, error.message);
+    }
+  }
+  
+  console.log('Schedule registration with main server completed');
 }
 
 /**
@@ -226,10 +257,34 @@ async function shutdown(services) {
       console.log(`Stopped ${config.taskName}`);
     }
     
+    // Unregister schedules from main server
+    await unregisterSchedulesFromMainServer();
+    
     console.log('Personal space monitoring shutdown complete');
   } catch (error) {
     console.error('Error during shutdown:', error);
   }
+}
+
+/**
+ * Unregister schedules from main server
+ */
+async function unregisterSchedulesFromMainServer() {
+  console.log('Unregistering personal space monitoring schedules from main server...');
+  
+  const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+  
+  for (const config of Object.values(MONITORING_CONFIG)) {
+    try {
+      await axios.delete(`${serverUrl}/api/scheduling/cancel/${config.taskName}`);
+      console.log(`✓ Unregistered ${config.taskName} from main scheduler`);
+    } catch (error) {
+      // Don't fail shutdown if we can't unregister - just log the warning
+      console.warn(`⚠ Could not unregister ${config.taskName} from main server:`, error.message);
+    }
+  }
+  
+  console.log('Schedule unregistration from main server completed');
 }
 
 /**
@@ -238,10 +293,11 @@ async function shutdown(services) {
 async function healthCheck() {
   try {
     // Check if required services are responding
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
     const checks = [
-      { service: 'Queue', url: 'http://localhost:3001/api/queueing/status' },
-      { service: 'Cache', url: 'http://localhost:3001/api/caching/status' },
-      { service: 'Search', url: 'http://localhost:3001/api/searching/status' }
+      { service: 'Queue', url: `${serverUrl}/api/queueing/status` },
+      { service: 'Cache', url: `${serverUrl}/api/caching/status` },
+      { service: 'Search', url: `${serverUrl}/api/searching/status` }
     ];
     
     const results = await Promise.all(

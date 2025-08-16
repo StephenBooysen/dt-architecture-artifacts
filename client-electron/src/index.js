@@ -26,8 +26,8 @@ root.render(
   <React.StrictMode>
     <Router>
       <Routes>
-        <Route path="/" element={<App />} />
         <Route path="/preview" element={<PreviewWindow />} />
+        <Route path="/*" element={<App />} />
       </Routes>
     </Router>
   </React.StrictMode>

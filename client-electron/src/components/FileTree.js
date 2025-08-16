@@ -37,6 +37,7 @@ import { fetchTemplates, fetchUserSpaces } from '../services/api';
  * @param {Function} props.onFileUpload - Callback for file upload.
  * @param {Set} props.expandedFolders - Set of folder paths that should be expanded.
  * @param {Function} props.onFolderToggle - Callback when a folder is expanded/collapsed.
+ * @param {Function} props.onFolderSelect - Callback when a folder is selected for viewing.
  * @param {Array} props.draftFiles - Array of draft file paths that haven't been committed.
  * @param {Object} props.providerInfo - Information about the filing provider (type, capabilities).
  * @param {Function} props.onViewChange - Callback for view changes (recent, starred).
@@ -54,6 +55,7 @@ const FileTree = ({
   onFileUpload,
   expandedFolders = new Set(),
   onFolderToggle,
+  onFolderSelect,
   onPublish,
   hasChanges,
   draftFiles = [],
@@ -421,6 +423,18 @@ const FileTree = ({
               </span>
             </div>
             <div className="file-tree-actions">
+              {onFolderSelect && (
+                <button
+                  className="action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFolderSelect(item.path);
+                  }}
+                  onContextMenu={(e) => e.stopPropagation()}
+                  title="View folder contents">
+                  <i className="bi bi-folder2-open"></i>
+                </button>
+              )}
               <button
                 className="action-btn"
                 onClick={(e) => {

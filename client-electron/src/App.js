@@ -22,10 +22,13 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import FolderContentView from './components/FolderContentView';
+import { parseURL, constructFileURL, constructSpaceURL } from './utils/urlUtils';
 import FileTree from './components/FileTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import PublishModal from './components/PublishModal';
@@ -67,6 +70,8 @@ import './App.css';
 function AppContent() {
   const { user, login, logout, isAuthenticated, loading } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
@@ -95,33 +100,75 @@ function AppContent() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'files', 'templates', 'recent', 'starred', 'search', 'folder'
+  const [urlInfo, setUrlInfo] = useState({ space: null, type: 'space', folderPath: '', fileName: null });
+  const [selectedFolderPath, setSelectedFolderPath] = useState(null);
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [currentSpace, setCurrentSpace] = useState(() => {
     return localStorage.getItem('architecture-artifacts-current-space') || null;
   });
   const [isCurrentSpaceReadonly, setIsCurrentSpaceReadonly] = useState(false);
 
-  // Initialize default space when authenticated - always start with Personal space
+  // Parse URL and update state when location changes
+  useEffect(() => {
+    const parsed = parseURL(location.pathname);
+    setUrlInfo(parsed);
+    
+    // Update current space if it's different from URL
+    if (parsed.space && currentSpace !== parsed.space) {
+      setCurrentSpace(parsed.space);
+      localStorage.setItem('architecture-artifacts-current-space', parsed.space);
+    }
+  }, [location.pathname, currentSpace]);
+
+  // Handle file loading from URL after authentication and space are ready
+  useEffect(() => {
+    if (isAuthenticated && currentSpace && urlInfo.type === 'file' && urlInfo.path) {
+      // Only auto-load if it's different from currently selected file
+      if (urlInfo.path !== selectedFile) {
+        handleFileSelect(urlInfo.path, false); // false = don't update URL since we're already there
+      }
+    }
+  }, [isAuthenticated, currentSpace, urlInfo.type, urlInfo.path, selectedFile]);
+
+  // Initialize space when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserSpaces().then(spaces => {
         if (spaces && spaces.length > 0) {
-          // Always prioritize Personal space on login
-          const personalSpace = spaces.find(space => space.space === 'Personal');
-          const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
-          
-          // Only set if it's different from current space to avoid unnecessary re-renders
-          if (currentSpace !== defaultSpace) {
-            setCurrentSpace(defaultSpace);
-            localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+          // Check if URL space is valid
+          if (urlInfo.space) {
+            const urlSpaceExists = spaces.find(space => space.space === urlInfo.space);
+            if (urlSpaceExists) {
+              // URL space is valid, use it
+              if (currentSpace !== urlInfo.space) {
+                setCurrentSpace(urlInfo.space);
+                localStorage.setItem('architecture-artifacts-current-space', urlInfo.space);
+              }
+            } else {
+              // URL space is invalid, redirect to default space
+              const personalSpace = spaces.find(space => space.space === 'Personal');
+              const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
+              setCurrentSpace(defaultSpace);
+              localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+              navigate(constructSpaceURL(defaultSpace));
+            }
+          } else {
+            // No URL space, use default
+            const personalSpace = spaces.find(space => space.space === 'Personal');
+            const defaultSpace = personalSpace ? personalSpace.space : spaces[0].space;
+            if (currentSpace !== defaultSpace) {
+              setCurrentSpace(defaultSpace);
+              localStorage.setItem('architecture-artifacts-current-space', defaultSpace);
+              navigate(constructSpaceURL(defaultSpace));
+            }
           }
         }
       }).catch(error => {
         console.error('Failed to load user spaces:', error);
       });
     }
-  }, [isAuthenticated]); // Removed currentSpace dependency to ensure this runs on every login
+  }, [isAuthenticated, urlInfo.space, navigate, currentSpace, location.pathname]);
 
   useEffect(() => {
     // Only load data if user is authenticated and has a space selected
@@ -555,7 +602,7 @@ function AppContent() {
     return map;
   };
 
-  const handleFileSelect = useCallback(async (filePath) => {
+  const handleFileSelect = useCallback(async (filePath, updateUrl = true) => {
     // Don't reload if the same file is already selected
     if (selectedFile === filePath) {
       return;
@@ -585,18 +632,31 @@ function AppContent() {
           toast.error('Failed to download file');
         }
       }
+      
+      // Navigate to file URL if updateUrl is true
+      if (updateUrl && currentSpace) {
+        const fileURL = constructFileURL(currentSpace, filePath);
+        navigate(fileURL);
+      }
     } catch (error) {
       console.error('Failed to load file:', error);
       toast.error('Failed to load file');
     } finally {
       setIsFileLoading(false);
     }
-  }, [selectedFile, currentSpace]);
+  }, [selectedFile, currentSpace, navigate]);
 
   const handleContentChange = useCallback((newContent) => {
     setFileContent(newContent);
     setHasChanges(true);
   }, []);
+
+  const handleFolderSelect = (folderPath) => {
+    setSelectedFolderPath(folderPath);
+    setCurrentView('folder');
+    // Clear selected file when viewing a folder
+    setSelectedFile(null);
+  };
 
   const handleSave = async () => {
     if (!selectedFile) return;
@@ -1373,6 +1433,7 @@ function AppContent() {
                 onFileUpload={handleFileUpload}
                 expandedFolders={expandedFolders}
                 onFolderToggle={handleFolderToggle}
+                onFolderSelect={handleFolderSelect}
                 onPublish={() => setShowPublishModal(true)}
                 hasChanges={hasChanges}
                 draftFiles={draftFiles}
@@ -1389,7 +1450,17 @@ function AppContent() {
         )}
 
         <section className="editor-section">
-          {currentView === 'home' ? (
+          {currentView === 'folder' ? (
+            <FolderContentView
+              files={files}
+              folderPath={selectedFolderPath}
+              currentSpace={currentSpace}
+              onFileSelect={handleFileSelect}
+              onFolderSelect={handleFolderSelect}
+              onNavigateToSpace={() => setCurrentView('home')}
+              isLoading={isLoading}
+            />
+          ) : currentView === 'home' ? (
             <HomeView
               onFileSelect={handleFileSelect}
               onTemplateSelect={handleTemplateSelect}
@@ -1425,7 +1496,7 @@ function AppContent() {
               isLoading={isLoading}
               onClearSearch={handleClearSearch}
             />
-          ) : (
+          ) : selectedFile ? (
             <MarkdownEditor
               content={fileContent}
               onChange={handleContentChange}
@@ -1435,6 +1506,14 @@ function AppContent() {
               fileData={fileData}
               onSave={handleSave}
               hasChanges={hasChanges}
+              currentSpace={currentSpace}
+            />
+          ) : (
+            <HomeView
+              onFileSelect={handleFileSelect}
+              onTemplateSelect={handleTemplateSelect}
+              isVisible={true}
+              isReadonly={isCurrentSpaceReadonly}
               currentSpace={currentSpace}
             />
           )}
