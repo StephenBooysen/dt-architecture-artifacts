@@ -1,6 +1,9 @@
 # Use an official Node.js runtime as a parent image
 FROM node:18-alpine
 
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
 # Set the working directory in the container
 WORKDIR /app
 
