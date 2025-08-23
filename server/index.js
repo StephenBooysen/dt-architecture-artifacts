@@ -162,8 +162,8 @@ function configureMiddleware() {
   });
 
   // Apply rate limiter
-  const limiter = configureRateLimit(config.RATE_LIMIT_WINDOW, config.RATE_LIMIT_MAX);
-  app.use('/api/', limiter);
+  // const limiter = configureRateLimit(config.RATE_LIMIT_WINDOW, config.RATE_LIMIT_MAX);
+  // app.use('/api/', limiter);
 }
 
 /**
